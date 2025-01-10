@@ -14,7 +14,9 @@ namespace Atom
 		AT_CORE_ERROR("ERROR");
 		AT_CORE_CRITICAL("CRITICAL");
 
-		m_Window = Window::Create();
+		m_Window = Window::Create({});
+		m_Window->InitializeGraphicsContext();
+		m_Window->InitializeSwapChain();
 	}
 
 	Application::~Application()

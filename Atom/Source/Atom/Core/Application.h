@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Window.h"
+#include "Atom/Core/Window.h"
 
 namespace Atom
 {
@@ -13,7 +12,7 @@ namespace Atom
 	public:
 		void Run();
 	private:
-		Window* m_Window;
+		Window* m_Window = nullptr;
 	};
 
 	// Implemented by CLIENT

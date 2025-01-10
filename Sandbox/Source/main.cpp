@@ -1,7 +1,5 @@
 #include <Atom.h>
 
-#include <iostream>
-
 class SandboxApplication : public Atom::Application
 {
 };

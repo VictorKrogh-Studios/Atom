@@ -6,24 +6,49 @@
 namespace Atom
 {
 
-	Window* Window::Create()
+	static void GLFWErrorCallback(int error, const char* description)
 	{
-		return new Window();
+		AT_CORE_ERROR("[GLFW] GLFW Error ({0}): {1}", error, description);
 	}
 
-	Window::Window()
+	Window* Window::Create(const WindowOptions& options)
 	{
+		return new Window(options);
+	}
+
+	Window::Window(const WindowOptions& options)
+		: m_Options(options)
+	{
+		m_Data.Title = m_Options.Title;
+		m_Data.Width = m_Options.Width;
+		m_Data.Height = m_Options.Height;
+
 		AT_CORE_ASSERT(glfwInit(), "Failed to initialize GLFW.");
 
-		m_WindowHandle = glfwCreateWindow(1280, 720, "Hello, world!", nullptr, nullptr);
+		glfwSetErrorCallback(GLFWErrorCallback);
+
+		SetClientAPI();
+
+		m_WindowHandle = CreateWindowHandle();
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
-		glfwMakeContextCurrent(m_WindowHandle);
+		//glfwMakeContextCurrent(m_WindowHandle);
 	}
 
 	Window::~Window()
 	{
 		glfwDestroyWindow(m_WindowHandle);
+		glfwTerminate();
+	}
+
+	void Window::InitializeGraphicsContext()
+	{
+		// TODO: Implement
+	}
+
+	void Window::InitializeSwapChain()
+	{
+		// TODO: Implement
 	}
 
 	void Window::Update()
@@ -31,8 +56,24 @@ namespace Atom
 		while (glfwWindowShouldClose(m_WindowHandle) == GLFW_FALSE)
 		{
 			glfwPollEvents();
-			glfwSwapBuffers(m_WindowHandle);
+			//glfwSwapBuffers(m_WindowHandle);
 		}
+	}
+
+	GLFWwindow* Window::CreateWindowHandle()
+	{
+		bool fullscreen = false;
+		if (fullscreen)
+		{
+			AT_CORE_ASSERT(!fullscreen, "Fullscreen support is not yet supported!");
+		}
+
+		return glfwCreateWindow(m_Data.Width, m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	}
+
+	void Window::SetClientAPI()
+	{
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
 }

@@ -4,3 +4,4 @@
 #include "Atom/Core/Log.h"
 
 #include <memory>
+#include <string>
