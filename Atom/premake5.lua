@@ -13,7 +13,12 @@ project "Atom"
 	}
     
     includedirs {
-		"Source"
+		"Source",
+        "%{IncludeDir.spdlog}"
+    }
+
+	links {
+        "spdlog"
     }
 
 	defines {
@@ -24,11 +29,11 @@ project "Atom"
 		systemversion "latest"
 
 	filter "configurations:Debug"
-		defines "AT_GFX_DEBUG"
+		defines "AT_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
-		defines "AT_GFX_RELEASE"
+		defines "AT_RELEASE"
 		runtime "Release"
 		optimize "on"
