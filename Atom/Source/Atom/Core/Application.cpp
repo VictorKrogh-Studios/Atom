@@ -8,15 +8,8 @@ namespace Atom
 	{
 		Log::Initialize();
 
-		AT_CORE_TRACE("TRACE");
-		AT_CORE_INFO("INFO");
-		AT_CORE_WARN("WARNING");
-		AT_CORE_ERROR("ERROR");
-		AT_CORE_CRITICAL("CRITICAL");
-
 		m_Window = Window::Create({});
 		m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
-		m_Window->InitializeGraphicsContext();
 		m_Window->InitializeSwapChain();
 	}
 

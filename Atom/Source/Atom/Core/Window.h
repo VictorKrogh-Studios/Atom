@@ -1,6 +1,8 @@
 #pragma once
 #include "Atom/Events/Event.h"
 
+#include "Atom/Graphics/GraphicsContext.h"
+
 #include <string>
 
 struct GLFWwindow;
@@ -25,7 +27,6 @@ namespace Atom
 		Window(const WindowOptions& options);
 		~Window();
 
-		void InitializeGraphicsContext();
 		void InitializeSwapChain();
 
 		void SetEventCallback(const EventCallbackFn& callback) 
@@ -35,6 +36,8 @@ namespace Atom
 
 		void Update();
 	private:
+		void InitializeGraphicsContext();
+
 		GLFWwindow* CreateWindowHandle();
 		void SetClientAPI();
 	private:
@@ -49,6 +52,8 @@ namespace Atom
 
 			EventCallbackFn EventCallback;
 		} m_Data;
+
+		GraphicsContext* m_GraphicsContext = nullptr;
 	};
 
 }
