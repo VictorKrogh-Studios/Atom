@@ -19,8 +19,6 @@ namespace Atom
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
 		glfwMakeContextCurrent(m_WindowHandle);
-
-		// Create swapchain
 	}
 
 	Window::~Window()

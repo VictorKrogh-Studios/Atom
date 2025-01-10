@@ -14,6 +14,9 @@ namespace Atom
 		Window();
 		~Window();
 
+		//void InitializeGraphicsContext();
+		//void InitializeSwapChain();
+
 		void Update();
 	private:
 		GLFWwindow* m_WindowHandle = nullptr;
