@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 
+struct GLFWwindow;
+
 namespace Atom
 {
 
@@ -9,9 +11,12 @@ namespace Atom
 	public:
 		static Window* Create();
 	public:
-		virtual ~Window() = default;
+		Window();
+		~Window();
 
-		virtual void Update() = 0;
+		void Update();
+	private:
+		GLFWwindow* m_WindowHandle = nullptr;
 	};
 
 }
