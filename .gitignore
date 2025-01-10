@@ -15,3 +15,5 @@ Intermediates/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+
+!Vendor/Premake/**
