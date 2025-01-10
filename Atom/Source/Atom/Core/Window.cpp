@@ -1,6 +1,8 @@
 #include "ATPCH.h"
 #include "Window.h"
 
+#include "Atom/Events/WindowEvent.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Atom
@@ -32,7 +34,17 @@ namespace Atom
 		m_WindowHandle = CreateWindowHandle();
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
+		glfwSetWindowUserPointer(m_WindowHandle, &m_Data);
+
 		//glfwMakeContextCurrent(m_WindowHandle);
+
+		glfwSetWindowCloseCallback(m_WindowHandle, [](GLFWwindow* window)
+		{
+			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+
+			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
 	}
 
 	Window::~Window()
@@ -53,11 +65,8 @@ namespace Atom
 
 	void Window::Update()
 	{
-		while (glfwWindowShouldClose(m_WindowHandle) == GLFW_FALSE)
-		{
-			glfwPollEvents();
-			//glfwSwapBuffers(m_WindowHandle);
-		}
+		glfwPollEvents();
+		//glfwSwapBuffers(m_WindowHandle);
 	}
 
 	GLFWwindow* Window::CreateWindowHandle()

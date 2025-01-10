@@ -15,6 +15,7 @@ namespace Atom
 		AT_CORE_CRITICAL("CRITICAL");
 
 		m_Window = Window::Create({});
+		m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
 		m_Window->InitializeGraphicsContext();
 		m_Window->InitializeSwapChain();
 	}
@@ -29,7 +30,22 @@ namespace Atom
 
 	void Application::Run()
 	{
-		m_Window->Update();
+		while (m_IsRunning)
+		{
+			m_Window->Update();
+		}
+	}
+
+	void Application::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) { return OnWindowCloseEvent(e); });
+	}
+
+	bool Application::OnWindowCloseEvent(WindowCloseEvent& event)
+	{
+		m_IsRunning = false;
+		return true;
 	}
 
 }
