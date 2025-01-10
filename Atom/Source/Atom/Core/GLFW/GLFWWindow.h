@@ -1,6 +1,8 @@
 #pragma once
 #include "Atom/Core/Window.h"
 
+struct GLFWwindow;
+
 namespace Atom
 {
 
@@ -9,6 +11,10 @@ namespace Atom
 	public:
 		GLFWWindow();
 		virtual ~GLFWWindow();
+
+		virtual void Update() override;
+	private:
+		GLFWwindow* m_WindowHandle = nullptr;
 	};
 
 }

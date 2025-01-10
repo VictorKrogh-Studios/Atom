@@ -27,6 +27,7 @@ namespace Atom
 
 	void Application::Run()
 	{
+		m_Window->Update();
 	}
 
 }

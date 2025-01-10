@@ -10,6 +10,8 @@ namespace Atom
 		static Window* Create();
 	public:
 		virtual ~Window() = default;
+
+		virtual void Update() = 0;
 	};
 
 }
