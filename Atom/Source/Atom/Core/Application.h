@@ -1,6 +1,8 @@
 #pragma once
 #include "Atom/Core/Window.h"
 
+#include "Atom/Events/WindowEvent.h"
+
 namespace Atom
 {
 
@@ -12,6 +14,10 @@ namespace Atom
 	public:
 		void Run();
 	private:
+		void OnEvent(Event& event);
+		bool OnWindowCloseEvent(WindowCloseEvent& event);
+	private:
+		bool m_IsRunning = true;
 		Window* m_Window = nullptr;
 	};
 
