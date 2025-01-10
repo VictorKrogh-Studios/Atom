@@ -1,7 +1,5 @@
 #include <Atom.h>
 
-#include <iostream>
-
 class SandboxApplication : public Atom::Application
 {
 };
@@ -21,5 +19,6 @@ int main(int argc, char** argv)
 	AT_ERROR("ERROR");
 	AT_CRITICAL("CRITICAL");
 
-	std::cout << "Hello, world" << std::endl;
+	app->Run();
+	delete app;
 }

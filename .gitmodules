@@ -1,3 +1,6 @@
 [submodule "Atom/Vendor/spdlog"]
 	path = Atom/Vendor/spdlog
 	url = https://github.com/AtomEngine-Studios/spdlog.git
+[submodule "Atom/Vendor/glfw"]
+	path = Atom/Vendor/glfw
+	url = https://github.com/AtomEngine-Studios/glfw.git
