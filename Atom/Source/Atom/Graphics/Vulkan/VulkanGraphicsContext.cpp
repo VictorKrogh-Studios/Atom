@@ -1,5 +1,6 @@
 #include "ATPCH.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanPhysicalDevice.h"
 
 namespace Atom
 {
@@ -44,16 +45,23 @@ namespace Atom
 		}
 
 		CreateVkInstance();
+
+		m_PhysicalDevice = VulkanPhysicalDevice::Select();
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()
 	{
+		delete m_PhysicalDevice;
+		m_PhysicalDevice = nullptr;
+
 		if (m_Options.EnableValidation)
 		{
-			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
-			vkDestroyDebugUtilsMessengerEXT(m_Instance, m_DebugUtilsMessenger, nullptr);
+			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_Instance, "vkDestroyDebugUtilsMessengerEXT");
+			vkDestroyDebugUtilsMessengerEXT(s_Instance, m_DebugUtilsMessenger, nullptr);
+			m_DebugUtilsMessenger = VK_NULL_HANDLE;
 		}
-		vkDestroyInstance(m_Instance, nullptr);
+		vkDestroyInstance(s_Instance, nullptr);
+		s_Instance = VK_NULL_HANDLE;
 	}
 
 	void VulkanGraphicsContext::CreateVkInstance()
@@ -110,11 +118,11 @@ namespace Atom
 			}
 		}
 
-		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &m_Instance);
+		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &s_Instance);
 
 		if (m_Options.EnableValidation)
 		{
-			auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT");
+			auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_Instance, "vkCreateDebugUtilsMessengerEXT");
 			AT_CORE_ASSERT(vkCreateDebugUtilsMessengerEXT != NULL, "");
 			VkDebugUtilsMessengerCreateInfoEXT debugUtilsCreateInfo{};
 			debugUtilsCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -122,7 +130,7 @@ namespace Atom
 			debugUtilsCreateInfo.pfnUserCallback = VulkanDebugUtilsMessengerCallback;
 			debugUtilsCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
 
-			vkCreateDebugUtilsMessengerEXT(m_Instance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
+			vkCreateDebugUtilsMessengerEXT(s_Instance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
 		}
 	}
 
