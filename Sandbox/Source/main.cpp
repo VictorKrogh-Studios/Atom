@@ -15,5 +15,11 @@ int main(int argc, char** argv)
 {
 	Atom::Application* app = Atom::CreateApplication(argc, argv);
 
+	AT_TRACE("TRACE");
+	AT_INFO("INFO");
+	AT_WARN("WARNING");
+	AT_ERROR("ERROR");
+	AT_CRITICAL("CRITICAL");
+
 	std::cout << "Hello, world" << std::endl;
 }
