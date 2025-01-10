@@ -1,6 +1,5 @@
+#include "ATPCH.h"
 #include "Application.h"
-
-#include "Log.h"
 
 namespace Atom
 {

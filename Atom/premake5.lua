@@ -3,6 +3,9 @@ project "Atom"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
+	
+	pchheader "ATPCH.h"
+	pchsource "Source/ATPCH.cpp"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
