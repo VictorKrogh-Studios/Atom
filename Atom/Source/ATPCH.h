@@ -1,5 +1,6 @@
 #pragma once
 
-#include <memory>
-
+#include "Atom/Core/Core.h"
 #include "Atom/Core/Log.h"
+
+#include <memory>
