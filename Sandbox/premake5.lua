@@ -8,8 +8,8 @@ project "Sandbox"
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files {
-		"Source/**.cpp",
-		"Source/**.h"
+		"Source/**.h",
+		"Source/**.cpp"
 	}
 	
 	includedirs {

@@ -8,7 +8,7 @@ project "Atom"
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files {
-		"Source/**.hpp",
+		"Source/**.h",
 		"Source/**.cpp"
 	}
     
