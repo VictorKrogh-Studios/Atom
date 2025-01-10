@@ -1,4 +1,4 @@
-workspace "AtomGE"
+workspace "Atom"
 	architecture "x86_64"
 	startproject "Sandbox"
 
@@ -12,6 +12,13 @@ workspace "AtomGE"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+IncludeDir = {}
+IncludeDir['spdlog'] = "%{wks.location}/Atom/Vendor/spdlog/include";
+
+group "Dependencies"
+    include "Atom/Vendor/spdlog"
+group ""
 
 include "Atom"
 include "Sandbox"

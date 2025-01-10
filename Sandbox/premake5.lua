@@ -14,11 +14,16 @@ project "Sandbox"
 	
 	includedirs {
 		"%{wks.location}/Atom/Source",
+        "%{IncludeDir.spdlog}"
     }
 
 	links {
 		"Atom",
 	}
+
+    buildoptions {
+        "/utf-8"
+    }
 
 	filter "system:windows"
 		systemversion "latest"
