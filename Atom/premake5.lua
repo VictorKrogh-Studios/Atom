@@ -25,6 +25,10 @@ project "Atom"
 		"_CRT_SECURE_NO_WARNINGS"
 	}
 
+    buildoptions {
+        "/utf-8"
+    }
+
 	filter "system:windows"
 		systemversion "latest"
 
