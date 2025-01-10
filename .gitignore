@@ -1,0 +1,17 @@
+!Vendor/premake/
+
+# Binaries
+**/bin/
+bin-int/
+Intermediates/
+
+# Atom files
+*.log
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
