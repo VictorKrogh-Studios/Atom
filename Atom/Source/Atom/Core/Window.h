@@ -1,4 +1,6 @@
 #pragma once
+#include "Atom/Events/Event.h"
+
 #include <string>
 
 struct GLFWwindow;
@@ -16,6 +18,8 @@ namespace Atom
 	class Window
 	{
 	public:
+		using EventCallbackFn = std::function<void(Event&)>;
+	public:
 		static Window* Create(const WindowOptions& options);
 	public:
 		Window(const WindowOptions& options);
@@ -23,6 +27,11 @@ namespace Atom
 
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();
+
+		void SetEventCallback(const EventCallbackFn& callback) 
+		{
+			m_Data.EventCallback = callback;
+		}
 
 		void Update();
 	private:
@@ -37,6 +46,8 @@ namespace Atom
 			std::string Title;
 			uint32_t Width;
 			uint32_t Height;
+
+			EventCallbackFn EventCallback;
 		} m_Data;
 	};
 
