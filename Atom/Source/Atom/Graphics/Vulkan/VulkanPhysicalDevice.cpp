@@ -88,6 +88,11 @@ namespace Atom
 		}
 	}
 
+	bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extension) const
+	{
+		return m_SupportedExtensions.find(extension) != m_SupportedExtensions.end();
+	}
+
 	void VulkanPhysicalDevice::FindSuitableGPU()
 	{
 		VkInstance instance = VulkanGraphicsContext::GetVkInstance();

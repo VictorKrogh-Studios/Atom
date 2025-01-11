@@ -47,10 +47,23 @@ namespace Atom
 		CreateVkInstance();
 
 		m_PhysicalDevice = VulkanPhysicalDevice::Select();
+
+		VkPhysicalDeviceFeatures enabledPhysicalDeviceFeatures;
+		memset(&enabledPhysicalDeviceFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
+		enabledPhysicalDeviceFeatures.samplerAnisotropy = true; 
+		enabledPhysicalDeviceFeatures.wideLines = true; 
+		enabledPhysicalDeviceFeatures.fillModeNonSolid = true;
+		enabledPhysicalDeviceFeatures.independentBlend = true; 
+		enabledPhysicalDeviceFeatures.pipelineStatisticsQuery = true; 
+		enabledPhysicalDeviceFeatures.shaderStorageImageReadWithoutFormat = true; 
+		m_Device = VulkanDevice::Create(m_PhysicalDevice, enabledPhysicalDeviceFeatures);
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()
 	{
+		delete m_Device;
+		m_Device = nullptr;
+
 		delete m_PhysicalDevice;
 		m_PhysicalDevice = nullptr;
 
@@ -66,7 +79,6 @@ namespace Atom
 
 	void VulkanGraphicsContext::CreateVkInstance()
 	{
-		std::vector<const char*> extensions(m_Options.GlfwExtensions, m_Options.GlfwExtensions + m_Options.GlfwExtensionsCount);
 
 		VkApplicationInfo applicationInfo{};
 		applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -82,6 +94,7 @@ namespace Atom
 		instanceCreateInfo.enabledExtensionCount = m_Options.GlfwExtensionsCount;
 		instanceCreateInfo.ppEnabledExtensionNames = m_Options.GlfwExtensions;
 
+		std::vector<const char*> extensions(m_Options.GlfwExtensions, m_Options.GlfwExtensions + m_Options.GlfwExtensionsCount);
 		if (m_Options.EnableValidation)
 		{
 			const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
@@ -132,6 +145,12 @@ namespace Atom
 
 			vkCreateDebugUtilsMessengerEXT(s_Instance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
 		}
+	}
+
+	void VulkanGraphicsContext::CreateVkDevice()
+	{
+		VkDeviceCreateInfo deviceCreateInfo{};
+		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	}
 
 }

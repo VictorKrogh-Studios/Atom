@@ -1,8 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
-#include <unordered_set>
-
 namespace Atom
 {
 
@@ -20,6 +18,8 @@ namespace Atom
 	public:
 		VulkanPhysicalDevice();
 		~VulkanPhysicalDevice() = default;
+
+		bool IsExtensionSupported(const std::string& extension) const;
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
@@ -33,6 +33,8 @@ namespace Atom
 		std::unordered_set<std::string> m_SupportedExtensions;
 		QueueFamilyIndices m_QueueFamilyIndices;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
+
+		friend class VulkanDevice;
 	};
 
 }
