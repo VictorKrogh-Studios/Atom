@@ -34,9 +34,11 @@ namespace Atom
 		m_WindowHandle = CreateWindowHandle();
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
-		glfwSetWindowUserPointer(m_WindowHandle, &m_Data);
-
 		//glfwMakeContextCurrent(m_WindowHandle);
+
+		InitializeGraphicsContext();
+
+		glfwSetWindowUserPointer(m_WindowHandle, &m_Data);
 
 		glfwSetWindowCloseCallback(m_WindowHandle, [](GLFWwindow* window)
 		{
@@ -49,13 +51,11 @@ namespace Atom
 
 	Window::~Window()
 	{
+		delete m_GraphicsContext;
+		m_GraphicsContext = nullptr;
+
 		glfwDestroyWindow(m_WindowHandle);
 		glfwTerminate();
-	}
-
-	void Window::InitializeGraphicsContext()
-	{
-		// TODO: Implement
 	}
 
 	void Window::InitializeSwapChain()
@@ -67,6 +67,20 @@ namespace Atom
 	{
 		glfwPollEvents();
 		//glfwSwapBuffers(m_WindowHandle);
+	}
+
+	void Window::InitializeGraphicsContext()
+	{
+		AT_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
+
+		uint32_t count = 0;
+		const char** extensions = glfwGetRequiredInstanceExtensions(&count);
+
+		GraphicsContextOptions options{};
+		options.GlfwExtensionsCount = count;
+		options.GlfwExtensions = extensions;
+
+		m_GraphicsContext = GraphicsContext::Create(options);
 	}
 
 	GLFWwindow* Window::CreateWindowHandle()

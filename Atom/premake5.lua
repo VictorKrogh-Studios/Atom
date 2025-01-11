@@ -18,12 +18,14 @@ project "Atom"
     includedirs {
 		"Source",
         "%{IncludeDir.spdlog}",
-        "%{IncludeDir.glfw}"
+        "%{IncludeDir.glfw}",
+        "%{IncludeDir.vulkan}"
     }
-
+	
 	links {
-        "spdlog",
-		"glfw"
+		"spdlog",
+		"glfw",
+		"%{Library.vulkan}"
     }
 
 	defines {
