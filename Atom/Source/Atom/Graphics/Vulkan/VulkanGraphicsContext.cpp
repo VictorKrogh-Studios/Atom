@@ -35,9 +35,13 @@ namespace Atom
 		return true;
 	}
 
+	VulkanGraphicsContext* VulkanGraphicsContext::s_Instance = nullptr;
+
 	VulkanGraphicsContext::VulkanGraphicsContext(const GraphicsContextOptions& options)
 		: GraphicsContext(options)
 	{
+		s_Instance = this;
+
 		if (!CheckDriverAPIVersionSupport(VK_API_VERSION_1_2))
 		{
 			AT_CORE_ERROR("Incompatible Vulkan driver version.\nUpdate your GPU drivers!");
@@ -69,12 +73,12 @@ namespace Atom
 
 		if (m_Options.EnableValidation)
 		{
-			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_Instance, "vkDestroyDebugUtilsMessengerEXT");
-			vkDestroyDebugUtilsMessengerEXT(s_Instance, m_DebugUtilsMessenger, nullptr);
+			auto vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkDestroyDebugUtilsMessengerEXT");
+			vkDestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugUtilsMessenger, nullptr);
 			m_DebugUtilsMessenger = VK_NULL_HANDLE;
 		}
-		vkDestroyInstance(s_Instance, nullptr);
-		s_Instance = VK_NULL_HANDLE;
+		vkDestroyInstance(m_VkInstance, nullptr);
+		m_VkInstance = VK_NULL_HANDLE;
 	}
 
 	void VulkanGraphicsContext::CreateVkInstance()
@@ -131,11 +135,11 @@ namespace Atom
 			}
 		}
 
-		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &s_Instance);
+		VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &m_VkInstance);
 
 		if (m_Options.EnableValidation)
 		{
-			auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_Instance, "vkCreateDebugUtilsMessengerEXT");
+			auto vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_VkInstance, "vkCreateDebugUtilsMessengerEXT");
 			AT_CORE_ASSERT(vkCreateDebugUtilsMessengerEXT != NULL, "");
 			VkDebugUtilsMessengerCreateInfoEXT debugUtilsCreateInfo{};
 			debugUtilsCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -143,14 +147,8 @@ namespace Atom
 			debugUtilsCreateInfo.pfnUserCallback = VulkanDebugUtilsMessengerCallback;
 			debugUtilsCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
 
-			vkCreateDebugUtilsMessengerEXT(s_Instance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
+			vkCreateDebugUtilsMessengerEXT(m_VkInstance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
 		}
-	}
-
-	void VulkanGraphicsContext::CreateVkDevice()
-	{
-		VkDeviceCreateInfo deviceCreateInfo{};
-		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	}
 
 }

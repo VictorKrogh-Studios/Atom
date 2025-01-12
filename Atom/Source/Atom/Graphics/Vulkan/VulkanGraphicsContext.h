@@ -15,16 +15,24 @@ namespace Atom
 		VulkanGraphicsContext(const GraphicsContextOptions& options);
 		virtual ~VulkanGraphicsContext();
 
-		static VkInstance GetVkInstance() { return s_Instance; }
 	private:
+		static VulkanGraphicsContext* Get() { return s_Instance; }
+		static VulkanPhysicalDevice* GetPhysicalDevice() { return Get()->m_PhysicalDevice; }
+		static VulkanDevice* GetDevice() { return Get()->m_Device; }
+		static VkInstance GetVkInstance() { return Get()->m_VkInstance; }
+
 		void CreateVkInstance();
-		void CreateVkDevice();
 	private:
-		inline static VkInstance s_Instance = VK_NULL_HANDLE;
+		static VulkanGraphicsContext* s_Instance;
+
+		VkInstance m_VkInstance = VK_NULL_HANDLE;
 		VkDebugUtilsMessengerEXT m_DebugUtilsMessenger = VK_NULL_HANDLE;
 
 		VulkanPhysicalDevice* m_PhysicalDevice;
 		VulkanDevice* m_Device;
+
+		friend class VulkanPhysicalDevice;
+		friend class VulkanSwapChain;
 	};
 
 }

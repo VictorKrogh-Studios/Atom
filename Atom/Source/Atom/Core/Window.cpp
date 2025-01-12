@@ -38,6 +38,8 @@ namespace Atom
 
 		InitializeGraphicsContext();
 
+		InitializeSwapChain();
+
 		glfwSetWindowUserPointer(m_WindowHandle, &m_Data);
 
 		glfwSetWindowCloseCallback(m_WindowHandle, [](GLFWwindow* window)
@@ -51,16 +53,14 @@ namespace Atom
 
 	Window::~Window()
 	{
+		delete m_SwapChain;
+		m_SwapChain = nullptr;
+
 		delete m_GraphicsContext;
 		m_GraphicsContext = nullptr;
 
 		glfwDestroyWindow(m_WindowHandle);
 		glfwTerminate();
-	}
-
-	void Window::InitializeSwapChain()
-	{
-		// TODO: Implement
 	}
 
 	void Window::Update()
@@ -81,6 +81,17 @@ namespace Atom
 		options.GlfwExtensions = extensions;
 
 		m_GraphicsContext = GraphicsContext::Create(options);
+	}
+
+	void Window::InitializeSwapChain()
+	{
+		SwapChainOptions swapChainOptions{};
+		swapChainOptions.WindowHandle = m_WindowHandle;
+		swapChainOptions.Width = m_Data.Width;
+		swapChainOptions.Height = m_Data.Height;
+		swapChainOptions.VSync = false;
+
+		m_SwapChain = SwapChain::Create(swapChainOptions);
 	}
 
 	GLFWwindow* Window::CreateWindowHandle()
