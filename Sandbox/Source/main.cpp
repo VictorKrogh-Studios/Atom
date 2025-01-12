@@ -1,21 +1,15 @@
 #include <Atom.h>
 
+#include "Layers/SandboxLayer.h"
+
 class SandboxApplication : public Atom::Application
 {
 public:
 	SandboxApplication()
-		: Application()
+		: Atom::Application()
 	{
-		m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/static_vert.spv", "Assets/Shaders/static_frag.spv");
+		PushLayer(new SandboxLayer());
 	}
-
-	~SandboxApplication()
-	{
-		delete m_Shader;
-		m_Shader = nullptr;
-	}
-private:
-	Atom::Shader* m_Shader = nullptr;
 };
 
 extern Atom::Application* Atom::CreateApplication(int argc, char** argv)
