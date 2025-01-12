@@ -3,6 +3,9 @@ project "Atom"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
+	
+	pchheader "ATPCH.h"
+	pchsource "Source/ATPCH.cpp"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -14,15 +17,20 @@ project "Atom"
     
     includedirs {
 		"Source",
-        "%{IncludeDir.spdlog}"
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.glfw}",
+        "%{IncludeDir.vulkan}"
     }
-
+	
 	links {
-        "spdlog"
+		"spdlog",
+		"glfw",
+		"%{Library.vulkan}"
     }
 
 	defines {
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+		"GLFW_INCLUDE_NONE"
 	}
 
     buildoptions {
