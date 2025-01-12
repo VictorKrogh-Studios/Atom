@@ -24,6 +24,9 @@ namespace Atom
 		bool m_IsRunning = true;
 		Window* m_Window = nullptr;
 		LayerStack m_LayerStack;
+
+		float m_LastFrameTime = 0.0f;
+		float m_DeltaTime = 0.0f;
 	};
 
 	// Implemented by CLIENT
