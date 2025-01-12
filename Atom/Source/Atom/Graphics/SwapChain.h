@@ -21,6 +21,10 @@ namespace Atom
 	public:
 		SwapChain(const SwapChainOptions& options);
 		virtual ~SwapChain() = default;
+
+		virtual void BeginFrame() = 0;
+		virtual void EndFrame() = 0;
+		virtual void Present() = 0;
 	protected:
 		SwapChainOptions m_Options;
 	};

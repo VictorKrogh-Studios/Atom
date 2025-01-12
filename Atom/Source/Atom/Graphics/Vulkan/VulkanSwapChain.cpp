@@ -78,6 +78,86 @@ namespace Atom
 		vkDeviceWaitIdle(device);
 	}
 
+	void VulkanSwapChain::BeginFrame()
+	{
+		m_CurrentImageIndex = AquireNextImage();
+	}
+
+	void VulkanSwapChain::EndFrame()
+	{
+		VulkanDevice* vulkanDevice = VulkanGraphicsContext::GetDevice();
+
+		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
+
+		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pWaitDstStageMask = &waitStageMask;
+		submitInfo.pWaitSemaphores = &m_ImageAvailableSemaphores[m_CurrentFrameIndex];
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		submitInfo.signalSemaphoreCount = 1;
+
+		// TODO: We need to find the Command buffers to submit this frame!
+		//submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentFrameIndex].CommandBuffer;
+		//submitInfo.commandBufferCount = 1;
+
+		VkResult result = vkResetFences(vulkanDevice->m_Device, 1, &m_Fences[m_CurrentFrameIndex]);
+
+		VkResult result = vkQueueSubmit(vulkanDevice->m_GraphicsQueue, 1, &submitInfo, m_Fences[m_CurrentFrameIndex]);
+	}
+
+	void VulkanSwapChain::Present()
+	{
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = NULL;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_SwapChain;
+		presentInfo.pImageIndices = &m_CurrentImageIndex;
+		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		presentInfo.waitSemaphoreCount = 1;
+		VkResult result = vkQueuePresentKHR(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, &presentInfo);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+			}
+			else
+			{
+				AT_CORE_ASSERT(result == VK_SUCCESS);
+			}
+		}
+	}
+
+	uint32_t VulkanSwapChain::AquireNextImage()
+	{
+		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
+
+		constexpr int framesInFlight = 3;
+
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
+
+		// Make sure the frame we're requesting has finished rendering (from previous iterations)
+		VkResult result = vkWaitForFences(device, 1, &m_Fences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
+
+		uint32_t imageIndex;
+		VkResult result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], (VkFence)nullptr, &imageIndex);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], (VkFence)nullptr, &imageIndex);
+			}
+		}
+
+		return imageIndex;
+	}
+
 	void VulkanSwapChain::CreateSurface()
 	{
 		VkInstance instance = VulkanGraphicsContext::GetVkInstance();
