@@ -1,6 +1,8 @@
 #include "ATPCH.h"
 #include "Application.h"
 
+#include "Atom/Core/Layer.h"
+
 namespace Atom
 {
 
@@ -14,6 +16,12 @@ namespace Atom
 
 	Application::~Application()
 	{
+		for (Layer* layer : m_LayerStack)
+		{
+			layer->OnDetach();
+			delete layer;
+		}
+
 		delete m_Window;
 		m_Window = nullptr;
 
@@ -25,7 +33,24 @@ namespace Atom
 		while (m_IsRunning)
 		{
 			m_Window->Update();
+
+			for (Layer* layer : m_LayerStack)
+			{
+				layer->OnUpdate(0.0f);
+			}
 		}
+	}
+
+	void Application::PushLayer(Layer* layer)
+	{
+		m_LayerStack.PushLayer(layer);
+		layer->OnAttach();
+	}
+
+	void Application::PushOverlay(Layer* overlay)
+	{
+		m_LayerStack.PushOverlay(overlay);
+		overlay->OnAttach();
 	}
 
 	void Application::OnEvent(Event& event)
