@@ -17,6 +17,8 @@ namespace Atom
 
 	private:
 		static VulkanGraphicsContext* Get() { return s_Instance; }
+		static VulkanPhysicalDevice* GetPhysicalDevice() { return Get()->m_PhysicalDevice; }
+		static VulkanDevice* GetDevice() { return Get()->m_Device; }
 		static VkInstance GetVkInstance() { return Get()->m_VkInstance; }
 
 		void CreateVkInstance();

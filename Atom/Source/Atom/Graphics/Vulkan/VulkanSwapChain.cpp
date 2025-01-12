@@ -10,8 +10,8 @@ namespace Atom
 	VulkanSwapChain::VulkanSwapChain(const SwapChainOptions& options)
 		: SwapChain(options)
 	{
-		VkPhysicalDevice physicalDevice = VulkanGraphicsContext::Get()->m_PhysicalDevice->m_PhysicalDevice;
-		VkDevice device = VulkanGraphicsContext::Get()->m_Device->m_Device;
+		VkPhysicalDevice physicalDevice = VulkanGraphicsContext::GetPhysicalDevice()->m_PhysicalDevice;
+		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
 		CreateSurface();
 
