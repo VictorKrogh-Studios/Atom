@@ -24,6 +24,7 @@ namespace Atom
 		VkQueue m_TransferQueue = VK_NULL_HANDLE;
 
 		friend class VulkanSwapChain;
+		friend class VulkanShader;
 	};
 
 }
