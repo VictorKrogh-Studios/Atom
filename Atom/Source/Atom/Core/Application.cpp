@@ -10,7 +10,6 @@ namespace Atom
 
 		m_Window = Window::Create({});
 		m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
-		m_Window->InitializeSwapChain();
 	}
 
 	Application::~Application()

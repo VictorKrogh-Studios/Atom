@@ -2,6 +2,7 @@
 #include "Atom/Events/Event.h"
 
 #include "Atom/Graphics/GraphicsContext.h"
+#include "Atom/Graphics/SwapChain.h"
 
 #include <string>
 
@@ -27,8 +28,6 @@ namespace Atom
 		Window(const WindowOptions& options);
 		~Window();
 
-		void InitializeSwapChain();
-
 		void SetEventCallback(const EventCallbackFn& callback) 
 		{
 			m_Data.EventCallback = callback;
@@ -37,6 +36,7 @@ namespace Atom
 		void Update();
 	private:
 		void InitializeGraphicsContext();
+		void InitializeSwapChain();
 
 		GLFWwindow* CreateWindowHandle();
 		void SetClientAPI();
@@ -54,6 +54,7 @@ namespace Atom
 		} m_Data;
 
 		GraphicsContext* m_GraphicsContext = nullptr;
+		SwapChain* m_SwapChain = nullptr;
 	};
 
 }

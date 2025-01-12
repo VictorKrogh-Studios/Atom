@@ -22,6 +22,8 @@ namespace Atom
 		VkDevice m_Device = VK_NULL_HANDLE;
 		VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
 		VkQueue m_TransferQueue = VK_NULL_HANDLE;
+
+		friend class VulkanSwapChain;
 	};
 
 }

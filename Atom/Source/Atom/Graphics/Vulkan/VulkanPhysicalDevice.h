@@ -35,6 +35,7 @@ namespace Atom
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 
 		friend class VulkanDevice;
+		friend class VulkanSwapChain;
 	};
 
 }
