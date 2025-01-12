@@ -33,10 +33,8 @@ namespace Atom
 		pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 		pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-		if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create pipeline layout!");
-		}
+		VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
+		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create pipeline layout");
 	}
 
 	void VulkanPipeline::CreateRenderPass(VkDevice device)
