@@ -1,6 +1,7 @@
 #include "ATPCH.h"
 #include "VulkanPipeline.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanShader.h"
 #include "VulkanUtils.h"
 
 namespace Atom
@@ -22,6 +23,7 @@ namespace Atom
 
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 	}
 
 	void VulkanPipeline::CreatePipelineLayout(VkDevice device)
@@ -163,6 +165,29 @@ namespace Atom
 		colorBlending.blendConstants[1] = 0.0f; // Optional
 		colorBlending.blendConstants[2] = 0.0f; // Optional
 		colorBlending.blendConstants[3] = 0.0f; // Optional
+
+		VulkanShader* vulkanShader = static_cast<VulkanShader*>(m_Options.Shader);
+
+		VkGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.stageCount = static_cast<uint32_t>(vulkanShader->m_PipelineShaderStageCreateInfos.size());
+		pipelineInfo.pStages = vulkanShader->m_PipelineShaderStageCreateInfos.data();
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &inputAssembly;
+		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pRasterizationState = &rasterizer;
+		pipelineInfo.pMultisampleState = &multisampling;
+		pipelineInfo.pDepthStencilState = nullptr; // Optional
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDynamicState = &dynamicState;
+		pipelineInfo.layout = m_PipelineLayout;
+		pipelineInfo.renderPass = m_RenderPass;
+		pipelineInfo.subpass = 0;
+		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+		pipelineInfo.basePipelineIndex = -1; // Optional
+
+		VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline);
+		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create graphics pipeline");
 	}
 
 }

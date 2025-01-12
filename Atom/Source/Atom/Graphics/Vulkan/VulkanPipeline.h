@@ -18,6 +18,7 @@ namespace Atom
 	private:
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		VkPipeline m_GraphicsPipeline = VK_NULL_HANDLE;
 	};
 
 }
