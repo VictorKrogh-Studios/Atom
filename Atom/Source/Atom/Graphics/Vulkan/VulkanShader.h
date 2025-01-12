@@ -10,7 +10,7 @@ namespace Atom
 	{
 	public:
 		VulkanShader(const std::string& vertexFilePath, const std::string& fragmentFilePath);
-		~VulkanShader();
+		virtual ~VulkanShader();
 	private:
 		VkShaderModule CreateShaderModule(const std::vector<char>& shaderCode);
 		std::vector<VkPipelineShaderStageCreateInfo> CreatePipelineShaderStageCreateInfos() const;
