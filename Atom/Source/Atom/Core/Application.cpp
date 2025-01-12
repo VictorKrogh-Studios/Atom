@@ -1,6 +1,7 @@
 #include "ATPCH.h"
 #include "Application.h"
 
+#include "Atom/Core/Timer.h"
 #include "Atom/Core/Layer.h"
 
 namespace Atom
@@ -30,13 +31,19 @@ namespace Atom
 
 	void Application::Run()
 	{
+		Timer timer;
+
 		while (m_IsRunning)
 		{
 			m_Window->Update();
 
+			float time = timer.Elapsed();
+			m_DeltaTime = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
 			for (Layer* layer : m_LayerStack)
 			{
-				layer->OnUpdate(0.0f);
+				layer->OnUpdate(m_DeltaTime);
 			}
 		}
 	}
