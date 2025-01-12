@@ -7,7 +7,7 @@ void SandboxLayer::OnAttach()
 	Atom::PipelineOptions pipelineOptions{};
 	pipelineOptions.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	pipelineOptions.Shader = m_Shader;
-	Atom::Pipeline::Create(pipelineOptions);
+	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
 }
 
 void SandboxLayer::OnDetach()
