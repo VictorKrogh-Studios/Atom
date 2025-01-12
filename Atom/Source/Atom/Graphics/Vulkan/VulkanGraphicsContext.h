@@ -34,6 +34,7 @@ namespace Atom
 		friend class VulkanPhysicalDevice;
 		friend class VulkanSwapChain;
 		friend class VulkanShader;
+		friend class VulkanPipeline;
 	};
 
 }
