@@ -6,6 +6,8 @@
 namespace Atom
 {
 
+	class VulkanPhysicalDevice;
+
 	class VulkanSwapChain : public SwapChain
 	{
 	public:

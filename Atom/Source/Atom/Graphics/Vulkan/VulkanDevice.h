@@ -26,6 +26,7 @@ namespace Atom
 		friend class VulkanSwapChain;
 		friend class VulkanShader;
 		friend class VulkanPipeline;
+		friend class VulkanRenderCommand;
 	};
 
 }

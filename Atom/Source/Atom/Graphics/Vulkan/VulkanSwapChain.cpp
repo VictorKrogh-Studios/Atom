@@ -105,7 +105,7 @@ namespace Atom
 
 		VkResult result = vkResetFences(vulkanDevice->m_Device, 1, &m_Fences[m_CurrentFrameIndex]);
 
-		VkResult result = vkQueueSubmit(vulkanDevice->m_GraphicsQueue, 1, &submitInfo, m_Fences[m_CurrentFrameIndex]);
+		result = vkQueueSubmit(vulkanDevice->m_GraphicsQueue, 1, &submitInfo, m_Fences[m_CurrentFrameIndex]);
 	}
 
 	void VulkanSwapChain::Present()
@@ -144,7 +144,7 @@ namespace Atom
 		VkResult result = vkWaitForFences(device, 1, &m_Fences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
 
 		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], (VkFence)nullptr, &imageIndex);
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], (VkFence)nullptr, &imageIndex);
 		if (result != VK_SUCCESS)
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)

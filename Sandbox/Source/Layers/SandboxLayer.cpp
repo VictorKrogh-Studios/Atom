@@ -8,13 +8,27 @@ void SandboxLayer::OnAttach()
 	pipelineOptions.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	pipelineOptions.Shader = m_Shader;
 	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
+
+	m_RenderCommand = Atom::RenderCommand::Create();
 }
 
 void SandboxLayer::OnDetach()
 {
+	delete m_RenderCommand;
+	m_RenderCommand = nullptr;
+
 	delete m_Pipeline;
 	m_Pipeline = nullptr;
 
 	delete m_Shader;
 	m_Shader = nullptr;
+}
+
+void SandboxLayer::OnUpdate(float deltaTime)
+{
+	m_RenderCommand->BeginRecording();
+
+	m_RenderCommand->RenderStaticPipeline(m_Pipeline, 3);
+
+	m_RenderCommand->EndRecording();
 }

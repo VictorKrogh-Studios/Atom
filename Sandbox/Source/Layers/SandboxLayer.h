@@ -10,8 +10,10 @@ public:
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
+	virtual void OnUpdate(float deltaTime) override;
 private:
 	Atom::Shader* m_Shader = nullptr;
 	Atom::Pipeline* m_Pipeline = nullptr;
+	Atom::RenderCommand* m_RenderCommand = nullptr;
 };
 
