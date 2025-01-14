@@ -109,9 +109,7 @@ namespace Atom
 			}
 		}
 
-		constexpr int framesInFlight = 3;
-
-		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_Options.FramesInFlight;
 
 		vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
 	}
@@ -521,17 +519,15 @@ namespace Atom
 
 	void VulkanSwapChain::CreateSyncObjects(VkDevice device)
 	{
-		constexpr int framesInFlight = 3;
-
-		if (m_ImageAvailableSemaphores.size() != framesInFlight)
+		if (m_ImageAvailableSemaphores.size() != m_Options.FramesInFlight)
 		{
-			m_ImageAvailableSemaphores.resize(framesInFlight);
-			m_RenderFinishedSemaphores.resize(framesInFlight);
+			m_ImageAvailableSemaphores.resize(m_Options.FramesInFlight);
+			m_RenderFinishedSemaphores.resize(m_Options.FramesInFlight);
 
 			VkSemaphoreCreateInfo semaphoreCreateInfo{};
 			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-			for (size_t i = 0; i < framesInFlight; i++)
+			for (size_t i = 0; i < m_Options.FramesInFlight; i++)
 			{
 				VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]);
 				AT_CORE_ASSERT(result == VK_SUCCESS);
@@ -541,13 +537,13 @@ namespace Atom
 			}
 		}
 
-		if (m_Fences.size() != framesInFlight)
+		if (m_Fences.size() != m_Options.FramesInFlight)
 		{
 			VkFenceCreateInfo fenceCreateInfo{};
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-			m_Fences.resize(framesInFlight);
+			m_Fences.resize(m_Options.FramesInFlight);
 			for (auto& fence : m_Fences)
 			{
 				VkResult result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fence);

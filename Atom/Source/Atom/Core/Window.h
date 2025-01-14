@@ -16,6 +16,7 @@ namespace Atom
 		std::string Title = "Atom";
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
+		uint32_t FramesInFlight;
 	};
 
 	class Window

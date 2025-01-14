@@ -10,6 +10,7 @@ namespace Atom
 		uint32_t Width;
 		uint32_t Height;
 		bool VSync;
+		uint32_t FramesInFlight;
 
 		GLFWwindow* WindowHandle;
 	};

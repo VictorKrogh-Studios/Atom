@@ -14,6 +14,5 @@ public:
 private:
 	Atom::Shader* m_Shader = nullptr;
 	Atom::Pipeline* m_Pipeline = nullptr;
-	Atom::RenderCommand* m_RenderCommand = nullptr;
 };
 
