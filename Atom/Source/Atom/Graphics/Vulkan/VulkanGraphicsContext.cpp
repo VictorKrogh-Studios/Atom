@@ -1,6 +1,6 @@
 #include "ATPCH.h"
 #include "VulkanGraphicsContext.h"
-#include "VulkanPhysicalDevice.h"
+#include "Internal/VulkanPhysicalDevice.h"
 
 namespace Atom
 {
@@ -50,7 +50,7 @@ namespace Atom
 
 		CreateVkInstance();
 
-		m_PhysicalDevice = VulkanPhysicalDevice::Select();
+		m_PhysicalDevice = Internal::VulkanPhysicalDevice::Select();
 
 		VkPhysicalDeviceFeatures enabledPhysicalDeviceFeatures;
 		memset(&enabledPhysicalDeviceFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
@@ -60,7 +60,7 @@ namespace Atom
 		enabledPhysicalDeviceFeatures.independentBlend = true; 
 		enabledPhysicalDeviceFeatures.pipelineStatisticsQuery = true; 
 		enabledPhysicalDeviceFeatures.shaderStorageImageReadWithoutFormat = true; 
-		m_Device = VulkanDevice::Create(m_PhysicalDevice, enabledPhysicalDeviceFeatures);
+		m_Device = Internal::VulkanDevice::Create(m_PhysicalDevice, enabledPhysicalDeviceFeatures);
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()

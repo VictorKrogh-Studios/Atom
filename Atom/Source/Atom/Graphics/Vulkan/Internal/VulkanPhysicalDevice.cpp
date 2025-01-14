@@ -1,9 +1,9 @@
 #include "ATPCH.h"
 #include "VulkanPhysicalDevice.h"
 
-#include "VulkanGraphicsContext.h"
+#include "Atom/Graphics/Vulkan/VulkanGraphicsContext.h"
 
-namespace Atom
+namespace Atom::Internal
 {
 
 	VulkanPhysicalDevice* VulkanPhysicalDevice::Select()

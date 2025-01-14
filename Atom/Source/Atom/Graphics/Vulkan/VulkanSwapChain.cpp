@@ -7,9 +7,13 @@
 namespace Atom
 {
 
+	VulkanSwapChain* VulkanSwapChain::s_Instance = nullptr;
+
 	VulkanSwapChain::VulkanSwapChain(const SwapChainOptions& options)
 		: SwapChain(options)
 	{
+		s_Instance = this;
+
 		VkPhysicalDevice physicalDevice = VulkanGraphicsContext::GetPhysicalDevice()->m_PhysicalDevice;
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
@@ -76,6 +80,65 @@ namespace Atom
 		m_Fences.clear();
 
 		vkDeviceWaitIdle(device);
+	}
+
+	void VulkanSwapChain::BeginFrame()
+	{
+		m_CurrentImageIndex = AquireNextImage();
+	}
+
+	void VulkanSwapChain::Present()
+	{
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_SwapChain;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		presentInfo.pImageIndices = &m_CurrentImageIndex;
+		VkResult result = vkQueuePresentKHR(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, &presentInfo);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+			}
+			else
+			{
+				AT_CORE_ASSERT(result == VK_SUCCESS);
+			}
+		}
+
+		constexpr int framesInFlight = 3;
+
+		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
+
+		vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
+	}
+
+	uint32_t VulkanSwapChain::AquireNextImage()
+	{
+		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
+
+		VkResult result = vkWaitForFences(device, 1, &m_Fences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		result = vkResetFences(device, 1, &m_Fences[m_CurrentFrameIndex]);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		uint32_t imageIndex;
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
+			}
+		}
+
+		return imageIndex;
 	}
 
 	void VulkanSwapChain::CreateSurface()

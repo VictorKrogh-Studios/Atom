@@ -9,6 +9,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "Atom/Graphics/Shader.h"
 #include "Atom/Graphics/Pipeline.h"
+#include "Atom/Graphics/RenderCommand.h"
+#include "Atom/Graphics/Renderer.h"
 
 
 

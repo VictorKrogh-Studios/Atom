@@ -28,12 +28,12 @@ namespace Atom
 		Window(const WindowOptions& options);
 		~Window();
 
-		void SetEventCallback(const EventCallbackFn& callback) 
-		{
-			m_Data.EventCallback = callback;
-		}
+		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
 		void Update();
+
+		void AquireNextImage() const { m_SwapChain->BeginFrame(); }
+		void Present() const { m_SwapChain->Present(); }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();

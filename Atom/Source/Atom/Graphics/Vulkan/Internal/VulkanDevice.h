@@ -3,7 +3,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace Atom
+namespace Atom::Internal
 {
 
 	class VulkanDevice
@@ -26,6 +26,8 @@ namespace Atom
 		friend class VulkanSwapChain;
 		friend class VulkanShader;
 		friend class VulkanPipeline;
+		friend class VulkanRenderCommand;
+		friend class VulkanCommandBuffer;
 	};
 
 }

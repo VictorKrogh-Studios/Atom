@@ -1,7 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
-namespace Atom
+namespace Atom::Internal
 {
 
 	class VulkanPhysicalDevice
@@ -36,6 +36,8 @@ namespace Atom
 
 		friend class VulkanDevice;
 		friend class VulkanSwapChain;
+		friend class VulkanRenderCommand;
+		friend class VulkanCommandBuffer;
 	};
 
 }
