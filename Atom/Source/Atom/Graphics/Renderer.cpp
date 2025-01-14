@@ -38,12 +38,12 @@ namespace Atom
 	void Renderer::BeginFrame()
 	{
 		s_Data->RenderCommand->ResetCommandBuffer(s_Data->CommandBuffer);
-		s_Data->RenderCommand->BeginRecording(s_Data->CommandBuffer);
+		s_Data->RenderCommand->BeginCommandBuffer(s_Data->CommandBuffer);
 	}
 
 	void Renderer::EndFrame()
 	{
-		s_Data->RenderCommand->EndRecording(s_Data->CommandBuffer);
+		s_Data->RenderCommand->EndCommandBuffer(s_Data->CommandBuffer);
 	}
 
 	void Renderer::DrawStaticTriangle(Pipeline* pipeline, uint32_t vertexCount)

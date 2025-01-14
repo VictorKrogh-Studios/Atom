@@ -24,7 +24,7 @@ namespace Atom
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
-	void VulkanRenderCommand::BeginRecording(CommandBuffer* commandBuffer)
+	void VulkanRenderCommand::BeginCommandBuffer(CommandBuffer* commandBuffer)
 	{
 		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
 
@@ -37,7 +37,7 @@ namespace Atom
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
-	void VulkanRenderCommand::EndRecording(CommandBuffer* commandBuffer)
+	void VulkanRenderCommand::EndCommandBuffer(CommandBuffer* commandBuffer)
 	{
 		Internal::VulkanDevice* vulkanDevice = VulkanGraphicsContext::GetDevice();
 		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();

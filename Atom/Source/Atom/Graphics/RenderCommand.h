@@ -14,8 +14,8 @@ namespace Atom
 		virtual ~RenderCommand() = default;
 
 		virtual void ResetCommandBuffer(CommandBuffer* commandBuffer) = 0;
-		virtual void BeginRecording(CommandBuffer* commandBuffer) = 0;
-		virtual void EndRecording(CommandBuffer* commandBuffer) = 0;
+		virtual void BeginCommandBuffer(CommandBuffer* commandBuffer) = 0;
+		virtual void EndCommandBuffer(CommandBuffer* commandBuffer) = 0;
 
 		virtual void RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount) = 0;
 	};
