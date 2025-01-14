@@ -1,7 +1,7 @@
 #include "ATPCH.h"
 #include "VulkanDevice.h"
 
-namespace Atom
+namespace Atom::Internal
 {
 
 	VulkanDevice* VulkanDevice::Create(VulkanPhysicalDevice* physicalDevice, VkPhysicalDeviceFeatures physicalDeviceFeatures)

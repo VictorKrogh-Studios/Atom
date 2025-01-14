@@ -6,24 +6,17 @@
 namespace Atom
 {
 
-	class VulkanPhysicalDevice;
-
 	class VulkanRenderCommand : public RenderCommand
 	{
 	public:
 		VulkanRenderCommand();
 		virtual ~VulkanRenderCommand();
 
-		virtual void BeginRecording() override;
-		virtual void EndRecording() override;
+		virtual void ResetCommandBuffer(CommandBuffer* commandBuffer) override;
+		virtual void BeginRecording(CommandBuffer* commandBuffer) override;
+		virtual void EndRecording(CommandBuffer* commandBuffer) override;
 
-		virtual void RenderStaticPipeline(Pipeline* pipeline, uint32_t vertexCount) override;
-	private:
-		void CreateCommandPool(VkDevice device, VulkanPhysicalDevice* physicalDevice);
-		void CreateCommandBuffer(VkDevice device);
-	private:
-		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
-		VkCommandBuffer m_CommandBuffer = VK_NULL_HANDLE;
+		virtual void RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount) override;
 	};
 
 }

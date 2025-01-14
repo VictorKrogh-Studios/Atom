@@ -37,6 +37,8 @@ namespace Atom
 		{
 			m_Window->Update();
 
+			m_Window->AquireNextImage();
+
 			float time = timer.Elapsed();
 			m_DeltaTime = time - m_LastFrameTime;
 			m_LastFrameTime = time;
@@ -45,6 +47,8 @@ namespace Atom
 			{
 				layer->OnUpdate(m_DeltaTime);
 			}
+
+			m_Window->Present();
 		}
 	}
 

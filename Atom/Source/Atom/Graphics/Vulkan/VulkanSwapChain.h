@@ -15,9 +15,10 @@ namespace Atom
 		~VulkanSwapChain();
 
 		virtual void BeginFrame() override;
-		virtual void EndFrame() override;
 		virtual void Present() override;
 	private:
+		static VulkanSwapChain* Get() { return s_Instance; }
+
 		uint32_t AquireNextImage();
 
 		void CreateSurface();
@@ -28,6 +29,8 @@ namespace Atom
 		void CreateFramebuffers(VkDevice device);
 		void CreateSyncObjects(VkDevice device);
 	private:
+		static VulkanSwapChain* s_Instance;
+
 		VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
 		VkSwapchainKHR m_SwapChain = VK_NULL_HANDLE;
 
@@ -54,6 +57,9 @@ namespace Atom
 		uint32_t m_Width;
 		uint32_t m_Height;
 		bool m_VSync = false;
+
+		friend class VulkanRenderCommand;
+		friend class VulkanPipeline;
 	};
 
 }

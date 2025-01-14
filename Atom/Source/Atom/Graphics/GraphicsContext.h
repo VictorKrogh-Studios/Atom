@@ -3,6 +3,8 @@
 namespace Atom
 {
 
+	class SwapChain;
+
 	struct GraphicsContextOptions
 	{
 		bool EnableValidation = true;
