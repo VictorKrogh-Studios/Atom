@@ -8,14 +8,6 @@
 namespace Atom
 {
 
-	VulkanRenderCommand::VulkanRenderCommand()
-	{
-	}
-
-	VulkanRenderCommand::~VulkanRenderCommand()
-	{
-	}
-
 	void VulkanRenderCommand::ResetCommandBuffer(CommandBuffer* commandBuffer)
 	{
 		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);

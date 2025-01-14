@@ -9,8 +9,8 @@ namespace Atom
 	class VulkanRenderCommand : public RenderCommand
 	{
 	public:
-		VulkanRenderCommand();
-		virtual ~VulkanRenderCommand();
+		VulkanRenderCommand() = default;
+		virtual ~VulkanRenderCommand() = default;
 
 		virtual void ResetCommandBuffer(CommandBuffer* commandBuffer) override;
 		virtual void BeginCommandBuffer(CommandBuffer* commandBuffer) override;
