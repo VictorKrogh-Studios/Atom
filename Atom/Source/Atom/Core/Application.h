@@ -7,10 +7,21 @@
 namespace Atom
 {
 
+	struct CommandLineArgs
+	{
+		int32_t Count;
+		char** Args;
+	};
+
+	struct ApplicationCreateInfo
+	{
+		CommandLineArgs Args;
+	};
+
 	class Application
 	{
 	public:
-		Application();
+		Application(const ApplicationCreateInfo& applicationCreateInfo);
 		~Application();
 	public:
 		void Run();
@@ -21,6 +32,7 @@ namespace Atom
 		void OnEvent(Event& event);
 		bool OnWindowCloseEvent(WindowCloseEvent& event);
 	private:
+		ApplicationCreateInfo m_CreateInfo;
 		bool m_IsRunning = true;
 		Window* m_Window = nullptr;
 		LayerStack m_LayerStack;
@@ -30,6 +42,6 @@ namespace Atom
 	};
 
 	// Implemented by CLIENT
-	Application* CreateApplication(int argc, char** argv);
+	Application* CreateApplication(const CommandLineArgs& args);
 
 }

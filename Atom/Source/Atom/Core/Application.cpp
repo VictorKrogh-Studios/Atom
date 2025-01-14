@@ -7,7 +7,8 @@
 namespace Atom
 {
 
-	Application::Application()
+	Application::Application(const ApplicationCreateInfo& applicationCreateInfo)
+		: m_CreateInfo(applicationCreateInfo)
 	{
 		Log::Initialize();
 
