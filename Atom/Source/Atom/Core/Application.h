@@ -16,6 +16,7 @@ namespace Atom
 	struct ApplicationCreateInfo
 	{
 		CommandLineArgs Args;
+		uint32_t FramesInFlight = 3;
 	};
 
 	class Application
