@@ -4,6 +4,7 @@
 #include "VulkanShader.h"
 #include "VulkanUtils.h"
 #include "VulkanRenderPass.h"
+#include "VulkanUniformBuffer.h"
 
 namespace Atom
 {
@@ -13,6 +14,10 @@ namespace Atom
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
+		CreateDescriptorSetLayout(device);
+		CreateDescriptorPool(device);
+		CreateDescriptorSet(device);
+
 		CreatePipelineLayout(device);
 		CreateGraphicsPipeline(device);
 	}
@@ -21,16 +26,91 @@ namespace Atom
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
+		vkDestroyDescriptorSetLayout(device, m_DescriptorSetLayout, nullptr);
+		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
+
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
+	}
+
+	void VulkanPipeline::CreateDescriptorSetLayout(VkDevice device)
+	{
+		VkDescriptorSetLayoutBinding uboLayoutBinding{};
+		uboLayoutBinding.binding = 0;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.descriptorCount = 1;
+		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = 1;
+		layoutInfo.pBindings = &uboLayoutBinding;
+
+		VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayout);
+		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create Descriptor Set Layout");
+	}
+
+	void VulkanPipeline::CreateDescriptorPool(VkDevice device)
+	{
+		VkDescriptorPoolSize poolSize{};
+		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSize.descriptorCount = static_cast<uint32_t>(3); // 3 = Frames in Flight
+
+		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
+		descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolCreateInfo.poolSizeCount = 1;
+		descriptorPoolCreateInfo.pPoolSizes = &poolSize;
+		descriptorPoolCreateInfo.maxSets = 3; // 3 = Frames in Flight
+
+		VkResult result = vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool);
+		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create Descriptor Pool");
+	}
+
+	void VulkanPipeline::CreateDescriptorSet(VkDevice device)
+	{
+		std::vector<VkDescriptorSetLayout> layouts(3, m_DescriptorSetLayout);
+
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = m_DescriptorPool;
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(3); // 3 = Frames in Flight
+		allocInfo.pSetLayouts = layouts.data();
+
+		m_DescriptorSets.resize(3); // 3 = Frames in Flight
+		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, m_DescriptorSets.data());
+		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to allocate Descriptor Sets");
+
+		VulkanUniformBuffer* uniformBuffer = static_cast<VulkanUniformBuffer*>(m_Options.UniformBuffer);
+
+		for (size_t i = 0; i < 3; i++)
+		{
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = uniformBuffer->m_Buffers[i];
+			bufferInfo.offset = 0;
+			bufferInfo.range = uniformBuffer->GetSize();
+
+			VkWriteDescriptorSet descriptorWrite{};
+			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet = m_DescriptorSets[i];
+			descriptorWrite.dstBinding = 0;
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo = &bufferInfo;
+			descriptorWrite.pImageInfo = nullptr; // Optional
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		}
 	}
 
 	void VulkanPipeline::CreatePipelineLayout(VkDevice device)
 	{
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0; // Optional
-		pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+		pipelineLayoutInfo.setLayoutCount = 1; // Optional
+		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout; // Optional
 		pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 		pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -105,6 +185,7 @@ namespace Atom
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		//rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.depthBiasConstantFactor = 0.0f; // Optional

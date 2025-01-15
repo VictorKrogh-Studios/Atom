@@ -6,12 +6,14 @@ namespace Atom
 
 	class Shader;
 	class RenderPass;
+	class UniformBuffer;
 
 	struct PipelineOptions
 	{
 		VertexAttributeLayout Layout;
 		Shader* Shader;
 		RenderPass* RenderPass;
+		UniformBuffer* UniformBuffer;
 	};
 
 	class Pipeline
