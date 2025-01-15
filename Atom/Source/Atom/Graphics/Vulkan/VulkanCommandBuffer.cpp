@@ -6,7 +6,8 @@
 namespace Atom
 {
 
-	VulkanCommandBuffer::VulkanCommandBuffer()
+	VulkanCommandBuffer::VulkanCommandBuffer(uint32_t count)
+		: CommandBuffer(count)
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 		Internal::VulkanPhysicalDevice* vulkanPhysicalDevice = VulkanGraphicsContext::GetPhysicalDevice();
@@ -20,7 +21,11 @@ namespace Atom
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
-		vkFreeCommandBuffers(device, m_CommandPool, 1, &m_CommandBuffer);
+		for (uint32_t i = 0; i < m_Count; i++)
+		{
+			vkFreeCommandBuffers(device, m_CommandPool, 1, &m_CommandBuffers[i]);
+		}
+		m_CommandBuffers.clear();
 		vkDestroyCommandPool(device, m_CommandPool, nullptr);
 	}
 
@@ -39,13 +44,15 @@ namespace Atom
 
 	void VulkanCommandBuffer::CreateCommandBuffer(VkDevice device)
 	{
+		m_CommandBuffers.resize(m_Count);
+
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		commandBufferAllocateInfo.commandBufferCount = 1;
+		commandBufferAllocateInfo.commandBufferCount = m_Count;
 		commandBufferAllocateInfo.commandPool = m_CommandPool;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-		VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &m_CommandBuffer);
+		VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data());
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
