@@ -20,6 +20,8 @@ namespace Atom::Internal
 		~VulkanPhysicalDevice() = default;
 
 		bool IsExtensionSupported(const std::string& extension) const;
+
+		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);

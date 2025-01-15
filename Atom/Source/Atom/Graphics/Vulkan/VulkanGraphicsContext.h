@@ -19,11 +19,13 @@ namespace Atom
 
 	private:
 		static VulkanGraphicsContext* Get() { return s_Instance; }
-		static Internal::VulkanPhysicalDevice* GetPhysicalDevice() { return Get()->m_PhysicalDevice; }
-		static Internal::VulkanDevice* GetDevice() { return Get()->m_Device; }
 		static VkInstance GetVkInstance() { return Get()->m_VkInstance; }
 
+		static Internal::VulkanPhysicalDevice* GetPhysicalDevice() { return Get()->m_PhysicalDevice; }
+		static Internal::VulkanDevice* GetDevice() { return Get()->m_Device; }
+
 		void CreateVkInstance();
+		VkCommandPool CreateCommandPool(uint32_t familyIndex);
 	private:
 		static VulkanGraphicsContext* s_Instance;
 
@@ -32,6 +34,9 @@ namespace Atom
 
 		Internal::VulkanPhysicalDevice* m_PhysicalDevice;
 		Internal::VulkanDevice* m_Device;
+
+		VkCommandPool m_GraphicsCommandPool = VK_NULL_HANDLE;
+		VkCommandPool m_TransferCommandPool = VK_NULL_HANDLE;
 
 		friend class Atom::Internal::VulkanPhysicalDevice;
 		friend class VulkanSwapChain;

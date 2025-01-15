@@ -19,10 +19,8 @@ namespace Atom
 		VulkanCommandBuffer(uint32_t count);
 		~VulkanCommandBuffer();
 	private:
-		void CreateCommandPool(VkDevice device, Internal::VulkanPhysicalDevice* physicalDevice);
 		void CreateCommandBuffer(VkDevice device);
 	private:
-		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 
 		friend class VulkanRenderCommand;

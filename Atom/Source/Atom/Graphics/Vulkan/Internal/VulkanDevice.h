@@ -13,6 +13,9 @@ namespace Atom::Internal
 	public:
 		VulkanDevice(VulkanPhysicalDevice* physicalDevice, VkPhysicalDeviceFeatures physicalDeviceFeatures);
 		~VulkanDevice();
+
+	public:
+		VkDevice GetVkDevice() const { return m_Device; }
 	private:
 		std::vector<const char*> GetDeviceExtensions() const;
 	private:

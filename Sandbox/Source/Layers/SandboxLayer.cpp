@@ -51,7 +51,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 {
 	m_Renderer->BeginScene();
 
-	//m_Renderer->DrawStaticTriangle(m_Pipeline);s
+	//m_Renderer->DrawStaticTriangle(m_Pipeline);
 	m_Renderer->DrawVertices(m_Pipeline, m_VertexBuffer, vertices.size());
 
 	m_Renderer->EndScene();
