@@ -2,6 +2,7 @@
 
 #include "Atom/Graphics/RenderCommand.h"
 #include "Atom/Graphics/CommandBuffer.h"
+#include "Atom/Graphics/Pipeline.h"
 
 namespace Atom
 {

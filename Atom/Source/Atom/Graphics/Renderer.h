@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Atom/Graphics/Pipeline.h"
-
 namespace Atom
 {
 
