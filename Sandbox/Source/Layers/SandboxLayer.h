@@ -17,6 +17,7 @@ private:
 	Atom::Pipeline* m_Pipeline = nullptr;
 	Atom::VertexBuffer* m_VertexBuffer = nullptr;
 	Atom::IndexBuffer* m_IndexBuffer = nullptr;
+	Atom::UniformBuffer* m_UniformBuffer = nullptr;
 	Atom::TestRenderer* m_Renderer = nullptr;
 };
 

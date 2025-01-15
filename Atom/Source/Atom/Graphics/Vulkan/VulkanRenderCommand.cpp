@@ -161,6 +161,8 @@ namespace Atom
 
 		vkCmdBindPipeline(vulkanCommandBuffer->m_CommandBuffers[frameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->m_GraphicsPipeline);
 
+		vkCmdBindDescriptorSets(vulkanCommandBuffer->m_CommandBuffers[frameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->m_PipelineLayout, 0, 1, &vulkanPipeline->m_DescriptorSets[frameIndex], 0, nullptr);
+
 		uint64_t offset = 0;
 		vkCmdBindVertexBuffers(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &vulkanVertexBuffer->m_Buffer, &offset);
 
