@@ -19,11 +19,6 @@ namespace Atom
 		static void BeginFrame();		// This should only be called from the engine!
 		static void EndFrame();			// This should only be called from the engine!
 
-		static void BeginScene();
-		static void EndScene();
-
-		static void DrawStaticTriangle(Pipeline* pipeline, uint32_t vertexCount = 3);
-
 		static uint32_t GetCurrentFrameIndex();
 		static uint32_t GetFramesInFlight();
 	};
