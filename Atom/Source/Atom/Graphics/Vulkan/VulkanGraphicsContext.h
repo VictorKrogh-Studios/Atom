@@ -45,6 +45,7 @@ namespace Atom
 		friend class VulkanRenderCommand;
 		friend class VulkanCommandBuffer;
 		friend class VulkanVertexBuffer;
+		friend class Atom::Internal::VulkanBuffer;
 	};
 
 }
