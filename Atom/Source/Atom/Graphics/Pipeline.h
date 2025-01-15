@@ -1,5 +1,4 @@
 #pragma once
-//#include "Atom/Graphics/Enumerations/ImageFormat.h"
 #include "Atom/Graphics/VertexAttributeLayout.h"
 
 namespace Atom
@@ -10,7 +9,6 @@ namespace Atom
 
 	struct PipelineOptions
 	{
-		//Enumerations::ImageFormat ImageFormat;
 		VertexAttributeLayout Layout;
 		Shader* Shader;
 		RenderPass* RenderPass;
