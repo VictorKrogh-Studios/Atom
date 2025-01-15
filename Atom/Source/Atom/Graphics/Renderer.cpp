@@ -39,7 +39,7 @@ namespace Atom
 
 	void Renderer::PresentAndWait()
 	{
-		s_Data->InitializeInfo.SwapChain->Present();
+		s_Data->SwapChain->Present(s_Data->CurrentFrameIndex, true);
 
 		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
 	}

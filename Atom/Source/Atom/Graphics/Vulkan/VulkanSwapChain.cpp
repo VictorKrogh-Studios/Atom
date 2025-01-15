@@ -107,14 +107,14 @@ namespace Atom
 		return imageIndex;
 	}
 
-	void VulkanSwapChain::Present()
+	void VulkanSwapChain::Present(uint32_t frameIndex, bool wait) const
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &m_SwapChain;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[frameIndex];
 		presentInfo.pImageIndices = &m_CurrentImageIndex;
 		VkResult result = vkQueuePresentKHR(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, &presentInfo);
 		if (result != VK_SUCCESS)
@@ -129,9 +129,10 @@ namespace Atom
 			}
 		}
 
-		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_Options.FramesInFlight;
-
-		vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
+		if (wait)
+		{
+			vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
+		}
 	}
 
 	void VulkanSwapChain::CreateSurface()
