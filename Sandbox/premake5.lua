@@ -14,7 +14,8 @@ project "Sandbox"
 	
 	includedirs {
 		"%{wks.location}/Atom/Source",
-        "%{IncludeDir.spdlog}"
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.glm}"
     }
 
 	links {

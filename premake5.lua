@@ -19,6 +19,7 @@ VULKAN_SDK = os.getenv("VULKAN_SDK")
 IncludeDir = {}
 IncludeDir['spdlog'] = "%{wks.location}/Atom/Vendor/spdlog/include";
 IncludeDir['glfw'] = "%{wks.location}/Atom/Vendor/glfw/include";
+IncludeDir['glm'] = "%{wks.location}/Atom/Vendor/glm";
 IncludeDir['vulkan'] = "%{VULKAN_SDK}/Include";
 
 LibraryDir = {}
