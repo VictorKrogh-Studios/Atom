@@ -10,6 +10,7 @@ namespace Atom
 	{
 		RendererInitializeInfo InitializeInfo;
 		uint32_t CurrentFrameIndex = 0;
+		SwapChain* SwapChain;
 	};
 
 	static RendererData* s_Data = nullptr;
@@ -18,6 +19,7 @@ namespace Atom
 	{
 		s_Data = new RendererData;
 		s_Data->InitializeInfo = initializeInfo;
+		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
 	}
 
 	void Renderer::Shutdown()
@@ -28,17 +30,18 @@ namespace Atom
 
 	void Renderer::BeginFrame()
 	{
-		s_Data->InitializeInfo.SwapChain->BeginFrame();
+		s_Data->SwapChain->AquireNextImage(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::EndFrame()
 	{
-		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
 	}
 
 	void Renderer::PresentAndWait()
 	{
 		s_Data->InitializeInfo.SwapChain->Present();
+
+		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
 	}
 
 	uint32_t Renderer::GetCurrentFrameIndex()

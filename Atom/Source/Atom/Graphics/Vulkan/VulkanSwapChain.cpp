@@ -82,9 +82,29 @@ namespace Atom
 		vkDeviceWaitIdle(device);
 	}
 
-	void VulkanSwapChain::BeginFrame()
+	uint32_t VulkanSwapChain::AquireNextImage(uint32_t frameIndex) const
 	{
-		m_CurrentImageIndex = AquireNextImage();
+		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
+
+		VkResult result = vkWaitForFences(device, 1, &m_Fences[frameIndex], VK_TRUE, UINT64_MAX);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		result = vkResetFences(device, 1, &m_Fences[frameIndex]);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		uint32_t imageIndex;
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+			}
+		}
+
+		return imageIndex;
 	}
 
 	void VulkanSwapChain::Present()
@@ -112,31 +132,6 @@ namespace Atom
 		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % m_Options.FramesInFlight;
 
 		vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
-	}
-
-	uint32_t VulkanSwapChain::AquireNextImage()
-	{
-		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
-
-		VkResult result = vkWaitForFences(device, 1, &m_Fences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		result = vkResetFences(device, 1, &m_Fences[m_CurrentFrameIndex]);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		uint32_t imageIndex;
-		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
-		if (result != VK_SUCCESS)
-		{
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-			{
-				// Resize swapchain!
-
-				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
-			}
-		}
-
-		return imageIndex;
 	}
 
 	void VulkanSwapChain::CreateSurface()

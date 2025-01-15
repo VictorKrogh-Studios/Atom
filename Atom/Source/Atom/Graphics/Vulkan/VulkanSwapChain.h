@@ -14,7 +14,7 @@ namespace Atom
 		VulkanSwapChain(const SwapChainOptions& options);
 		~VulkanSwapChain();
 
-		virtual void BeginFrame() override;
+		virtual uint32_t AquireNextImage(uint32_t frameIndex) const override;
 		virtual void Present() override;
 	private:
 		static VulkanSwapChain* Get() { return s_Instance; }

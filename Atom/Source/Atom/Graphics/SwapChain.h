@@ -23,7 +23,7 @@ namespace Atom
 		SwapChain(const SwapChainOptions& options);
 		virtual ~SwapChain() = default;
 
-		virtual void BeginFrame() = 0;
+		virtual uint32_t AquireNextImage(uint32_t frameIndex) const = 0;
 		virtual void Present() = 0;
 	protected:
 		SwapChainOptions m_Options;
