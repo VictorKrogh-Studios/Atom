@@ -1,8 +1,7 @@
 #include "ATPCH.h"
 #include "Renderer.h"
 
-#include "Atom/Graphics/RenderCommand.h"
-#include "Atom/Graphics/CommandBuffer.h"
+#include "Atom/Graphics/SwapChain.h"
 
 namespace Atom
 {
@@ -29,14 +28,17 @@ namespace Atom
 
 	void Renderer::BeginFrame()
 	{
-		// TODO: Move Aquire swapchain image to here
+		s_Data->InitializeInfo.SwapChain->BeginFrame();
 	}
 
 	void Renderer::EndFrame()
 	{
-		// TODO: Move presenting to here, or make a specific "Present" method for that?
-
 		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
+	}
+
+	void Renderer::PresentAndWait()
+	{
+		s_Data->InitializeInfo.SwapChain->Present();
 	}
 
 	uint32_t Renderer::GetCurrentFrameIndex()

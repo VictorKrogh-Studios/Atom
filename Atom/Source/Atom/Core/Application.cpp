@@ -22,6 +22,7 @@ namespace Atom
 
 
 		RendererInitializeInfo rendererInitializeInfo{};
+		rendererInitializeInfo.SwapChain = m_Window->GetSwapChain();
 		rendererInitializeInfo.FramesInFlight = m_CreateInfo.FramesInFlight;
 
 		Renderer::Initialize(rendererInitializeInfo);
@@ -51,8 +52,6 @@ namespace Atom
 		{
 			m_Window->Update();
 
-			m_Window->AquireNextImage();
-
 			Renderer::BeginFrame();
 
 			float time = timer.Elapsed();
@@ -66,7 +65,7 @@ namespace Atom
 
 			Renderer::EndFrame();
 
-			m_Window->Present();
+			Renderer::PresentAndWait();
 		}
 	}
 

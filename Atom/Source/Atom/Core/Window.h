@@ -35,6 +35,8 @@ namespace Atom
 
 		void AquireNextImage() const { m_SwapChain->BeginFrame(); }
 		void Present() const { m_SwapChain->Present(); }
+
+		SwapChain* GetSwapChain() const { return m_SwapChain; }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();
