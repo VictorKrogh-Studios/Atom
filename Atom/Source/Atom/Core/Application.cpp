@@ -4,19 +4,34 @@
 #include "Atom/Core/Timer.h"
 #include "Atom/Core/Layer.h"
 
+#include "Atom/Graphics/Renderer.h"
+
 namespace Atom
 {
 
-	Application::Application()
+	Application::Application(const ApplicationCreateInfo& applicationCreateInfo)
+		: m_CreateInfo(applicationCreateInfo)
 	{
 		Log::Initialize();
 
-		m_Window = Window::Create({});
+		WindowOptions windowOptions{};
+		windowOptions.FramesInFlight = m_CreateInfo.FramesInFlight;
+
+		m_Window = Window::Create(windowOptions);
 		m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
+
+
+		RendererInitializeInfo rendererInitializeInfo{};
+		rendererInitializeInfo.SwapChain = m_Window->GetSwapChain();
+		rendererInitializeInfo.FramesInFlight = m_CreateInfo.FramesInFlight;
+
+		Renderer::Initialize(rendererInitializeInfo);
 	}
 
 	Application::~Application()
 	{
+		Renderer::Shutdown();
+
 		for (Layer* layer : m_LayerStack)
 		{
 			layer->OnDetach();
@@ -37,7 +52,7 @@ namespace Atom
 		{
 			m_Window->Update();
 
-			m_Window->AquireNextImage();
+			Renderer::BeginFrame();
 
 			float time = timer.Elapsed();
 			m_DeltaTime = time - m_LastFrameTime;
@@ -48,7 +63,9 @@ namespace Atom
 				layer->OnUpdate(m_DeltaTime);
 			}
 
-			m_Window->Present();
+			Renderer::EndFrame();
+
+			Renderer::PresentAndWait();
 		}
 	}
 

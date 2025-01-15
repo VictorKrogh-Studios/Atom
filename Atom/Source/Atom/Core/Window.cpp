@@ -90,6 +90,7 @@ namespace Atom
 		swapChainOptions.Width = m_Data.Width;
 		swapChainOptions.Height = m_Data.Height;
 		swapChainOptions.VSync = false;
+		swapChainOptions.FramesInFlight = m_Options.FramesInFlight;
 
 		m_SwapChain = SwapChain::Create(swapChainOptions);
 	}

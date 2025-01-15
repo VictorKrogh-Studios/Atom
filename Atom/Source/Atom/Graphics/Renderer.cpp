@@ -1,54 +1,57 @@
 #include "ATPCH.h"
 #include "Renderer.h"
 
-#include "Atom/Graphics/RenderCommand.h"
-#include "Atom/Graphics/CommandBuffer.h"
+#include "Atom/Graphics/SwapChain.h"
 
 namespace Atom
 {
 
 	struct RendererData
 	{
-		RenderCommand* RenderCommand;
-		CommandBuffer* CommandBuffer;
+		RendererInitializeInfo InitializeInfo;
+		uint32_t CurrentFrameIndex = 0;
+		SwapChain* SwapChain;
 	};
 
 	static RendererData* s_Data = nullptr;
 
-	void Renderer::Initialize()
+	void Renderer::Initialize(const RendererInitializeInfo& initializeInfo)
 	{
 		s_Data = new RendererData;
-
-		s_Data->RenderCommand = RenderCommand::Create();
-		s_Data->CommandBuffer = CommandBuffer::Create();
+		s_Data->InitializeInfo = initializeInfo;
+		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
 	}
 
 	void Renderer::Shutdown()
 	{
-		delete s_Data->RenderCommand;
-		s_Data->RenderCommand = nullptr;
-
-		delete s_Data->CommandBuffer;
-		s_Data->CommandBuffer = nullptr;
-
 		delete s_Data;
 		s_Data = nullptr;
 	}
 
 	void Renderer::BeginFrame()
 	{
-		s_Data->RenderCommand->ResetCommandBuffer(s_Data->CommandBuffer);
-		s_Data->RenderCommand->BeginCommandBuffer(s_Data->CommandBuffer);
+		s_Data->SwapChain->AquireNextImage(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::EndFrame()
 	{
-		s_Data->RenderCommand->EndCommandBuffer(s_Data->CommandBuffer);
 	}
 
-	void Renderer::DrawStaticTriangle(Pipeline* pipeline, uint32_t vertexCount)
+	void Renderer::PresentAndWait()
 	{
-		s_Data->RenderCommand->RenderStaticPipeline(s_Data->CommandBuffer, pipeline, vertexCount);
+		s_Data->SwapChain->Present(s_Data->CurrentFrameIndex, true);
+
+		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
+	}
+
+	uint32_t Renderer::GetCurrentFrameIndex()
+	{
+		return s_Data->CurrentFrameIndex;
+	}
+
+	uint32_t Renderer::GetFramesInFlight()
+	{
+		return s_Data->InitializeInfo.FramesInFlight;
 	}
 
 }

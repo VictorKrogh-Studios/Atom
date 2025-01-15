@@ -9,17 +9,13 @@ void SandboxLayer::OnAttach()
 	pipelineOptions.Shader = m_Shader;
 	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
 
-	m_RenderCommand = Atom::RenderCommand::Create();
-
-	Atom::Renderer::Initialize();
+	m_Renderer = Atom::TestRenderer::Create();
 }
 
 void SandboxLayer::OnDetach()
 {
-	Atom::Renderer::Shutdown();
-
-	delete m_RenderCommand;
-	m_RenderCommand = nullptr;
+	delete m_Renderer;
+	m_Renderer = nullptr;
 
 	delete m_Pipeline;
 	m_Pipeline = nullptr;
@@ -30,9 +26,9 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float deltaTime)
 {
-	Atom::Renderer::BeginFrame();
+	m_Renderer->BeginScene();
 
-	Atom::Renderer::DrawStaticTriangle(m_Pipeline);
+	m_Renderer->DrawStaticTriangle(m_Pipeline);
 
-	Atom::Renderer::EndFrame();
+	m_Renderer->EndScene();
 }

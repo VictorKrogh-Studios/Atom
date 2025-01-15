@@ -82,19 +82,39 @@ namespace Atom
 		vkDeviceWaitIdle(device);
 	}
 
-	void VulkanSwapChain::BeginFrame()
+	uint32_t VulkanSwapChain::AquireNextImage(uint32_t frameIndex) const
 	{
-		m_CurrentImageIndex = AquireNextImage();
+		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
+
+		VkResult result = vkWaitForFences(device, 1, &m_Fences[frameIndex], VK_TRUE, UINT64_MAX);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		result = vkResetFences(device, 1, &m_Fences[frameIndex]);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		uint32_t imageIndex;
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+		if (result != VK_SUCCESS)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			{
+				// Resize swapchain!
+
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+			}
+		}
+
+		return imageIndex;
 	}
 
-	void VulkanSwapChain::Present()
+	void VulkanSwapChain::Present(uint32_t frameIndex, bool wait) const
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &m_SwapChain;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[m_CurrentFrameIndex];
+		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[frameIndex];
 		presentInfo.pImageIndices = &m_CurrentImageIndex;
 		VkResult result = vkQueuePresentKHR(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, &presentInfo);
 		if (result != VK_SUCCESS)
@@ -109,36 +129,10 @@ namespace Atom
 			}
 		}
 
-		constexpr int framesInFlight = 3;
-
-		m_CurrentFrameIndex = (m_CurrentFrameIndex + 1) % framesInFlight;
-
-		vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
-	}
-
-	uint32_t VulkanSwapChain::AquireNextImage()
-	{
-		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
-
-		VkResult result = vkWaitForFences(device, 1, &m_Fences[m_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		result = vkResetFences(device, 1, &m_Fences[m_CurrentFrameIndex]);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		uint32_t imageIndex;
-		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
-		if (result != VK_SUCCESS)
+		if (wait)
 		{
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-			{
-				// Resize swapchain!
-
-				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[m_CurrentFrameIndex], VK_NULL_HANDLE, &imageIndex);
-			}
+			vkDeviceWaitIdle(VulkanGraphicsContext::GetDevice()->m_Device);
 		}
-
-		return imageIndex;
 	}
 
 	void VulkanSwapChain::CreateSurface()
@@ -521,17 +515,15 @@ namespace Atom
 
 	void VulkanSwapChain::CreateSyncObjects(VkDevice device)
 	{
-		constexpr int framesInFlight = 3;
-
-		if (m_ImageAvailableSemaphores.size() != framesInFlight)
+		if (m_ImageAvailableSemaphores.size() != m_Options.FramesInFlight)
 		{
-			m_ImageAvailableSemaphores.resize(framesInFlight);
-			m_RenderFinishedSemaphores.resize(framesInFlight);
+			m_ImageAvailableSemaphores.resize(m_Options.FramesInFlight);
+			m_RenderFinishedSemaphores.resize(m_Options.FramesInFlight);
 
 			VkSemaphoreCreateInfo semaphoreCreateInfo{};
 			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-			for (size_t i = 0; i < framesInFlight; i++)
+			for (size_t i = 0; i < m_Options.FramesInFlight; i++)
 			{
 				VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]);
 				AT_CORE_ASSERT(result == VK_SUCCESS);
@@ -541,13 +533,13 @@ namespace Atom
 			}
 		}
 
-		if (m_Fences.size() != framesInFlight)
+		if (m_Fences.size() != m_Options.FramesInFlight)
 		{
 			VkFenceCreateInfo fenceCreateInfo{};
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-			m_Fences.resize(framesInFlight);
+			m_Fences.resize(m_Options.FramesInFlight);
 			for (auto& fence : m_Fences)
 			{
 				VkResult result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fence);

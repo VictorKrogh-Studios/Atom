@@ -16,6 +16,7 @@ namespace Atom
 		std::string Title = "Atom";
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
+		uint32_t FramesInFlight;
 	};
 
 	class Window
@@ -32,8 +33,7 @@ namespace Atom
 
 		void Update();
 
-		void AquireNextImage() const { m_SwapChain->BeginFrame(); }
-		void Present() const { m_SwapChain->Present(); }
+		SwapChain* GetSwapChain() const { return m_SwapChain; }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();

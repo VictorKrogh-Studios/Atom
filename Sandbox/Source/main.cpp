@@ -5,21 +5,23 @@
 class SandboxApplication : public Atom::Application
 {
 public:
-	SandboxApplication()
-		: Atom::Application()
+	SandboxApplication(const Atom::ApplicationCreateInfo& applicationCreateInfo) : Atom::Application(applicationCreateInfo)
 	{
 		PushLayer(new SandboxLayer());
 	}
 };
 
-extern Atom::Application* Atom::CreateApplication(int argc, char** argv)
+extern Atom::Application* Atom::CreateApplication(const Atom::CommandLineArgs& args)
 {
-	return new SandboxApplication();
+	Atom::ApplicationCreateInfo applicationCreateInfo{};
+	applicationCreateInfo.Args = args;
+
+	return new SandboxApplication(applicationCreateInfo);
 }
 
 int main(int argc, char** argv)
 {
-	Atom::Application* app = Atom::CreateApplication(argc, argv);
+	Atom::Application* app = Atom::CreateApplication({ argc, argv });
 
 	AT_TRACE("TRACE");
 	AT_INFO("INFO");

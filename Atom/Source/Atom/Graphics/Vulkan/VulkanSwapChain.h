@@ -14,12 +14,10 @@ namespace Atom
 		VulkanSwapChain(const SwapChainOptions& options);
 		~VulkanSwapChain();
 
-		virtual void BeginFrame() override;
-		virtual void Present() override;
+		virtual uint32_t AquireNextImage(uint32_t frameIndex) const override;
+		virtual void Present(uint32_t frameIndex, bool wait) const override;
 	private:
 		static VulkanSwapChain* Get() { return s_Instance; }
-
-		uint32_t AquireNextImage();
 
 		void CreateSurface();
 		void FindSuitablePresentQueueIndex(VkPhysicalDevice physicalDevice);
@@ -52,7 +50,6 @@ namespace Atom
 		VkColorSpaceKHR m_ColorSpace;
 
 		uint32_t m_CurrentImageIndex = 0;
-		uint32_t m_CurrentFrameIndex = 0;
 
 		uint32_t m_Width;
 		uint32_t m_Height;

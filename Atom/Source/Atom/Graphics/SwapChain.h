@@ -10,6 +10,7 @@ namespace Atom
 		uint32_t Width;
 		uint32_t Height;
 		bool VSync;
+		uint32_t FramesInFlight;
 
 		GLFWwindow* WindowHandle;
 	};
@@ -22,8 +23,8 @@ namespace Atom
 		SwapChain(const SwapChainOptions& options);
 		virtual ~SwapChain() = default;
 
-		virtual void BeginFrame() = 0;
-		virtual void Present() = 0;
+		virtual uint32_t AquireNextImage(uint32_t frameIndex) const = 0;
+		virtual void Present(uint32_t frameIndex, bool wait) const = 0;
 	protected:
 		SwapChainOptions m_Options;
 	};
