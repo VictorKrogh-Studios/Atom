@@ -55,6 +55,7 @@ namespace Atom
 
 		friend class VulkanRenderCommand;
 		friend class VulkanPipeline;
+		friend class VulkanImGuiLayer;
 	};
 
 }

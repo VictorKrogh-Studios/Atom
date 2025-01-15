@@ -22,7 +22,7 @@ project "Atom"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.glfw}",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.imgui}",
+        "%{IncludeDir.ImGui}",
         "%{IncludeDir.vulkan}"
     }
 	

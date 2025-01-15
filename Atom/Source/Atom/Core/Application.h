@@ -4,6 +4,8 @@
 
 #include "Atom/Events/WindowEvent.h"
 
+#include "Atom/ImGui/ImGuiLayer.h"
+
 namespace Atom
 {
 
@@ -37,6 +39,7 @@ namespace Atom
 		bool m_IsRunning = true;
 		Window* m_Window = nullptr;
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer = nullptr;
 
 		float m_LastFrameTime = 0.0f;
 		float m_DeltaTime = 0.0f;

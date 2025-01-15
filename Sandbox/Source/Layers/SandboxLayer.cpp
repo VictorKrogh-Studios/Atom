@@ -6,6 +6,8 @@
 
 #include <chrono>
 
+#include <imgui.h>
+
 struct Vertex
 {
 	glm::vec2 pos;
@@ -125,4 +127,9 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndRenderPass();
 
 	m_Renderer->EndScene();
+}
+
+void SandboxLayer::OnImGui()
+{
+	ImGui::ShowDemoWindow();
 }

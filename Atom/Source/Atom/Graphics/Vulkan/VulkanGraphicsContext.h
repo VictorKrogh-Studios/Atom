@@ -50,6 +50,8 @@ namespace Atom
 		friend class VulkanVertexBuffer;
 		friend class VulkanIndexBuffer;
 		friend class VulkanUniformBuffer;
+
+		friend class VulkanImGuiLayer;
 	};
 
 }

@@ -26,6 +26,9 @@ namespace Atom
 		rendererInitializeInfo.FramesInFlight = m_CreateInfo.FramesInFlight;
 
 		Renderer::Initialize(rendererInitializeInfo);
+
+		m_ImGuiLayer = ImGuiLayer::Create(m_Window);
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -52,16 +55,25 @@ namespace Atom
 		{
 			m_Window->Update();
 
-			Renderer::BeginFrame();
-
 			float time = timer.Elapsed();
 			m_DeltaTime = time - m_LastFrameTime;
 			m_LastFrameTime = time;
+
+			Renderer::BeginFrame();
 
 			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate(m_DeltaTime);
 			}
+
+			m_ImGuiLayer->Begin();
+			{
+				for (Layer* layer : m_LayerStack)
+				{
+					layer->OnImGui();
+				}
+			}
+			m_ImGuiLayer->End();
 
 			Renderer::EndFrame();
 
