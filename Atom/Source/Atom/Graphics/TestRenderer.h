@@ -5,6 +5,7 @@
 #include "Atom/Graphics/Pipeline.h"
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
+#include "Atom/Graphics/RenderPass.h"
 
 namespace Atom
 {
@@ -19,6 +20,9 @@ namespace Atom
 
 		void BeginScene() const;
 		void EndScene() const;
+
+		void BeginRenderPass(RenderPass* renderPass) const;
+		void EndRenderPass() const;
 
 		void DrawStaticTriangle(Pipeline* pipeline);
 		void DrawVertices(Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount);

@@ -1,17 +1,19 @@
 #pragma once
-#include "Atom/Graphics/Enumerations/ImageFormat.h"
+//#include "Atom/Graphics/Enumerations/ImageFormat.h"
 #include "Atom/Graphics/VertexAttributeLayout.h"
 
 namespace Atom
 {
 
 	class Shader;
+	class RenderPass;
 
 	struct PipelineOptions
 	{
-		Enumerations::ImageFormat ImageFormat;
-		Shader* Shader;
+		//Enumerations::ImageFormat ImageFormat;
 		VertexAttributeLayout Layout;
+		Shader* Shader;
+		RenderPass* RenderPass;
 	};
 
 	class Pipeline

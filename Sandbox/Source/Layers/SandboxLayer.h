@@ -13,6 +13,7 @@ public:
 	virtual void OnUpdate(float deltaTime) override;
 private:
 	Atom::Shader* m_Shader = nullptr;
+	Atom::RenderPass* m_RenderPass = nullptr;
 	Atom::Pipeline* m_Pipeline = nullptr;
 	Atom::VertexBuffer* m_VertexBuffer = nullptr;
 	Atom::IndexBuffer* m_IndexBuffer = nullptr;

@@ -37,6 +37,16 @@ namespace Atom
 		m_RenderCommand->SubmitCommandBuffer(m_CommandBuffer, Renderer::GetCurrentFrameIndex());
 	}
 
+	void TestRenderer::BeginRenderPass(RenderPass* renderPass) const
+	{
+		m_RenderCommand->BeginRenderPass(m_CommandBuffer, renderPass, Renderer::GetCurrentFrameIndex());
+	}
+
+	void TestRenderer::EndRenderPass() const
+	{
+		m_RenderCommand->EndRenderPass(m_CommandBuffer, Renderer::GetCurrentFrameIndex());
+	}
+
 	void TestRenderer::DrawStaticTriangle(Pipeline* pipeline)
 	{
 		m_RenderCommand->RenderStaticPipeline(m_CommandBuffer, pipeline, 3, Renderer::GetCurrentFrameIndex());
