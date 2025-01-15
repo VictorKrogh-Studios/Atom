@@ -61,10 +61,16 @@ namespace Atom
 		enabledPhysicalDeviceFeatures.pipelineStatisticsQuery = true; 
 		enabledPhysicalDeviceFeatures.shaderStorageImageReadWithoutFormat = true; 
 		m_Device = Internal::VulkanDevice::Create(m_PhysicalDevice, enabledPhysicalDeviceFeatures);
+
+		m_GraphicsCommandPool = CreateCommandPool(m_PhysicalDevice->GetQueueFamilyIndices().Graphics);
+		m_TransferCommandPool = CreateCommandPool(m_PhysicalDevice->GetQueueFamilyIndices().Transfer);
 	}
 
 	VulkanGraphicsContext::~VulkanGraphicsContext()
 	{
+		vkDestroyCommandPool(m_Device->GetVkDevice(), m_TransferCommandPool, nullptr);
+		vkDestroyCommandPool(m_Device->GetVkDevice(), m_GraphicsCommandPool, nullptr);
+
 		delete m_Device;
 		m_Device = nullptr;
 
@@ -149,6 +155,20 @@ namespace Atom
 
 			vkCreateDebugUtilsMessengerEXT(m_VkInstance, &debugUtilsCreateInfo, nullptr, &m_DebugUtilsMessenger);
 		}
+	}
+
+	VkCommandPool VulkanGraphicsContext::CreateCommandPool(uint32_t queueFamilyIndex)
+	{
+		VkCommandPoolCreateInfo commandPoolCreateInfo{};
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex; 
+
+		VkCommandPool commandPool = VK_NULL_HANDLE;
+		VkResult result = vkCreateCommandPool(m_Device->GetVkDevice(), &commandPoolCreateInfo, nullptr, &commandPool);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		return commandPool;
 	}
 
 }

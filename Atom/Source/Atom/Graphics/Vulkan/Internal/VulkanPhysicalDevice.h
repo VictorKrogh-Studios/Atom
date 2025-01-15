@@ -20,6 +20,9 @@ namespace Atom::Internal
 		~VulkanPhysicalDevice() = default;
 
 		bool IsExtensionSupported(const std::string& extension) const;
+
+		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
@@ -38,6 +41,7 @@ namespace Atom::Internal
 		friend class VulkanSwapChain;
 		friend class VulkanRenderCommand;
 		friend class VulkanCommandBuffer;
+		friend class VulkanVertexBuffer;
 	};
 
 }

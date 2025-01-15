@@ -84,12 +84,31 @@ namespace Atom
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 		dynamicState.pDynamicStates = dynamicStates.data();
 
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = m_Options.Layout.GetStride();
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions;
+		vertexInputAttributeDescriptions.resize(m_Options.Layout.GetElements().size());
+
+		uint32_t index = 0;
+		for (auto& element : m_Options.Layout.GetElements())
+		{
+			vertexInputAttributeDescriptions[index].binding = bindingDescription.binding;
+			vertexInputAttributeDescriptions[index].location = index;
+			vertexInputAttributeDescriptions[index].format = Vulkan::Utils::GetVkFormatByShaderDataType(element.Type);
+			vertexInputAttributeDescriptions[index].offset = element.Offset;
+
+			index++;
+		}
+
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributeDescriptions.size());
+		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions.data(); // Optional
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

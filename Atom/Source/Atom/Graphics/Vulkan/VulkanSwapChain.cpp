@@ -82,7 +82,7 @@ namespace Atom
 		vkDeviceWaitIdle(device);
 	}
 
-	uint32_t VulkanSwapChain::AquireNextImage(uint32_t frameIndex) const
+	uint32_t VulkanSwapChain::AquireNextImage(uint32_t frameIndex)
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
@@ -92,19 +92,18 @@ namespace Atom
 		result = vkResetFences(device, 1, &m_Fences[frameIndex]);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 
-		uint32_t imageIndex;
-		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 		if (result != VK_SUCCESS)
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
 				// Resize swapchain!
 
-				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &imageIndex);
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 			}
 		}
 
-		return imageIndex;
+		return m_CurrentImageIndex;
 	}
 
 	void VulkanSwapChain::Present(uint32_t frameIndex, bool wait) const

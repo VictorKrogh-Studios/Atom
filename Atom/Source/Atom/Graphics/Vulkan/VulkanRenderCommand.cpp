@@ -4,6 +4,8 @@
 
 #include "Atom/Graphics/Vulkan/VulkanCommandBuffer.h"
 #include "Atom/Graphics/Vulkan/VulkanPipeline.h"
+#include "Atom/Graphics/Vulkan/VulkanVertexBuffer.h"
+#include "Atom/Graphics/Vulkan/VulkanIndexBuffer.h"
 
 namespace Atom
 {
@@ -114,6 +116,114 @@ namespace Atom
 		vkCmdBindPipeline(vulkanCommandBuffer->m_CommandBuffers[frameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->m_GraphicsPipeline);
 
 		vkCmdDraw(vulkanCommandBuffer->m_CommandBuffers[frameIndex], vertexCount, 1, 0, 0);
+
+		vkCmdEndRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex]);
+	}
+
+	void VulkanRenderCommand::DrawVertices(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount, uint32_t frameIndex) const
+	{
+		VulkanPipeline* vulkanPipeline = static_cast<VulkanPipeline*>(pipeline);
+		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();
+
+		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
+		VulkanVertexBuffer* vulkanVertexBuffer = static_cast<VulkanVertexBuffer*>(vertexBuffer);
+
+		constexpr VkClearColorValue clearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
+		constexpr VkClearValue clearValue = { clearColor };
+
+		VkRenderPassBeginInfo renderPassBeginInfo{};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearValue;
+		renderPassBeginInfo.renderArea = {
+			{ 0, 0 },
+			{ vulkanSwapChain->m_Width, vulkanSwapChain->m_Height }
+		};
+		renderPassBeginInfo.framebuffer = vulkanSwapChain->m_Framebuffers[vulkanSwapChain->m_CurrentImageIndex];
+		renderPassBeginInfo.renderPass = vulkanSwapChain->m_RenderPass; // vulkanPipeline->m_RenderPass;
+
+		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)vulkanSwapChain->m_Width;
+		viewport.height = (float)vulkanSwapChain->m_Height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = { vulkanSwapChain->m_Width, vulkanSwapChain->m_Height };
+
+		vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+
+		vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+
+		vkCmdBindPipeline(vulkanCommandBuffer->m_CommandBuffers[frameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->m_GraphicsPipeline);
+
+		uint64_t offset = 0;
+		vkCmdBindVertexBuffers(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &vulkanVertexBuffer->m_Buffer, &offset);
+
+		vkCmdDraw(vulkanCommandBuffer->m_CommandBuffers[frameIndex], vertexCount, 1, 0, 0);
+
+		vkCmdEndRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex]);
+	}
+
+	void VulkanRenderCommand::DrawIndexed(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount, uint32_t frameIndex) const
+	{
+		if (indexCount == 0)
+		{
+			indexCount = indexBuffer->GetIndexCount();
+		}
+
+		VulkanPipeline* vulkanPipeline = static_cast<VulkanPipeline*>(pipeline);
+		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();
+
+		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
+		VulkanVertexBuffer* vulkanVertexBuffer = static_cast<VulkanVertexBuffer*>(vertexBuffer);
+		VulkanIndexBuffer* vulkanIndexBuffer = static_cast<VulkanIndexBuffer*>(indexBuffer);
+
+		constexpr VkClearColorValue clearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
+		constexpr VkClearValue clearValue = { clearColor };
+
+		VkRenderPassBeginInfo renderPassBeginInfo{};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.clearValueCount = 1;
+		renderPassBeginInfo.pClearValues = &clearValue;
+		renderPassBeginInfo.renderArea = {
+			{ 0, 0 },
+			{ vulkanSwapChain->m_Width, vulkanSwapChain->m_Height }
+		};
+		renderPassBeginInfo.framebuffer = vulkanSwapChain->m_Framebuffers[vulkanSwapChain->m_CurrentImageIndex];
+		renderPassBeginInfo.renderPass = vulkanSwapChain->m_RenderPass; // vulkanPipeline->m_RenderPass;
+
+		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)vulkanSwapChain->m_Width;
+		viewport.height = (float)vulkanSwapChain->m_Height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = { vulkanSwapChain->m_Width, vulkanSwapChain->m_Height };
+
+		vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+
+		vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+
+		vkCmdBindPipeline(vulkanCommandBuffer->m_CommandBuffers[frameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->m_GraphicsPipeline);
+
+		uint64_t offset = 0;
+		vkCmdBindVertexBuffers(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &vulkanVertexBuffer->m_Buffer, &offset);
+
+		vkCmdBindIndexBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex], vulkanIndexBuffer->m_Buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexed(vulkanCommandBuffer->m_CommandBuffers[frameIndex], indexCount, 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex]);
 	}

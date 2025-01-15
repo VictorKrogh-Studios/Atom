@@ -18,4 +18,20 @@ namespace Atom::Vulkan::Utils
 		return VkFormat::VK_FORMAT_UNDEFINED;
 	}
 
+	inline static VkFormat GetVkFormatByShaderDataType(Enumerations::ShaderDataType shaderDataType)
+	{
+		switch (shaderDataType)
+		{
+			case Atom::Enumerations::ShaderDataType::Float: return VkFormat::VK_FORMAT_R32_SFLOAT;
+			case Atom::Enumerations::ShaderDataType::Float2: return VkFormat::VK_FORMAT_R32G32_SFLOAT;
+			case Atom::Enumerations::ShaderDataType::Float3: return VkFormat::VK_FORMAT_R32G32B32_SFLOAT;
+			case Atom::Enumerations::ShaderDataType::Float4: return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+			case Atom::Enumerations::ShaderDataType::None:
+			default: break;
+		}
+
+		AT_CORE_ASSERT(true, "Unknown image format");
+		return VkFormat::VK_FORMAT_UNDEFINED;
+	}
+
 }

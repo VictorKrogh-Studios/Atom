@@ -6,15 +6,13 @@
 namespace Atom
 {
 
-	class VulkanPhysicalDevice;
-
 	class VulkanSwapChain : public SwapChain
 	{
 	public:
 		VulkanSwapChain(const SwapChainOptions& options);
 		~VulkanSwapChain();
 
-		virtual uint32_t AquireNextImage(uint32_t frameIndex) const override;
+		virtual uint32_t AquireNextImage(uint32_t frameIndex) override;
 		virtual void Present(uint32_t frameIndex, bool wait) const override;
 	private:
 		static VulkanSwapChain* Get() { return s_Instance; }

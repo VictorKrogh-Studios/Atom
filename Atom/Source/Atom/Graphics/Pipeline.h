@@ -1,5 +1,6 @@
 #pragma once
 #include "Atom/Graphics/Enumerations/ImageFormat.h"
+#include "Atom/Graphics/VertexAttributeLayout.h"
 
 namespace Atom
 {
@@ -10,6 +11,7 @@ namespace Atom
 	{
 		Enumerations::ImageFormat ImageFormat;
 		Shader* Shader;
+		VertexAttributeLayout Layout;
 	};
 
 	class Pipeline
