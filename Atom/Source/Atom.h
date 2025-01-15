@@ -12,5 +12,7 @@
 #include "Atom/Graphics/RenderCommand.h"
 #include "Atom/Graphics/Renderer.h"
 
+#include "Atom/Graphics/TestRenderer.h"
+
 
 

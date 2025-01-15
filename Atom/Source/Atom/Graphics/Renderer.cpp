@@ -9,10 +9,8 @@ namespace Atom
 
 	struct RendererData
 	{
-		RenderCommand* RenderCommand;
-		CommandBuffer* CommandBuffer;
-
 		RendererInitializeInfo InitializeInfo;
+		uint32_t CurrentFrameIndex = 0;
 	};
 
 	static RendererData* s_Data = nullptr;
@@ -21,45 +19,29 @@ namespace Atom
 	{
 		s_Data = new RendererData;
 		s_Data->InitializeInfo = initializeInfo;
-
-		s_Data->RenderCommand = RenderCommand::Create();
-		s_Data->CommandBuffer = CommandBuffer::Create();
 	}
 
 	void Renderer::Shutdown()
 	{
-		delete s_Data->RenderCommand;
-		s_Data->RenderCommand = nullptr;
-
-		delete s_Data->CommandBuffer;
-		s_Data->CommandBuffer = nullptr;
-
 		delete s_Data;
 		s_Data = nullptr;
 	}
 
 	void Renderer::BeginFrame()
 	{
+		// TODO: Move Aquire swapchain image to here
 	}
 
 	void Renderer::EndFrame()
 	{
+		// TODO: Move presenting to here, or make a specific "Present" method for that?
+
+		s_Data->CurrentFrameIndex = (s_Data->CurrentFrameIndex + 1) % s_Data->InitializeInfo.FramesInFlight;
 	}
 
-	void Renderer::BeginScene()
+	uint32_t Renderer::GetCurrentFrameIndex()
 	{
-		s_Data->RenderCommand->ResetCommandBuffer(s_Data->CommandBuffer);
-		s_Data->RenderCommand->BeginCommandBuffer(s_Data->CommandBuffer);
-	}
-
-	void Renderer::EndScene()
-	{
-		s_Data->RenderCommand->EndCommandBuffer(s_Data->CommandBuffer);
-	}
-
-	void Renderer::DrawStaticTriangle(Pipeline* pipeline, uint32_t vertexCount)
-	{
-		s_Data->RenderCommand->RenderStaticPipeline(s_Data->CommandBuffer, pipeline, vertexCount);
+		return s_Data->CurrentFrameIndex;
 	}
 
 	uint32_t Renderer::GetFramesInFlight()
