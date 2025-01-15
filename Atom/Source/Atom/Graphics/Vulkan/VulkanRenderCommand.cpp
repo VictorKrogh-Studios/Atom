@@ -30,7 +30,8 @@ namespace Atom
 
 		VkCommandBufferBeginInfo commandBufferBeginInfo{};
 		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		//commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
 		VkResult result = vkBeginCommandBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &commandBufferBeginInfo);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
@@ -44,8 +45,17 @@ namespace Atom
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
+	//static VkFence s_WaitFence = VK_NULL_HANDLE;
+
 	void VulkanRenderCommand::SubmitCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex, bool wait) const
 	{
+		//if (s_WaitFence == VK_NULL_HANDLE)
+		//{
+		//	VkFenceCreateInfo fenceCreateInfo{};
+		//	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		//	vkCreateFence(VulkanGraphicsContext::GetDevice()->GetVkDevice(), &fenceCreateInfo, nullptr, &s_WaitFence);
+		//}
+
 		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();
 
 		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
@@ -53,6 +63,19 @@ namespace Atom
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+		//{
+		//	VkSubmitInfo submitInfo = {};
+		//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		//	submitInfo.pCommandBuffers = &vulkanCommandBuffer->m_CommandBuffers[frameIndex];
+		//	submitInfo.commandBufferCount = 1;
+
+		//	vkWaitForFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence, VK_TRUE, UINT64_MAX);
+		//	vkResetFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence);
+
+		//	VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, s_WaitFence);
+		//	AT_CORE_ASSERT(result == VK_SUCCESS);
+		//}
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

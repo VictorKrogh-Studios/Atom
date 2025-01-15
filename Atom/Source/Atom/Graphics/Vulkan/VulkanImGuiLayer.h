@@ -20,9 +20,13 @@ namespace Atom
 	private:
 		void CreateDescriptorPool(VkDevice device);
 		void CreateCommandBuffers(VkDevice device, uint32_t framesInFlight);
+		void CreateRenderPass(VkDevice device);
+		void CreateWaitFences(VkDevice device, uint32_t framesInFlight);
 	private:
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
+		std::vector<VkFence> m_WaitFences;
+		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 	};
 
 }
