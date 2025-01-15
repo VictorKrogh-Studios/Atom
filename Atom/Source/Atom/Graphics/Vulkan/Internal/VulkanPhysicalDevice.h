@@ -23,6 +23,8 @@ namespace Atom::Internal
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
+
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 	private:
 		VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 		VkPhysicalDeviceProperties m_Properties;
