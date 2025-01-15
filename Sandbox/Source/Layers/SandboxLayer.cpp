@@ -31,8 +31,15 @@ void SandboxLayer::OnAttach()
 {
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_vert.spv", "Assets/Shaders/shader_frag.spv");
 
+	Atom::RenderPassCreateInfo renderPassCreateInfo{};
+	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
+	renderPassCreateInfo.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.RenderArea = { 1600, 900 };
+	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
+
 	Atom::PipelineOptions pipelineOptions{};
-	pipelineOptions.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	//pipelineOptions.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	pipelineOptions.RenderPass = m_RenderPass;
 	pipelineOptions.Shader = m_Shader;
 	pipelineOptions.Layout = {
 		{ Atom::Enumerations::ShaderDataType::Float2, "inPosition" },
@@ -62,6 +69,9 @@ void SandboxLayer::OnDetach()
 	delete m_IndexBuffer;
 	m_IndexBuffer = nullptr;
 
+	delete m_RenderPass;
+	m_RenderPass = nullptr;
+
 	delete m_Pipeline;
 	m_Pipeline = nullptr;
 
@@ -73,12 +83,16 @@ void SandboxLayer::OnUpdate(float deltaTime)
 {
 	m_Renderer->BeginScene();
 
+	m_Renderer->BeginRenderPass(m_RenderPass);
+
 	//m_Renderer->DrawStaticTriangle(m_Pipeline);
 #ifdef USE_VERTICES
 	m_Renderer->DrawVertices(m_Pipeline, m_VertexBuffer, vertices.size());
 #else
 	m_Renderer->DrawIndexed(m_Pipeline, m_VertexBuffer, m_IndexBuffer, 6);
 #endif
+
+	m_Renderer->EndRenderPass();
 
 	m_Renderer->EndScene();
 }

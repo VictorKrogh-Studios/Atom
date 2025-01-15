@@ -3,6 +3,7 @@
 #include "VulkanGraphicsContext.h"
 #include "VulkanShader.h"
 #include "VulkanUtils.h"
+#include "VulkanRenderPass.h"
 
 namespace Atom
 {
@@ -13,7 +14,6 @@ namespace Atom
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
 		CreatePipelineLayout(device);
-		CreateRenderPass(device);
 		CreateGraphicsPipeline(device);
 	}
 
@@ -22,7 +22,6 @@ namespace Atom
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
 
 		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
-		vkDestroyRenderPass(device, m_RenderPass, nullptr);
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 	}
 
@@ -37,39 +36,6 @@ namespace Atom
 
 		VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
 		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create pipeline layout");
-	}
-
-	void VulkanPipeline::CreateRenderPass(VkDevice device)
-	{
-		VkAttachmentDescription colorAttachment{};
-		colorAttachment.format = Vulkan::Utils::GetVkFormat(m_Options.ImageFormat); // swapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorAttachmentRef{};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
-
-		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachment;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-
-		VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass);
-		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create render pass!");
 	}
 
 	void VulkanPipeline::CreateGraphicsPipeline(VkDevice device)
@@ -187,7 +153,14 @@ namespace Atom
 
 		VulkanShader* vulkanShader = static_cast<VulkanShader*>(m_Options.Shader);
 
-		VkGraphicsPipelineCreateInfo pipelineInfo{};
+		VkRenderPass renderPass = VK_NULL_HANDLE;
+#if 0 
+		renderPass = VulkanSwapChain::Get()->m_RenderPass;
+#else
+		renderPass = static_cast<VulkanRenderPass*>(m_Options.RenderPass)->m_RenderPass;
+#endif
+
+			VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = static_cast<uint32_t>(vulkanShader->m_PipelineShaderStageCreateInfos.size());
 		pipelineInfo.pStages = vulkanShader->m_PipelineShaderStageCreateInfos.data();
@@ -200,7 +173,7 @@ namespace Atom
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.layout = m_PipelineLayout;
-		pipelineInfo.renderPass = VulkanSwapChain::Get()->m_RenderPass;
+		pipelineInfo.renderPass = renderPass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional

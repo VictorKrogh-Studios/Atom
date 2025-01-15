@@ -1,5 +1,7 @@
 #pragma once
 #include "Atom/Graphics/Enumerations/ImageFormat.h"
+#include "Atom/Graphics/Enumerations/ShaderDataType.h"
+
 #include <vulkan/vulkan.h>
 
 namespace Atom::Vulkan::Utils
