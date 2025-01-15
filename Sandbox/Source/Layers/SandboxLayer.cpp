@@ -1,6 +1,10 @@
 #include "SandboxLayer.h"
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 
 struct Vertex
 {
@@ -27,9 +31,18 @@ const std::vector<uint32_t> indices = {
 };
 #endif
 
+struct UniformBufferObject
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
 void SandboxLayer::OnAttach()
 {
-	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_vert.spv", "Assets/Shaders/shader_frag.spv");
+	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
+
+	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo_vert.spv", "Assets/Shaders/shader_ubo_frag.spv");
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
@@ -45,6 +58,7 @@ void SandboxLayer::OnAttach()
 		{ Atom::Enumerations::ShaderDataType::Float2, "inPosition" },
 		{ Atom::Enumerations::ShaderDataType::Float3, "inColor" }
 	};
+	pipelineOptions.UniformBuffer = m_UniformBuffer;
 	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
 
 #ifdef USE_VERTICES
@@ -69,6 +83,9 @@ void SandboxLayer::OnDetach()
 	delete m_IndexBuffer;
 	m_IndexBuffer = nullptr;
 
+	delete m_UniformBuffer;
+	m_UniformBuffer = nullptr;
+
 	delete m_RenderPass;
 	m_RenderPass = nullptr;
 
@@ -81,6 +98,19 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float deltaTime)
 {
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	UniformBufferObject ubo{};
+	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.proj = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 10.0f);
+	//ubo.proj[1][1] *= -1;
+
+	m_UniformBuffer->Upload((void*)&ubo, sizeof(ubo), Atom::Renderer::GetCurrentFrameIndex());
+
 	m_Renderer->BeginScene();
 
 	m_Renderer->BeginRenderPass(m_RenderPass);
