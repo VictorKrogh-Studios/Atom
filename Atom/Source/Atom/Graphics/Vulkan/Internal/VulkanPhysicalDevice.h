@@ -40,6 +40,7 @@ namespace Atom::Internal
 		friend class VulkanSwapChain;
 		friend class VulkanRenderCommand;
 		friend class VulkanCommandBuffer;
+		friend class VulkanVertexBuffer;
 	};
 
 }

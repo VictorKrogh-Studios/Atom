@@ -42,4 +42,9 @@ namespace Atom
 		m_RenderCommand->RenderStaticPipeline(m_CommandBuffer, pipeline, 3, Renderer::GetCurrentFrameIndex());
 	}
 
+	void TestRenderer::DrawVertices(Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount)
+	{
+		m_RenderCommand->DrawVertices(m_CommandBuffer, pipeline, vertexBuffer, vertexCount, Renderer::GetCurrentFrameIndex());
+	}
+
 }
