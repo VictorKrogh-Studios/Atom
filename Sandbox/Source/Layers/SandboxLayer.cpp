@@ -8,11 +8,24 @@ struct Vertex
 	glm::vec3 color;
 };
 
+#ifdef USE_VERTICES
 const std::vector<Vertex> vertices = {
 	{ { 0.0f, -0.5f}, { 1.0f, 0.0f, 0.0f } },
 	{ { 0.5f,  0.5f}, { 0.0f, 1.0f, 0.0f } },
 	{ {-0.5f,  0.5f}, { 0.0f, 0.0f, 1.0f } }
 };
+#else
+const std::vector<Vertex> vertices = {
+	{ {-0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+	{ { 0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } },
+	{ {-0.5f,  0.5f }, { 1.0f, 1.0f, 1.0f } }
+};
+
+const std::vector<uint32_t> indices = {
+	0, 1, 2, 2, 3, 0
+};
+#endif
 
 void SandboxLayer::OnAttach()
 {
@@ -27,7 +40,13 @@ void SandboxLayer::OnAttach()
 	};
 	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
 
-	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data()); 
+#ifdef USE_VERTICES
+	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data());
+#else
+	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data());
+
+	m_IndexBuffer = Atom::IndexBuffer::Create(indices.size(), (uint32_t*)indices.data());
+#endif
 
 	m_Renderer = Atom::TestRenderer::Create();
 }
@@ -39,6 +58,9 @@ void SandboxLayer::OnDetach()
 
 	delete m_VertexBuffer;
 	m_VertexBuffer = nullptr;
+
+	delete m_IndexBuffer;
+	m_IndexBuffer = nullptr;
 
 	delete m_Pipeline;
 	m_Pipeline = nullptr;
@@ -52,7 +74,11 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->BeginScene();
 
 	//m_Renderer->DrawStaticTriangle(m_Pipeline);
+#ifdef USE_VERTICES
 	m_Renderer->DrawVertices(m_Pipeline, m_VertexBuffer, vertices.size());
+#else
+	m_Renderer->DrawIndexed(m_Pipeline, m_VertexBuffer, m_IndexBuffer, 6);
+#endif
 
 	m_Renderer->EndScene();
 }

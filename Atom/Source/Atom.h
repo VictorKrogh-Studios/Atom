@@ -13,6 +13,7 @@
 #include "Atom/Graphics/RenderCommand.h"
 #include "Atom/Graphics/Renderer.h"
 #include "Atom/Graphics/VertexBuffer.h"
+#include "Atom/Graphics/IndexBuffer.h"
 
 #include "Atom/Graphics/TestRenderer.h"
 

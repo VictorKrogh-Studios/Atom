@@ -47,4 +47,9 @@ namespace Atom
 		m_RenderCommand->DrawVertices(m_CommandBuffer, pipeline, vertexBuffer, vertexCount, Renderer::GetCurrentFrameIndex());
 	}
 
+	void TestRenderer::DrawIndexed(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount)
+	{
+		m_RenderCommand->DrawIndexed(m_CommandBuffer, pipeline, vertexBuffer, indexBuffer, indexCount, Renderer::GetCurrentFrameIndex());
+	}
+
 }
