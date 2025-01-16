@@ -12,6 +12,8 @@ namespace Atom
 	Application::Application(const ApplicationCreateInfo& applicationCreateInfo)
 		: m_CreateInfo(applicationCreateInfo)
 	{
+		s_Instance = this;
+
 		Log::Initialize();
 
 		WindowOptions windowOptions{};

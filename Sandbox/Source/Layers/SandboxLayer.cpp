@@ -48,7 +48,7 @@ void SandboxLayer::OnAttach()
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 

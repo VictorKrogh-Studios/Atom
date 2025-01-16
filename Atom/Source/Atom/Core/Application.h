@@ -28,6 +28,9 @@ namespace Atom
 		~Application();
 	public:
 		void Run();
+
+		static Application& Get() { return *s_Instance; };
+		Window* GetWindow() const { return m_Window; }
 	protected:
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
@@ -43,6 +46,8 @@ namespace Atom
 
 		float m_LastFrameTime = 0.0f;
 		float m_DeltaTime = 0.0f;
+	private:
+		inline static Application* s_Instance = nullptr;
 	};
 
 	// Implemented by CLIENT

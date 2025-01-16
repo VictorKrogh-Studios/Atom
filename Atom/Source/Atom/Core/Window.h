@@ -34,6 +34,7 @@ namespace Atom
 		void Update();
 
 		SwapChain* GetSwapChain() const { return m_SwapChain; }
+		Enumerations::ImageFormat GetImageFormat() const { return m_SwapChain->GetImageFormat(); }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();
