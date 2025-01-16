@@ -11,6 +11,12 @@ namespace Atom
 	public:
 		VulkanRenderPass(const RenderPassCreateInfo& renderPassCreateInfo);
 		~VulkanRenderPass();
+
+		// Internal to Vulkan components!
+
+		inline VkRenderPass GetVkRenderPass() const { return m_RenderPass; }
+		inline VkClearValue GetVkClearValue() const { return GetClearColor(); }
+		inline VkExtent2D GetRenderAreaExtent() const { return GetRenderArea(); }
 	private:
 		void CreateRenderPass(VkDevice device);
 

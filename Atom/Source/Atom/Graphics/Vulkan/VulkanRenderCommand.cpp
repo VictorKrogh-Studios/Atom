@@ -105,9 +105,8 @@ namespace Atom
 		VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(renderPass);
 		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();
 
-		const VkClearValue clearValue = vulkanRenderPass->GetClearColor();
-
-		VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderArea();
+		const VkClearValue clearValue = vulkanRenderPass->GetVkClearValue();
+		const VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderAreaExtent();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -117,8 +116,8 @@ namespace Atom
 			{ 0, 0 },
 			renderAreaExtent
 		};
-		renderPassBeginInfo.framebuffer = vulkanSwapChain->m_Framebuffers[vulkanSwapChain->m_CurrentImageIndex];
-		renderPassBeginInfo.renderPass = vulkanRenderPass->m_RenderPass; // vulkanPipeline->m_RenderPass;
+		renderPassBeginInfo.framebuffer = vulkanSwapChain->GetCurrentFramebuffer();
+		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 
 		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
