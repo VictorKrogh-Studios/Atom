@@ -4,6 +4,7 @@ namespace Atom
 {
 
 	class SwapChain;
+	class RenderCommand;
 
 	struct RendererInitializeInfo
 	{
@@ -23,6 +24,7 @@ namespace Atom
 
 		static uint32_t GetCurrentFrameIndex();
 		static uint32_t GetFramesInFlight();
+		static RenderCommand* GetRenderCommand();
 	};
 
 }

@@ -2,6 +2,7 @@
 #include "Renderer.h"
 
 #include "Atom/Graphics/SwapChain.h"
+#include "Atom/Graphics/RenderCommand.h"
 
 namespace Atom
 {
@@ -11,6 +12,7 @@ namespace Atom
 		RendererInitializeInfo InitializeInfo;
 		uint32_t CurrentFrameIndex = 0;
 		SwapChain* SwapChain;
+		RenderCommand* RenderCommand;
 	};
 
 	static RendererData* s_Data = nullptr;
@@ -20,10 +22,14 @@ namespace Atom
 		s_Data = new RendererData;
 		s_Data->InitializeInfo = initializeInfo;
 		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
+		s_Data->RenderCommand = RenderCommand::Create();
 	}
 
 	void Renderer::Shutdown()
 	{
+		delete s_Data->RenderCommand;
+		s_Data->RenderCommand = nullptr;
+
 		delete s_Data;
 		s_Data = nullptr;
 	}
@@ -52,6 +58,11 @@ namespace Atom
 	uint32_t Renderer::GetFramesInFlight()
 	{
 		return s_Data->InitializeInfo.FramesInFlight;
+	}
+
+	RenderCommand* Renderer::GetRenderCommand()
+	{
+		return s_Data->RenderCommand;
 	}
 
 }

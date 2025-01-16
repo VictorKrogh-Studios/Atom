@@ -39,10 +39,6 @@ namespace Atom
 		//io.Fonts->AddFontFromFileTTF("Resources/Fonts/OpenSans/OpenSans-Bold.ttf", fontSize);
 		//io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/OpenSans/OpenSans-Regular.ttf", fontSize);
 
-		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsClassic();
-
 		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -50,24 +46,14 @@ namespace Atom
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
+		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.15f, style.Colors[ImGuiCol_WindowBg].w);
 
 		AT_CORE_ASSERT(ImGui_ImplGlfw_InitForVulkan(m_WindowHandle, true));
 
 		InitializeResources(Renderer::GetFramesInFlight());
 
-
-		//SetDarkThemeColors();
-
-		//Application& app = Application::Get();
-
-		//GLFWwindow* glfwWindow = static_cast<GlfwWindow*>(app.GetWindow())->m_WindowHandle;
-
-		//DX11RendererContext& context = DX11RendererContext::Get();
-
-		// Setup Platform/Renderer bindings
-		//ImGui_ImplGlfw_InitForOther(glfwWindow, true);
-		//ImGui_ImplWin32_Init(app.GetWindow()->GetNativeWindowHandle());
-		//ImGui_ImplDX11_Init(context.m_Device, context.m_DeviceContext);
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
 	}
 
 	void ImGuiLayer::OnDetach()

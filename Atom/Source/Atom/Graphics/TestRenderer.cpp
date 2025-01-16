@@ -1,7 +1,8 @@
 #include "ATPCH.h"
 #include "TestRenderer.h"
 
-#include "Renderer.h"
+#include "Atom/Graphics/Renderer.h"
+#include "Atom/Graphics/RenderCommand.h"
 
 namespace Atom
 {
@@ -12,15 +13,12 @@ namespace Atom
 	}
 
 	TestRenderer::TestRenderer()
-		: m_RenderCommand(RenderCommand::Create()), m_CommandBuffer(CommandBuffer::Create())
+		: m_RenderCommand(Renderer::GetRenderCommand()), m_CommandBuffer(CommandBuffer::Create())
 	{
 	}
 
 	TestRenderer::~TestRenderer()
 	{
-		delete m_RenderCommand;
-		m_RenderCommand = nullptr;
-
 		delete m_CommandBuffer;
 		m_CommandBuffer = nullptr;
 	}
