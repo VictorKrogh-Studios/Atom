@@ -2,6 +2,8 @@
 #include "VulkanSwapChain.h"
 #include "VulkanGraphicsContext.h"
 
+#include "VulkanUtils.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Atom
@@ -30,6 +32,8 @@ namespace Atom
 		CreateFramebuffers(device);
 
 		CreateSyncObjects(device);
+
+		m_ImageFormat = Vulkan::Utils::GetImageFormat(m_ColorFormat);
 	}
 
 	VulkanSwapChain::~VulkanSwapChain()

@@ -4,6 +4,8 @@
 
 #include "Atom/Events/WindowEvent.h"
 
+#include "Atom/ImGui/ImGuiLayer.h"
+
 namespace Atom
 {
 
@@ -26,6 +28,9 @@ namespace Atom
 		~Application();
 	public:
 		void Run();
+
+		static Application& Get() { return *s_Instance; };
+		Window* GetWindow() const { return m_Window; }
 	protected:
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
@@ -37,9 +42,12 @@ namespace Atom
 		bool m_IsRunning = true;
 		Window* m_Window = nullptr;
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer = nullptr;
 
 		float m_LastFrameTime = 0.0f;
 		float m_DeltaTime = 0.0f;
+	private:
+		inline static Application* s_Instance = nullptr;
 	};
 
 	// Implemented by CLIENT

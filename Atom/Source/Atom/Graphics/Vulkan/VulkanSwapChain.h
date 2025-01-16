@@ -14,6 +14,10 @@ namespace Atom
 
 		virtual uint32_t AquireNextImage(uint32_t frameIndex) override;
 		virtual void Present(uint32_t frameIndex, bool wait) const override;
+
+		// Internal to Vulkan components!
+
+		VkFramebuffer GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; }
 	private:
 		static VulkanSwapChain* Get() { return s_Instance; }
 
@@ -55,6 +59,7 @@ namespace Atom
 
 		friend class VulkanRenderCommand;
 		friend class VulkanPipeline;
+		friend class VulkanImGuiLayer;
 	};
 
 }

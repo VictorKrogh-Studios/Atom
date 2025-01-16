@@ -33,6 +33,8 @@ namespace Atom::Internal
 		friend class VulkanCommandBuffer;
 		friend class VulkanVertexBuffer;
 		friend class VulkanBuffer;
+
+		friend class VulkanImGuiLayer;
 	};
 
 }

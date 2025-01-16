@@ -6,6 +6,8 @@
 
 #include <chrono>
 
+#include <imgui.h>
+
 struct Vertex
 {
 	glm::vec2 pos;
@@ -46,7 +48,7 @@ void SandboxLayer::OnAttach()
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 
@@ -66,7 +68,7 @@ void SandboxLayer::OnAttach()
 #else
 	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data());
 
-	m_IndexBuffer = Atom::IndexBuffer::Create(indices.size(), (uint32_t*)indices.data());
+	m_IndexBuffer = Atom::IndexBuffer::Create((uint32_t)indices.size(), (uint32_t*)indices.data());
 #endif
 
 	m_Renderer = Atom::TestRenderer::Create();
@@ -125,4 +127,9 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndRenderPass();
 
 	m_Renderer->EndScene();
+}
+
+void SandboxLayer::OnImGui()
+{
+	ImGui::ShowDemoWindow();
 }

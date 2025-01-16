@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Atom/Graphics/RenderCommand.h"
 #include "Atom/Graphics/CommandBuffer.h"
 #include "Atom/Graphics/Pipeline.h"
 #include "Atom/Graphics/VertexBuffer.h"
@@ -9,6 +8,8 @@
 
 namespace Atom
 {
+
+	class RenderCommand;
 
 	class TestRenderer
 	{

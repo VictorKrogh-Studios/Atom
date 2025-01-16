@@ -22,12 +22,14 @@ project "Atom"
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.glfw}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.ImGui}",
         "%{IncludeDir.vulkan}"
     }
 	
 	links {
 		"spdlog",
 		"glfw",
+		"imgui",
 		"%{Library.vulkan}"
     }
 

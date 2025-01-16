@@ -20,6 +20,7 @@ IncludeDir = {}
 IncludeDir['spdlog'] = "%{wks.location}/Atom/Vendor/spdlog/include";
 IncludeDir['glfw'] = "%{wks.location}/Atom/Vendor/glfw/include";
 IncludeDir['glm'] = "%{wks.location}/Atom/Vendor/glm";
+IncludeDir["ImGui"] = "%{wks.location}/Atom/Vendor/imgui";
 IncludeDir['vulkan'] = "%{VULKAN_SDK}/Include";
 
 LibraryDir = {}
@@ -31,6 +32,7 @@ Library['vulkan'] = "%{LibraryDir.vulkan}/vulkan-1.lib";
 group "Dependencies"
     include "Atom/Vendor/spdlog"
     include "Atom/Vendor/glfw"
+	include "Atom/Vendor/imgui"
 group ""
 
 include "Atom"

@@ -34,6 +34,7 @@ namespace Atom
 		void Update();
 
 		SwapChain* GetSwapChain() const { return m_SwapChain; }
+		Enumerations::ImageFormat GetImageFormat() const { return m_SwapChain->GetImageFormat(); }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();
@@ -55,6 +56,8 @@ namespace Atom
 
 		GraphicsContext* m_GraphicsContext = nullptr;
 		SwapChain* m_SwapChain = nullptr;
+
+		friend class ImGuiLayer;
 	};
 
 }

@@ -23,6 +23,8 @@ namespace Atom::Internal
 
 		const QueueFamilyIndices& GetQueueFamilyIndices() const { return m_QueueFamilyIndices; }
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+
+		VkPhysicalDevice GetVkPhysicalDevice() const { return m_PhysicalDevice; }
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
@@ -42,6 +44,8 @@ namespace Atom::Internal
 		friend class VulkanRenderCommand;
 		friend class VulkanCommandBuffer;
 		friend class VulkanVertexBuffer;
+
+		friend class VulkanImGuiLayer;
 	};
 
 }
