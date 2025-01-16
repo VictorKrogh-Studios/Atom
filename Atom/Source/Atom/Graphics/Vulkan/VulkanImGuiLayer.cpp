@@ -7,8 +7,8 @@
 namespace Atom
 {
 
-	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow* windowHandle)
-		: ImGuiLayer(windowHandle)
+	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow* windowHandle, RenderCommand* renderCommand)
+		: ImGuiLayer(windowHandle), m_RenderCommand(static_cast<VulkanRenderCommand*>(renderCommand))
 	{
 	}
 
@@ -64,50 +64,76 @@ namespace Atom
 	{
 		VulkanSwapChain* swapChain = VulkanSwapChain::Get();
 
+		VkClearValue clearValues[2];
+		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		uint32_t width = swapChain->m_Width;
+		uint32_t height = swapChain->m_Height;
+
+		VkCommandBuffer drawCommandBuffer = m_RenderCommand->m_DrawCommandBuffers[frameIndex];
+#if 0
+		VkCommandBufferBeginInfo drawCmdBufInfo = {};
+		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		drawCmdBufInfo.pNext = nullptr;
+
+		vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo);
+#endif
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.pNext = nullptr;
+		renderPassBeginInfo.renderPass = m_RenderPass; //swapChain.GetRenderPass();
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+		renderPassBeginInfo.framebuffer = swapChain->GetCurrentFramebuffer();
+
+		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = swapChain->m_RenderPass;
+		inheritanceInfo.renderPass = m_RenderPass; // swapChain->m_RenderPass;
 		inheritanceInfo.framebuffer = swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		//cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
+		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
 		VkResult result = vkBeginCommandBuffer(m_CommandBuffers[frameIndex], &cmdBufInfo);
 
-		VkClearValue clearValues[2]{};
-		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)height;
+		viewport.height = -(float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(m_CommandBuffers[frameIndex], 0, 1, &viewport);
 
-		VkRenderPassBeginInfo renderPassBeginInfo{};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.clearValueCount = 2;
-		renderPassBeginInfo.pClearValues = clearValues;
-		renderPassBeginInfo.renderPass = m_RenderPass;
-		renderPassBeginInfo.framebuffer = swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
-		renderPassBeginInfo.renderArea.offset = { 0,0 };
-		renderPassBeginInfo.renderArea.extent = { 1600, 900 };
-		vkCmdBeginRenderPass(m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(m_CommandBuffers[frameIndex], 0, 1, &scissor);
 
 		ImGui_ImplVulkan_RenderDrawData(draw_data, m_CommandBuffers[frameIndex]);
 
-		vkCmdEndRenderPass(m_CommandBuffers[frameIndex]);
-
 		vkEndCommandBuffer(m_CommandBuffers[frameIndex]);
 
-		{
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.pCommandBuffers = &m_CommandBuffers[frameIndex];
-			submitInfo.commandBufferCount = 1;
+		vkCmdExecuteCommands(drawCommandBuffer, 1, &m_CommandBuffers[frameIndex]);
 
-			vkWaitForFences(VulkanGraphicsContext::GetDevice()->GetVkDevice(), 1, &m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX);
-			vkResetFences(VulkanGraphicsContext::GetDevice()->GetVkDevice(), 1, &m_WaitFences[frameIndex]);
+		vkCmdEndRenderPass(drawCommandBuffer);
 
-			VkResult result = vkQueueSubmit(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, 1, &submitInfo, m_WaitFences[frameIndex]);
-			AT_CORE_ASSERT(result == VK_SUCCESS);
-		}
+#if 0
+		vkEndCommandBuffer(drawCommandBuffer);
+#endif
 	}
 
 	void VulkanImGuiLayer::CreateDescriptorPool(VkDevice device)
@@ -144,7 +170,7 @@ namespace Atom
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandBufferCount = framesInFlight;
 		commandBufferAllocateInfo.commandPool = VulkanGraphicsContext::Get()->m_GraphicsCommandPool;
-		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 
 		VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data());
 		AT_CORE_ASSERT(result == VK_SUCCESS);
@@ -156,11 +182,11 @@ namespace Atom
 		VkAttachmentDescription colorAttachmentDesc = {};
 		colorAttachmentDesc.format = VulkanSwapChain::Get()->m_ColorFormat;
 		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; //VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; //VK_ATTACHMENT_LOAD_OP_CLEAR
 		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_UNDEFINED
 		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorReference = {};

@@ -37,10 +37,13 @@ namespace Atom
 	void Renderer::BeginFrame()
 	{
 		s_Data->SwapChain->AquireNextImage(s_Data->CurrentFrameIndex);
+
+		s_Data->RenderCommand->BeginFrame(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::EndFrame()
 	{
+		s_Data->RenderCommand->EndFrame(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::PresentAndWait()

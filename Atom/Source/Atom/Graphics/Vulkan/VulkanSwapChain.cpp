@@ -65,17 +65,24 @@ namespace Atom
 
 		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
 
-		for (auto& semaphore : m_ImageAvailableSemaphores)
+		for (auto& swapChainSemaphore : m_SwapChainSemaphores)
 		{
-			vkDestroySemaphore(device, semaphore, nullptr);
+			vkDestroySemaphore(device, swapChainSemaphore.ImageAvailableSemaphore, nullptr);
+			vkDestroySemaphore(device, swapChainSemaphore.RenderFinishedSemaphore, nullptr);
 		}
-		m_ImageAvailableSemaphores.clear();
+		m_SwapChainSemaphores.clear();
 
-		for (auto& semaphore : m_RenderFinishedSemaphores)
-		{
-			vkDestroySemaphore(device, semaphore, nullptr);
-		}
-		m_RenderFinishedSemaphores.clear();
+		//for (auto& semaphore : m_ImageAvailableSemaphores)
+		//{
+		//	vkDestroySemaphore(device, semaphore, nullptr);
+		//}
+		//m_ImageAvailableSemaphores.clear();
+
+		//for (auto& semaphore : m_RenderFinishedSemaphores)
+		//{
+		//	vkDestroySemaphore(device, semaphore, nullptr);
+		//}
+		//m_RenderFinishedSemaphores.clear();
 
 		for (auto& fence : m_Fences)
 		{
@@ -96,14 +103,16 @@ namespace Atom
 		result = vkResetFences(device, 1, &m_Fences[frameIndex]);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 
-		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
+		result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_SwapChainSemaphores[frameIndex].ImageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
+		//result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 		if (result != VK_SUCCESS)
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
 				// Resize swapchain!
 
-				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
+				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_SwapChainSemaphores[frameIndex].ImageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
+				//result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 			}
 		}
 
@@ -117,7 +126,7 @@ namespace Atom
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &m_SwapChain;
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphores[frameIndex];
+		presentInfo.pWaitSemaphores = &m_SwapChainSemaphores[frameIndex].RenderFinishedSemaphore; // m_RenderFinishedSemaphores[frameIndex];
 		presentInfo.pImageIndices = &m_CurrentImageIndex;
 		VkResult result = vkQueuePresentKHR(VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, &presentInfo);
 		if (result != VK_SUCCESS)
@@ -518,22 +527,35 @@ namespace Atom
 
 	void VulkanSwapChain::CreateSyncObjects(VkDevice device)
 	{
-		if (m_ImageAvailableSemaphores.size() != m_Options.FramesInFlight)
+		//if (m_ImageAvailableSemaphores.size() != m_Options.FramesInFlight)
+		//{
+		//	m_ImageAvailableSemaphores.resize(m_Options.FramesInFlight);
+		//	m_RenderFinishedSemaphores.resize(m_Options.FramesInFlight);
+
+		//	VkSemaphoreCreateInfo semaphoreCreateInfo{};
+		//	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		//	for (size_t i = 0; i < m_Options.FramesInFlight; i++)
+		//	{
+		//		VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]);
+		//		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+		//		result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_RenderFinishedSemaphores[i]);
+		//		AT_CORE_ASSERT(result == VK_SUCCESS);
+		//	}
+		//}
+
+		VkSemaphoreCreateInfo semaphoreCreateInfo{};
+		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		m_SwapChainSemaphores.resize(m_Options.FramesInFlight);
+		for (uint32_t i = 0; i < m_Options.FramesInFlight; i++)
 		{
-			m_ImageAvailableSemaphores.resize(m_Options.FramesInFlight);
-			m_RenderFinishedSemaphores.resize(m_Options.FramesInFlight);
+			VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_SwapChainSemaphores[i].ImageAvailableSemaphore);
+			AT_CORE_ASSERT(result == VK_SUCCESS);
 
-			VkSemaphoreCreateInfo semaphoreCreateInfo{};
-			semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-			for (size_t i = 0; i < m_Options.FramesInFlight; i++)
-			{
-				VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]);
-				AT_CORE_ASSERT(result == VK_SUCCESS);
-
-				result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_RenderFinishedSemaphores[i]);
-				AT_CORE_ASSERT(result == VK_SUCCESS);
-			}
+			result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_SwapChainSemaphores[i].RenderFinishedSemaphore);
+			AT_CORE_ASSERT(result == VK_SUCCESS);
 		}
 
 		if (m_Fences.size() != m_Options.FramesInFlight)

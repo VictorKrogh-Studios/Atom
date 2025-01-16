@@ -1,6 +1,8 @@
 #pragma once
 #include "Atom/Core/Layer.h"
 
+#include "Atom/Graphics/RenderCommand.h"
+
 #include <imgui.h>
 
 struct GLFWwindow;
@@ -13,7 +15,7 @@ namespace Atom
 	class ImGuiLayer : public Layer
 	{
 	public:
-		static ImGuiLayer* Create(Window* window);
+		static ImGuiLayer* Create(Window* window, RenderCommand* renderCommand);
 	public:
 		ImGuiLayer(GLFWwindow* windowHandle);
 		virtual ~ImGuiLayer() = default;

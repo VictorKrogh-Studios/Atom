@@ -27,6 +27,12 @@ namespace Atom
 		virtual void RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount, uint32_t frameIndex) const = 0;
 		virtual void DrawVertices(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount, uint32_t frameIndex) const = 0;
 		virtual void DrawIndexed(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount, uint32_t frameIndex) const = 0;
+
+	private: // Should only be called from Renderer!
+		virtual void BeginFrame(uint32_t frameIndex) const = 0;
+		virtual void EndFrame(uint32_t frameIndex) const = 0;
+
+		friend class Renderer;
 	};
 
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "Atom/ImGui/ImGuiLayer.h"
 
+#include "Atom/Graphics/Vulkan/VulkanRenderCommand.h"
+
 #include <vulkan/vulkan.h>
 
 namespace Atom
@@ -9,7 +11,7 @@ namespace Atom
 	class VulkanImGuiLayer : public ImGuiLayer
 	{
 	public:
-		VulkanImGuiLayer(GLFWwindow* windowHandle);
+		VulkanImGuiLayer(GLFWwindow* windowHandle, RenderCommand* renderCommand);
 		virtual ~VulkanImGuiLayer() = default;
 	protected:
 		virtual void InitializeResources(uint32_t framesInFlight) override;
@@ -27,6 +29,8 @@ namespace Atom
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 		std::vector<VkFence> m_WaitFences;
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+
+		VulkanRenderCommand* m_RenderCommand = nullptr;
 	};
 
 }

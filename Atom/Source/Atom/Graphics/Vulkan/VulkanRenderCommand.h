@@ -13,6 +13,8 @@ namespace Atom
 
 	}
 
+	class VulkanSwapChain;
+
 	class VulkanRenderCommand : public RenderCommand
 	{
 	public:
@@ -30,8 +32,20 @@ namespace Atom
 		virtual void RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount, uint32_t frameIndex) const override;
 		virtual void DrawVertices(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount, uint32_t frameIndex) const override;
 		virtual void DrawIndexed(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount, uint32_t frameIndex) const override;
+
+	private: // Should only be called from Renderer!
+		virtual void BeginFrame(uint32_t frameIndex) const override;
+		virtual void EndFrame(uint32_t frameIndex) const override;
+
+	private:
+		void CreateDrawCommandBuffers(VkDevice device, uint32_t count);
 	private:
 		Internal::VulkanDevice* m_VulkanDevice;
+		VulkanSwapChain* m_SwapChain;
+
+		std::vector<VkCommandBuffer> m_DrawCommandBuffers;
+
+		friend class VulkanImGuiLayer;
 	};
 
 }

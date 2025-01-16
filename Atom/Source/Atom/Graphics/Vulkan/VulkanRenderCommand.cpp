@@ -2,6 +2,8 @@
 #include "VulkanRenderCommand.h"
 #include "VulkanGraphicsContext.h"
 
+#include "Atom/Graphics/Vulkan/VulkanSwapChain.h"
+
 #include "Atom/Graphics/Vulkan/VulkanCommandBuffer.h"
 #include "Atom/Graphics/Vulkan/VulkanPipeline.h"
 #include "Atom/Graphics/Vulkan/VulkanVertexBuffer.h"
@@ -14,6 +16,9 @@ namespace Atom
 	VulkanRenderCommand::VulkanRenderCommand()
 	{
 		m_VulkanDevice = VulkanGraphicsContext::GetDevice();
+		m_SwapChain = VulkanSwapChain::Get();
+
+		CreateDrawCommandBuffers(m_VulkanDevice->m_Device, 3);
 	}
 
 	void VulkanRenderCommand::ResetCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex) const
@@ -45,7 +50,7 @@ namespace Atom
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
-	//static VkFence s_WaitFence = VK_NULL_HANDLE;
+	static VkFence s_WaitFence = VK_NULL_HANDLE;
 
 	void VulkanRenderCommand::SubmitCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex, bool wait) const
 	{
@@ -62,7 +67,7 @@ namespace Atom
 
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		// VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
 		//{
 		//	VkSubmitInfo submitInfo = {};
@@ -79,18 +84,22 @@ namespace Atom
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pWaitDstStageMask = &waitStageMask;
+		//submitInfo.pWaitDstStageMask = &waitStageMask;
 
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = &vulkanSwapChain->m_ImageAvailableSemaphores[frameIndex];
+		//submitInfo.waitSemaphoreCount = 1;
+		//submitInfo.pWaitSemaphores = &vulkanSwapChain->m_ImageAvailableSemaphores[frameIndex];
 
 		submitInfo.pCommandBuffers = &vulkanCommandBuffer->m_CommandBuffers[frameIndex];
 		submitInfo.commandBufferCount = 1;
 
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &vulkanSwapChain->m_RenderFinishedSemaphores[frameIndex];
+		//submitInfo.signalSemaphoreCount = 1;
+		//submitInfo.pSignalSemaphores = &vulkanSwapChain->m_RenderFinishedSemaphores[frameIndex];
 
-		VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, vulkanSwapChain->m_Fences[frameIndex]);
+		//vkWaitForFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence, VK_TRUE, UINT64_MAX);
+		//vkResetFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence);
+
+		VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, s_WaitFence);
+		//VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, vulkanSwapChain->m_Fences[frameIndex]);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 
 		//if (wait)
@@ -191,6 +200,75 @@ namespace Atom
 		vkCmdBindIndexBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex], vulkanIndexBuffer->m_Buffer, 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdDrawIndexed(vulkanCommandBuffer->m_CommandBuffers[frameIndex], indexCount, 1, 0, 0, 0);
+	}
+
+	void VulkanRenderCommand::BeginFrame(uint32_t frameIndex) const
+	{
+		VkResult result = vkResetCommandBuffer(m_DrawCommandBuffers[frameIndex], 0);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+#if 1
+		VkCommandBufferBeginInfo commandBufferBeginInfo{};
+		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		//commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		result = vkBeginCommandBuffer(m_DrawCommandBuffers[frameIndex], &commandBufferBeginInfo);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+#endif
+	}
+
+	void VulkanRenderCommand::EndFrame(uint32_t frameIndex) const
+	{
+#if 1
+		VkResult result = vkEndCommandBuffer(m_DrawCommandBuffers[frameIndex]);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+#endif
+
+		VulkanSwapChain::SwapChainSemaphores semaphores = m_SwapChain->GetSwapChainSemaphores(frameIndex);
+
+		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.pWaitDstStageMask = &waitStageMask;
+
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &semaphores.ImageAvailableSemaphore; // vulkanSwapChain->m_ImageAvailableSemaphores[frameIndex];
+
+		submitInfo.pCommandBuffers = &m_DrawCommandBuffers[frameIndex];
+		submitInfo.commandBufferCount = 1;
+
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = &semaphores.RenderFinishedSemaphore; // vulkanSwapChain->m_RenderFinishedSemaphores[frameIndex];
+
+		result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, m_SwapChain->m_Fences[frameIndex]);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+	}
+
+	void VulkanRenderCommand::CreateDrawCommandBuffers(VkDevice device, uint32_t count)
+	{
+		m_DrawCommandBuffers.resize(count);
+
+		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocateInfo.commandBufferCount = count;
+		commandBufferAllocateInfo.commandPool = VulkanGraphicsContext::Get()->m_GraphicsCommandPool;
+		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_DrawCommandBuffers.data());
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+
+#if 0
+		auto fpSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT");
+
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_COMMAND_BUFFER;
+		nameInfo.pObjectName = "Draw Command Buffer";
+		nameInfo.objectHandle = (uint64_t)m_DrawCommandBuffers[0];
+		fpSetDebugUtilsObjectNameEXT(device, &nameInfo);
+#endif
 	}
 
 }

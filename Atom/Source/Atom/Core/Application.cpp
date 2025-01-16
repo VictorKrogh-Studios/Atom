@@ -29,7 +29,7 @@ namespace Atom
 
 		Renderer::Initialize(rendererInitializeInfo);
 
-		m_ImGuiLayer = ImGuiLayer::Create(m_Window);
+		m_ImGuiLayer = ImGuiLayer::Create(m_Window, Renderer::GetRenderCommand());
 		PushOverlay(m_ImGuiLayer);
 	}
 
