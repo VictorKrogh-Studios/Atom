@@ -68,7 +68,7 @@ void SandboxLayer::OnAttach()
 #else
 	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data());
 
-	m_IndexBuffer = Atom::IndexBuffer::Create(indices.size(), (uint32_t*)indices.data());
+	m_IndexBuffer = Atom::IndexBuffer::Create((uint32_t)indices.size(), (uint32_t*)indices.data());
 #endif
 
 	m_Renderer = Atom::TestRenderer::Create();
