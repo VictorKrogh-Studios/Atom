@@ -76,10 +76,14 @@ namespace Atom
 
 		VkResult result = vkBeginCommandBuffer(m_CommandBuffers[frameIndex], &cmdBufInfo);
 
+		VkClearValue clearValues[2]{};
+		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.clearValueCount = 1;
-		renderPassBeginInfo.pClearValues = new VkClearValue({ 0.1f, 0.1f, 0.1f, 1.0f });
+		renderPassBeginInfo.clearValueCount = 2;
+		renderPassBeginInfo.pClearValues = clearValues;
 		renderPassBeginInfo.renderPass = m_RenderPass;
 		renderPassBeginInfo.framebuffer = swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
 		renderPassBeginInfo.renderArea.offset = { 0,0 };
@@ -152,11 +156,11 @@ namespace Atom
 		VkAttachmentDescription colorAttachmentDesc = {};
 		colorAttachmentDesc.format = VulkanSwapChain::Get()->m_ColorFormat;
 		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; //VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_UNDEFINED;
 		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorReference = {};
