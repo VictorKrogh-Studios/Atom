@@ -1,11 +1,56 @@
 #pragma once
 #include "Atom/Graphics/Enumerations/ImageFormat.h"
 #include "Atom/Graphics/Enumerations/ShaderDataType.h"
+#include "Atom/Graphics/Enumerations/CommandBufferLevel.h"
+#include "Atom/Graphics/Enumerations/CommandBufferUsageFlags.h"
+#include "Atom/Graphics/Enumerations/RenderPassAttachmentLoadOperation.h"
 
 #include <vulkan/vulkan.h>
 
 namespace Atom::Vulkan::Utils
 {
+
+	inline static VkAttachmentLoadOp GetVkAttachmentLoadOp(Enumerations::RenderPassAttachmentLoadOperation renderPassLoadOperation)
+	{
+		switch (renderPassLoadOperation)
+		{
+			case Atom::Enumerations::RenderPassAttachmentLoadOperation::Load: return VK_ATTACHMENT_LOAD_OP_LOAD;
+			case Atom::Enumerations::RenderPassAttachmentLoadOperation::Clear: return VK_ATTACHMENT_LOAD_OP_CLEAR; 
+			case Atom::Enumerations::RenderPassAttachmentLoadOperation::DontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			default: break;
+		}
+
+		AT_CORE_ASSERT(true, "Invalid render pass attachment load operation");
+		return VK_ATTACHMENT_LOAD_OP_MAX_ENUM;
+	}
+
+	inline static VkCommandBufferUsageFlags GetVkCommandBufferUsageFlags(Enumerations::CommandBufferUsageFlags commandBufferUsageFlags)
+	{
+		switch (commandBufferUsageFlags)
+		{
+			case Atom::Enumerations::CommandBufferUsageFlags::ONE_TIME_SUBMIT_BIT: return VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			case Atom::Enumerations::CommandBufferUsageFlags::RENDER_PASS_CONTINUE_BIT: return VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			case Atom::Enumerations::CommandBufferUsageFlags::SIMULTANEOUS_USE_BIT: return VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+			case Atom::Enumerations::CommandBufferUsageFlags::None:
+			default: break;
+		}
+
+		AT_CORE_ASSERT(true, "Unknown command buffer usage flag");
+		return VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM;
+	}
+
+	inline static VkCommandBufferLevel GetVkCommandBufferLevel(Enumerations::CommandBufferLevel commandBufferLevel)
+	{
+		switch (commandBufferLevel)
+		{
+			case Atom::Enumerations::CommandBufferLevel::Primary: return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			case Atom::Enumerations::CommandBufferLevel::Secondary:	return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+			default: break;
+		}
+
+		AT_CORE_ASSERT(true, "Unknown command buffer level");
+		return VK_COMMAND_BUFFER_LEVEL_MAX_ENUM;
+	}
 
 	inline static VkFormat GetVkFormat(Enumerations::ImageFormat imageFormat)
 	{

@@ -30,7 +30,6 @@ namespace Atom
 		void DrawIndexed(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount);
 	private:
 		RenderCommand* m_RenderCommand = nullptr;
-		CommandBuffer* m_CommandBuffer = nullptr;
 	};
 
 }

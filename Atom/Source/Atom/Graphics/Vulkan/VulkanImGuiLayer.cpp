@@ -2,6 +2,9 @@
 #include "VulkanImGuiLayer.h"
 #include "VulkanGraphicsContext.h"
 
+#include "Atom/Graphics/Vulkan/VulkanCommandBuffer.h"
+#include "Atom/Graphics/Vulkan/VulkanRenderPass.h"
+
 #include <backends/imgui_impl_vulkan.h>
 
 namespace Atom
@@ -20,10 +23,6 @@ namespace Atom
 		CreateDescriptorPool(device);
 
 		CreateCommandBuffers(device, framesInFlight);
-
-		CreateRenderPass(device);
-
-		CreateWaitFences(device, framesInFlight);
 
 		ImGui_ImplVulkan_InitInfo initInfo{};
 		initInfo.Instance = VulkanGraphicsContext::GetVkInstance();
@@ -45,13 +44,6 @@ namespace Atom
 
 		ImGui_ImplVulkan_Shutdown();
 
-		vkDestroyRenderPass(device, m_RenderPass, nullptr);
-
-		for (size_t i = 0; i < m_WaitFences.size(); i++)
-		{
-			vkDestroyFence(device, m_WaitFences[i], nullptr);
-		}
-
 		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 	}
 
@@ -60,45 +52,22 @@ namespace Atom
 		ImGui_ImplVulkan_NewFrame();
 	}
 
-	void VulkanImGuiLayer::OnRender(ImDrawData* draw_data, uint32_t frameIndex) const
+	void VulkanImGuiLayer::OnRender(ImDrawData* draw_data, CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const
 	{
-		VulkanSwapChain* swapChain = VulkanSwapChain::Get();
+		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
+		VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(renderPass);
 
-		VkClearValue clearValues[2];
-		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		VulkanSwapChain* swapChain = VulkanSwapChain::Get();
 
 		uint32_t width = swapChain->m_Width;
 		uint32_t height = swapChain->m_Height;
 
-		VkCommandBuffer drawCommandBuffer = m_RenderCommand->m_DrawCommandBuffers[frameIndex];
-#if 0
-		VkCommandBufferBeginInfo drawCmdBufInfo = {};
-		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		drawCmdBufInfo.pNext = nullptr;
-
-		vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo);
-#endif
-
-		VkRenderPassBeginInfo renderPassBeginInfo = {};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.pNext = nullptr;
-		renderPassBeginInfo.renderPass = m_RenderPass; //swapChain.GetRenderPass();
-		renderPassBeginInfo.renderArea.offset.x = 0;
-		renderPassBeginInfo.renderArea.offset.y = 0;
-		renderPassBeginInfo.renderArea.extent.width = width;
-		renderPassBeginInfo.renderArea.extent.height = height;
-		renderPassBeginInfo.clearValueCount = 2; // Color + depth
-		renderPassBeginInfo.pClearValues = clearValues;
-		renderPassBeginInfo.framebuffer = swapChain->GetCurrentFramebuffer();
-
-		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+		VkCommandBuffer drawCommandBuffer = vulkanCommandBuffer->m_CommandBuffers[frameIndex]; //m_RenderCommand->m_DrawCommandBuffers[frameIndex];
 
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = m_RenderPass; // swapChain->m_RenderPass;
-		inheritanceInfo.framebuffer = swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
+		inheritanceInfo.renderPass = vulkanRenderPass->GetVkRenderPass(); // m_RenderPass; // swapChain->m_RenderPass;
+		inheritanceInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer(); // swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -128,12 +97,6 @@ namespace Atom
 		vkEndCommandBuffer(m_CommandBuffers[frameIndex]);
 
 		vkCmdExecuteCommands(drawCommandBuffer, 1, &m_CommandBuffers[frameIndex]);
-
-		vkCmdEndRenderPass(drawCommandBuffer);
-
-#if 0
-		vkEndCommandBuffer(drawCommandBuffer);
-#endif
 	}
 
 	void VulkanImGuiLayer::CreateDescriptorPool(VkDevice device)
@@ -174,72 +137,6 @@ namespace Atom
 
 		VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data());
 		AT_CORE_ASSERT(result == VK_SUCCESS);
-	}
-
-	void VulkanImGuiLayer::CreateRenderPass(VkDevice device)
-	{
-		// Color attachment
-		VkAttachmentDescription colorAttachmentDesc = {};
-		colorAttachmentDesc.format = VulkanSwapChain::Get()->m_ColorFormat;
-		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; //VK_ATTACHMENT_LOAD_OP_CLEAR
-		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; //VK_IMAGE_LAYOUT_UNDEFINED
-		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorReference = {};
-		colorReference.attachment = 0;
-		colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference depthReference = {};
-		depthReference.attachment = 1;
-		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpassDescription = {};
-		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpassDescription.colorAttachmentCount = 1;
-		subpassDescription.pColorAttachments = &colorReference;
-		subpassDescription.inputAttachmentCount = 0;
-		subpassDescription.pInputAttachments = nullptr;
-		subpassDescription.preserveAttachmentCount = 0;
-		subpassDescription.pPreserveAttachments = nullptr;
-		subpassDescription.pResolveAttachments = nullptr;
-
-		VkSubpassDependency dependency = {};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachmentDesc;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpassDescription;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-
-		VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass);
-		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create render pass!");
-	}
-
-	void VulkanImGuiLayer::CreateWaitFences(VkDevice device, uint32_t framesInFlight)
-	{
-		m_WaitFences.resize(framesInFlight);
-
-		VkFenceCreateInfo fenceCreateInfo{};
-		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		for (uint32_t i = 0; i < framesInFlight; i++)
-		{
-			vkCreateFence(device, &fenceCreateInfo, nullptr, &m_WaitFences[i]);
-		}
 	}
 
 }

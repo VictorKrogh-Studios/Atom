@@ -13,6 +13,7 @@ namespace Atom
 		uint32_t CurrentFrameIndex = 0;
 		SwapChain* SwapChain;
 		RenderCommand* RenderCommand;
+		CommandBuffer* DrawCommandBuffers;
 	};
 
 	static RendererData* s_Data = nullptr;
@@ -23,6 +24,12 @@ namespace Atom
 		s_Data->InitializeInfo = initializeInfo;
 		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
 		s_Data->RenderCommand = RenderCommand::Create();
+
+		CommandBufferCreateInfo commandBufferCreateInfo{};
+		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Primary;
+		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::ONE_TIME_SUBMIT_BIT;
+		commandBufferCreateInfo.TargetSwapChain = true;
+		s_Data->DrawCommandBuffers = CommandBuffer::Create(commandBufferCreateInfo, s_Data->InitializeInfo.FramesInFlight);
 	}
 
 	void Renderer::Shutdown()
@@ -38,12 +45,14 @@ namespace Atom
 	{
 		s_Data->SwapChain->AquireNextImage(s_Data->CurrentFrameIndex);
 
-		s_Data->RenderCommand->BeginFrame(s_Data->CurrentFrameIndex);
+		s_Data->DrawCommandBuffers->Reset(s_Data->CurrentFrameIndex);
+		s_Data->DrawCommandBuffers->Begin(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::EndFrame()
 	{
-		s_Data->RenderCommand->EndFrame(s_Data->CurrentFrameIndex);
+		s_Data->DrawCommandBuffers->End(s_Data->CurrentFrameIndex);
+		s_Data->DrawCommandBuffers->Submit(s_Data->CurrentFrameIndex);
 	}
 
 	void Renderer::PresentAndWait()
@@ -66,6 +75,11 @@ namespace Atom
 	RenderCommand* Renderer::GetRenderCommand()
 	{
 		return s_Data->RenderCommand;
+	}
+
+	CommandBuffer* Renderer::GetDrawCommandBuffer()
+	{
+		return s_Data->DrawCommandBuffers;
 	}
 
 }

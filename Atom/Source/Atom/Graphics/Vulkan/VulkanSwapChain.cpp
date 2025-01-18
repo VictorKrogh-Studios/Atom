@@ -72,18 +72,6 @@ namespace Atom
 		}
 		m_SwapChainSemaphores.clear();
 
-		//for (auto& semaphore : m_ImageAvailableSemaphores)
-		//{
-		//	vkDestroySemaphore(device, semaphore, nullptr);
-		//}
-		//m_ImageAvailableSemaphores.clear();
-
-		//for (auto& semaphore : m_RenderFinishedSemaphores)
-		//{
-		//	vkDestroySemaphore(device, semaphore, nullptr);
-		//}
-		//m_RenderFinishedSemaphores.clear();
-
 		for (auto& fence : m_Fences)
 		{
 			vkDestroyFence(device, fence, nullptr);

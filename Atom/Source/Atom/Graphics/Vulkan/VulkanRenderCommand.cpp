@@ -116,6 +116,11 @@ namespace Atom
 
 		const VkClearValue clearValue = vulkanRenderPass->GetVkClearValue();
 		const VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderAreaExtent();
+		VkFramebuffer frameBuffer = VK_NULL_HANDLE;
+		if (vulkanRenderPass->m_CreateInfo.TargetSwapChain)
+		{
+			frameBuffer = vulkanSwapChain->GetCurrentFramebuffer();
+		}
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -125,26 +130,32 @@ namespace Atom
 			{ 0, 0 },
 			renderAreaExtent
 		};
-		renderPassBeginInfo.framebuffer = vulkanSwapChain->GetCurrentFramebuffer();
+		renderPassBeginInfo.framebuffer = frameBuffer;
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 
-		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, vulkanRenderPass->GetVkSubpassContents());
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)renderAreaExtent.width;
-		viewport.height = (float)renderAreaExtent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		if (vulkanRenderPass->m_CreateInfo.ImplicitSetViewport)
+		{
+			VkViewport viewport{};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)renderAreaExtent.width;
+			viewport.height = (float)renderAreaExtent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
 
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = renderAreaExtent;
+			vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+		}
 
-		vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+		if (vulkanRenderPass->m_CreateInfo.ImplicitSetScissor)
+		{
+			VkRect2D scissor{};
+			scissor.offset = { 0, 0 };
+			scissor.extent = renderAreaExtent;
 
-		vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+			vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+		}
 	}
 
 	void VulkanRenderCommand::EndRenderPass(CommandBuffer* commandBuffer, uint32_t frameIndex) const

@@ -8,18 +8,18 @@
 namespace Atom
 {
 
-	CommandBuffer* CommandBuffer::Create()
+	CommandBuffer* CommandBuffer::Create(const CommandBufferCreateInfo& commandBufferCreateInfo)
 	{
-		return Create(Renderer::GetFramesInFlight());
+		return Create(commandBufferCreateInfo, Renderer::GetFramesInFlight());
 	}
 
-	CommandBuffer* CommandBuffer::Create(uint32_t count)
+	CommandBuffer* CommandBuffer::Create(const CommandBufferCreateInfo& commandBufferCreateInfo, uint32_t count)
 	{
-		return new VulkanCommandBuffer(count);
+		return new VulkanCommandBuffer(commandBufferCreateInfo, count);
 	}
 
-	CommandBuffer::CommandBuffer(uint32_t count)
-		: m_Count(count)
+	CommandBuffer::CommandBuffer(const CommandBufferCreateInfo& commandBufferCreateInfo, uint32_t count)
+		: m_CommandBufferCreateInfo(commandBufferCreateInfo), m_Count(count)
 	{
 	}
 

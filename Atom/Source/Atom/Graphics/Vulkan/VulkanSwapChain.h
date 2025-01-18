@@ -67,6 +67,8 @@ namespace Atom
 		bool m_VSync = false;
 
 		friend class VulkanRenderCommand;
+		friend class VulkanRenderPass;
+		friend class VulkanCommandBuffer;
 		friend class VulkanPipeline;
 		friend class VulkanImGuiLayer;
 	};

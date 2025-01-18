@@ -27,6 +27,8 @@ namespace Atom
 		virtual uint32_t AquireNextImage(uint32_t frameIndex) = 0;
 		virtual void Present(uint32_t frameIndex, bool wait) const = 0;
 
+		uint32_t GetWidth() const { return m_Options.Width; }
+		uint32_t GetHeight() const { return m_Options.Height; }
 		Enumerations::ImageFormat GetImageFormat() const { return m_ImageFormat; }
 	protected:
 		SwapChainOptions m_Options;

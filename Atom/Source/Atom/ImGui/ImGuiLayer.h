@@ -2,6 +2,7 @@
 #include "Atom/Core/Layer.h"
 
 #include "Atom/Graphics/RenderCommand.h"
+#include "Atom/Graphics/RenderPass.h"
 
 #include <imgui.h>
 
@@ -30,9 +31,10 @@ namespace Atom
 		virtual void ShutdownResources() = 0;
 
 		virtual void OnBeginFrame() const = 0;
-		virtual void OnRender(ImDrawData* draw_data, uint32_t frameIndex) const = 0;
+		virtual void OnRender(ImDrawData* draw_data, CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const = 0;
 	private:
 		GLFWwindow* m_WindowHandle = nullptr;
+		RenderPass* m_RenderPass = nullptr;
 	};
 
 }

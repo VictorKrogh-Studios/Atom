@@ -1,5 +1,7 @@
 #pragma once
 #include "Atom/Graphics/Enumerations/ImageFormat.h"
+#include "Atom/Graphics/Enumerations/RenderPassSubpassContents.h"
+#include "Atom/Graphics/Enumerations/RenderPassAttachmentLoadOperation.h"
 
 #include <glm/glm.hpp>
 
@@ -11,6 +13,11 @@ namespace Atom
 		Enumerations::ImageFormat ImageFormat;
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		glm::u32vec2 RenderArea;
+		Enumerations::RenderPassSubpassContents SubpassContents = Enumerations::RenderPassSubpassContents::Inline;
+		Enumerations::RenderPassAttachmentLoadOperation LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Clear;
+		bool TargetSwapChain = false;
+		bool ImplicitSetViewport = true;
+		bool ImplicitSetScissor = true;
 	};
 
 	class RenderPass

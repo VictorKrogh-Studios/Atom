@@ -50,6 +50,7 @@ void SandboxLayer::OnAttach()
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
 	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
+	renderPassCreateInfo.TargetSwapChain = true;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 
 	Atom::PipelineOptions pipelineOptions{};
