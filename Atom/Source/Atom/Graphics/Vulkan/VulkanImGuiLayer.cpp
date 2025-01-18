@@ -62,12 +62,12 @@ namespace Atom
 		uint32_t width = swapChain->m_Width;
 		uint32_t height = swapChain->m_Height;
 
-		VkCommandBuffer drawCommandBuffer = vulkanCommandBuffer->m_CommandBuffers[frameIndex]; //m_RenderCommand->m_DrawCommandBuffers[frameIndex];
+		VkCommandBuffer drawCommandBuffer = vulkanCommandBuffer->m_CommandBuffers[frameIndex]; 
 
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = vulkanRenderPass->GetVkRenderPass(); // m_RenderPass; // swapChain->m_RenderPass;
-		inheritanceInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer(); // swapChain->m_Framebuffers[swapChain->m_CurrentImageIndex];
+		inheritanceInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
+		inheritanceInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer();
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
