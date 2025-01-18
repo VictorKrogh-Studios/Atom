@@ -27,11 +27,7 @@ namespace Atom
 
 		const VkClearValue clearValue = vulkanRenderPass->GetVkClearValue();
 		const VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderAreaExtent();
-		VkFramebuffer frameBuffer = VK_NULL_HANDLE;
-		if (vulkanRenderPass->m_CreateInfo.TargetSwapChain)
-		{
-			frameBuffer = vulkanSwapChain->GetCurrentFramebuffer();
-		}
+		const VkFramebuffer frameBuffer = vulkanRenderPass->GetVkFramebuffer();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
