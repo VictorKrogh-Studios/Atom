@@ -16,7 +16,7 @@ namespace Atom
 	class ImGuiLayer : public Layer
 	{
 	public:
-		static ImGuiLayer* Create(Window* window, RenderCommand* renderCommand);
+		static ImGuiLayer* Create(Window* window);
 	public:
 		ImGuiLayer(GLFWwindow* windowHandle);
 		virtual ~ImGuiLayer() = default;

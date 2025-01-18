@@ -11,7 +11,7 @@ namespace Atom
 	class VulkanImGuiLayer : public ImGuiLayer
 	{
 	public:
-		VulkanImGuiLayer(GLFWwindow* windowHandle, RenderCommand* renderCommand);
+		VulkanImGuiLayer(GLFWwindow* windowHandle);
 		virtual ~VulkanImGuiLayer() = default;
 	protected:
 		virtual void InitializeResources(uint32_t framesInFlight) override;
@@ -25,8 +25,6 @@ namespace Atom
 	private:
 		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
-
-		VulkanRenderCommand* m_RenderCommand = nullptr;
 	};
 
 }

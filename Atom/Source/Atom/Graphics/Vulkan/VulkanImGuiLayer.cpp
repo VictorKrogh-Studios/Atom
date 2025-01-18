@@ -10,8 +10,8 @@
 namespace Atom
 {
 
-	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow* windowHandle, RenderCommand* renderCommand)
-		: ImGuiLayer(windowHandle), m_RenderCommand(static_cast<VulkanRenderCommand*>(renderCommand))
+	VulkanImGuiLayer::VulkanImGuiLayer(GLFWwindow* windowHandle)
+		: ImGuiLayer(windowHandle)
 	{
 	}
 

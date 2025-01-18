@@ -15,9 +15,9 @@
 namespace Atom
 {
 
-	ImGuiLayer* ImGuiLayer::Create(Window* window, RenderCommand* renderCommand)
+	ImGuiLayer* ImGuiLayer::Create(Window* window)
 	{
-		return new VulkanImGuiLayer(window->m_WindowHandle, renderCommand);
+		return new VulkanImGuiLayer(window->m_WindowHandle);
 	}
 
 	ImGuiLayer::ImGuiLayer(GLFWwindow* windowHandle)
