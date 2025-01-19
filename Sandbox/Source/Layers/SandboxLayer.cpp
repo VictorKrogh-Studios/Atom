@@ -156,7 +156,10 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 	m_Renderer2D->Begin(projection, view);
 
-	m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+	for (size_t i = 0; i < 900; i++)
+	{
+		m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+	}
 	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	m_Renderer2D->End();

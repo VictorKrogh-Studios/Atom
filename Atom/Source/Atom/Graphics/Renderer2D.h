@@ -40,6 +40,10 @@ namespace Atom
 		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
 	private:
+		void StartBatch();
+		void Flush();
+		void NextBatch();
+	private:
 		Renderer2DCapabilities m_Capabilities;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
