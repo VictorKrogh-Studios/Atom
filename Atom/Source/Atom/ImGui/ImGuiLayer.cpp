@@ -1,6 +1,9 @@
 #include "ATPCH.h"
 #include "ImGuiLayer.h"
+
 #include "Atom/Core/Window.h"
+#include "Atom/Core/Application.h"
+
 #include "Atom/Graphics/Renderer.h"
 
 #include <backends/imgui_impl_glfw.h>
@@ -54,10 +57,26 @@ namespace Atom
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
+
+		auto swapChain = Application::Get().GetWindow()->GetSwapChain();
+
+		RenderPassCreateInfo renderPassCreateInfo{};
+		renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
+		renderPassCreateInfo.ClearColor = { 0.1f, 0.1f,0.1f, 1.0f };
+		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+		renderPassCreateInfo.RenderArea = { swapChain->GetWidth(), swapChain->GetHeight() };
+		renderPassCreateInfo.ImplicitSetViewport = false;
+		renderPassCreateInfo.ImplicitSetScissor = false;
+		renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
+		renderPassCreateInfo.TargetSwapChain = true;
+		m_RenderPass = RenderPass::Create(renderPassCreateInfo);
 	}
 
 	void ImGuiLayer::OnDetach()
 	{
+		delete m_RenderPass;
+		m_RenderPass = nullptr;
+
 		ShutdownResources();
 
 		ImGui_ImplGlfw_Shutdown();
@@ -76,7 +95,17 @@ namespace Atom
 	{
 		ImGui::Render();
 
-		OnRender(ImGui::GetDrawData(), Renderer::GetCurrentFrameIndex());
+		{
+			uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+			RenderCommand* renderCommand = Renderer::GetRenderCommand();
+			CommandBuffer* drawCommandBuffer = Renderer::GetDrawCommandBuffer();
+
+			renderCommand->BeginRenderPass(drawCommandBuffer, m_RenderPass, frameIndex);
+
+			OnRender(ImGui::GetDrawData(), drawCommandBuffer, m_RenderPass, frameIndex);
+
+			renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
+		}
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows

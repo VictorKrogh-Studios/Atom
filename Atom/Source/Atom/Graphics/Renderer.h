@@ -1,4 +1,5 @@
 #pragma once
+#include "Atom/Graphics/CommandBuffer.h"
 
 namespace Atom
 {
@@ -25,6 +26,7 @@ namespace Atom
 		static uint32_t GetCurrentFrameIndex();
 		static uint32_t GetFramesInFlight();
 		static RenderCommand* GetRenderCommand();
+		static CommandBuffer* GetDrawCommandBuffer();
 	};
 
 }

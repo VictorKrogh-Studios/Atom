@@ -50,6 +50,7 @@ void SandboxLayer::OnAttach()
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
 	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
+	renderPassCreateInfo.TargetSwapChain = true;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 
 	Atom::PipelineOptions pipelineOptions{};
@@ -132,4 +133,28 @@ void SandboxLayer::OnUpdate(float deltaTime)
 void SandboxLayer::OnImGui()
 {
 	ImGui::ShowDemoWindow();
+
+	static int location = 1;
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	const float PAD = 10.0f;
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImVec2 work_pos = viewport->WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+	ImVec2 work_size = viewport->WorkSize;
+	ImVec2 window_pos, window_pos_pivot;
+	window_pos.x = (location & 1) ? (work_pos.x + work_size.x - PAD) : (work_pos.x + PAD);
+	window_pos.y = (location & 2) ? (work_pos.y + work_size.y - PAD) : (work_pos.y + PAD);
+	window_pos_pivot.x = (location & 1) ? 1.0f : 0.0f;
+	window_pos_pivot.y = (location & 2) ? 1.0f : 0.0f;
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	window_flags |= ImGuiWindowFlags_NoMove;
+	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+	if (ImGui::Begin("Example: Simple overlay", nullptr, window_flags))
+	{
+		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+	}
+	ImGui::End();
 }
+
+

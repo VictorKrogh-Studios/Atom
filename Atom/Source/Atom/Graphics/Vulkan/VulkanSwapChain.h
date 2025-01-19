@@ -9,6 +9,12 @@ namespace Atom
 	class VulkanSwapChain : public SwapChain
 	{
 	public:
+		struct SwapChainSemaphores
+		{
+			VkSemaphore ImageAvailableSemaphore;
+			VkSemaphore RenderFinishedSemaphore;
+		};
+	public:
 		VulkanSwapChain(const SwapChainOptions& options);
 		~VulkanSwapChain();
 
@@ -18,6 +24,7 @@ namespace Atom
 		// Internal to Vulkan components!
 
 		VkFramebuffer GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; }
+		const SwapChainSemaphores& GetSwapChainSemaphores(uint32_t index) const{ return m_SwapChainSemaphores[index]; }
 	private:
 		static VulkanSwapChain* Get() { return s_Instance; }
 
@@ -39,8 +46,10 @@ namespace Atom
 		std::vector<VkImageView> m_SwapChainImageViews;
 
 		// Sync objects
-		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+		std::vector<SwapChainSemaphores> m_SwapChainSemaphores;
+
+		//std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+		//std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_Fences;
 
 		VkRenderPass m_RenderPass;
@@ -58,6 +67,8 @@ namespace Atom
 		bool m_VSync = false;
 
 		friend class VulkanRenderCommand;
+		friend class VulkanRenderPass;
+		friend class VulkanCommandBuffer;
 		friend class VulkanPipeline;
 		friend class VulkanImGuiLayer;
 	};

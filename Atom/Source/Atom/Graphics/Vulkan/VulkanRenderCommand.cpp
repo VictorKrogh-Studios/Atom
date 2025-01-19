@@ -2,6 +2,8 @@
 #include "VulkanRenderCommand.h"
 #include "VulkanGraphicsContext.h"
 
+#include "Atom/Graphics/Vulkan/VulkanSwapChain.h"
+
 #include "Atom/Graphics/Vulkan/VulkanCommandBuffer.h"
 #include "Atom/Graphics/Vulkan/VulkanPipeline.h"
 #include "Atom/Graphics/Vulkan/VulkanVertexBuffer.h"
@@ -14,89 +16,7 @@ namespace Atom
 	VulkanRenderCommand::VulkanRenderCommand()
 	{
 		m_VulkanDevice = VulkanGraphicsContext::GetDevice();
-	}
-
-	void VulkanRenderCommand::ResetCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex) const
-	{
-		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
-
-		VkResult result = vkResetCommandBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-	}
-
-	void VulkanRenderCommand::BeginCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex) const
-	{
-		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
-
-		VkCommandBufferBeginInfo commandBufferBeginInfo{};
-		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-		//commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		VkResult result = vkBeginCommandBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &commandBufferBeginInfo);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-	}
-
-	void VulkanRenderCommand::EndCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex) const
-	{
-		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
-
-		VkResult result = vkEndCommandBuffer(vulkanCommandBuffer->m_CommandBuffers[frameIndex]);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-	}
-
-	//static VkFence s_WaitFence = VK_NULL_HANDLE;
-
-	void VulkanRenderCommand::SubmitCommandBuffer(CommandBuffer* commandBuffer, uint32_t frameIndex, bool wait) const
-	{
-		//if (s_WaitFence == VK_NULL_HANDLE)
-		//{
-		//	VkFenceCreateInfo fenceCreateInfo{};
-		//	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		//	vkCreateFence(VulkanGraphicsContext::GetDevice()->GetVkDevice(), &fenceCreateInfo, nullptr, &s_WaitFence);
-		//}
-
-		VulkanSwapChain* vulkanSwapChain = VulkanSwapChain::Get();
-
-		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
-
-		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
-
-		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-		//{
-		//	VkSubmitInfo submitInfo = {};
-		//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		//	submitInfo.pCommandBuffers = &vulkanCommandBuffer->m_CommandBuffers[frameIndex];
-		//	submitInfo.commandBufferCount = 1;
-
-		//	vkWaitForFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence, VK_TRUE, UINT64_MAX);
-		//	vkResetFences(m_VulkanDevice->GetVkDevice(), 1, &s_WaitFence);
-
-		//	VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, s_WaitFence);
-		//	AT_CORE_ASSERT(result == VK_SUCCESS);
-		//}
-
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pWaitDstStageMask = &waitStageMask;
-
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = &vulkanSwapChain->m_ImageAvailableSemaphores[frameIndex];
-
-		submitInfo.pCommandBuffers = &vulkanCommandBuffer->m_CommandBuffers[frameIndex];
-		submitInfo.commandBufferCount = 1;
-
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &vulkanSwapChain->m_RenderFinishedSemaphores[frameIndex];
-
-		VkResult result = vkQueueSubmit(m_VulkanDevice->m_GraphicsQueue, 1, &submitInfo, vulkanSwapChain->m_Fences[frameIndex]);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		//if (wait)
-		//{
-		//	vkDeviceWaitIdle(m_VulkanDevice->m_Device);
-		//}
+		m_SwapChain = VulkanSwapChain::Get();
 	}
 
 	void VulkanRenderCommand::BeginRenderPass(CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const
@@ -107,6 +27,7 @@ namespace Atom
 
 		const VkClearValue clearValue = vulkanRenderPass->GetVkClearValue();
 		const VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderAreaExtent();
+		const VkFramebuffer frameBuffer = vulkanRenderPass->GetVkFramebuffer();
 
 		VkRenderPassBeginInfo renderPassBeginInfo{};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -116,26 +37,32 @@ namespace Atom
 			{ 0, 0 },
 			renderAreaExtent
 		};
-		renderPassBeginInfo.framebuffer = vulkanSwapChain->GetCurrentFramebuffer();
+		renderPassBeginInfo.framebuffer = frameBuffer;
 		renderPassBeginInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
 
-		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex], &renderPassBeginInfo, vulkanRenderPass->GetVkSubpassContents());
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)renderAreaExtent.width;
-		viewport.height = (float)renderAreaExtent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		if (vulkanRenderPass->m_CreateInfo.ImplicitSetViewport)
+		{
+			VkViewport viewport{};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.width = (float)renderAreaExtent.width;
+			viewport.height = (float)renderAreaExtent.height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
 
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = renderAreaExtent;
+			vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+		}
 
-		vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+		if (vulkanRenderPass->m_CreateInfo.ImplicitSetScissor)
+		{
+			VkRect2D scissor{};
+			scissor.offset = { 0, 0 };
+			scissor.extent = renderAreaExtent;
 
-		vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+			vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
+		}
 	}
 
 	void VulkanRenderCommand::EndRenderPass(CommandBuffer* commandBuffer, uint32_t frameIndex) const

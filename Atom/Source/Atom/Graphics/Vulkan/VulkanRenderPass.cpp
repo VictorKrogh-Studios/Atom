@@ -1,6 +1,7 @@
 #include "ATPCH.h"
 #include "VulkanRenderPass.h"
 #include "VulkanGraphicsContext.h"
+#include "VulkanSwapChain.h"
 
 #include "VulkanUtils.h"
 
@@ -28,11 +29,11 @@ namespace Atom
 		VkAttachmentDescription colorAttachmentDesc = {};
 		colorAttachmentDesc.format = Vulkan::Utils::GetVkFormat(m_CreateInfo.ImageFormat); // m_ColorFormat;
 		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachmentDesc.loadOp = Vulkan::Utils::GetVkAttachmentLoadOp(m_CreateInfo.LoadOperation); // VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentDesc.initialLayout = m_CreateInfo.LoadOperation == Enumerations::RenderPassAttachmentLoadOperation::Clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // HACK
 		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorReference = {};
