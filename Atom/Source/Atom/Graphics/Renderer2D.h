@@ -14,17 +14,17 @@ namespace Atom
 
 	struct Renderer2DCapabilities
 	{
+		Renderer2DCapabilities(uint32_t maxQuads = 1000)
+			: MaxQuads(maxQuads), MaxVertices(maxQuads * 4), MaxIndices(maxQuads * 6)
+		{
+		}
+
+	private:
 		uint32_t MaxQuads = 1000;
-
-		const uint32_t GetMaxVertices() const
-		{
-			return MaxQuads * 4;
-		}
-
-		const uint32_t GetMaxIndices() const
-		{
-			return MaxQuads * 6;
-		}
+		uint32_t MaxVertices;
+		uint32_t MaxIndices;
+		
+		friend class Renderer2D;
 	};
 
 	class Renderer2D
@@ -68,6 +68,7 @@ namespace Atom
 			Shader* Shader = nullptr;
 
 			uint32_t IndexCount = 0;
+			uint32_t PreviousIndexCount = 0;
 			T* VertexBufferBase = nullptr;
 			T* VertexBufferPtr = nullptr;
 		};
