@@ -21,5 +21,8 @@ private:
 	Atom::IndexBuffer* m_IndexBuffer = nullptr;
 	Atom::UniformBuffer* m_UniformBuffer = nullptr;
 	Atom::TestRenderer* m_Renderer = nullptr;
+	Atom::Renderer2D* m_Renderer2D = nullptr;
+
+	glm::vec3 m_CameraPosition = { 0,0,10 };
 };
 

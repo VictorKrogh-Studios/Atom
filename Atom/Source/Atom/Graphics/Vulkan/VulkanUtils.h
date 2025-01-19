@@ -4,18 +4,33 @@
 #include "Atom/Graphics/Enumerations/CommandBufferLevel.h"
 #include "Atom/Graphics/Enumerations/CommandBufferUsageFlags.h"
 #include "Atom/Graphics/Enumerations/RenderPassAttachmentLoadOperation.h"
+#include "Atom/Graphics/Enumerations/BufferUsageFlags.h"
 
 #include <vulkan/vulkan.h>
 
 namespace Atom::Vulkan::Utils
 {
 
+	inline static VkBufferUsageFlags GetVkBufferUsageFlags(Enumerations::BufferUsageFlags bufferUsageFlags)
+	{
+		switch (bufferUsageFlags)
+		{
+			case Atom::Enumerations::BufferUsageFlags::VertexBuffer: return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			case Atom::Enumerations::BufferUsageFlags::IndexBuffer: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			case Atom::Enumerations::BufferUsageFlags::None:
+			default: break;
+		}
+
+		AT_CORE_ASSERT(true, "Invalid buffer usage flag");
+		return VK_BUFFER_USAGE_FLAG_BITS_MAX_ENUM;
+	}
+
 	inline static VkAttachmentLoadOp GetVkAttachmentLoadOp(Enumerations::RenderPassAttachmentLoadOperation renderPassLoadOperation)
 	{
 		switch (renderPassLoadOperation)
 		{
 			case Atom::Enumerations::RenderPassAttachmentLoadOperation::Load: return VK_ATTACHMENT_LOAD_OP_LOAD;
-			case Atom::Enumerations::RenderPassAttachmentLoadOperation::Clear: return VK_ATTACHMENT_LOAD_OP_CLEAR; 
+			case Atom::Enumerations::RenderPassAttachmentLoadOperation::Clear: return VK_ATTACHMENT_LOAD_OP_CLEAR;
 			case Atom::Enumerations::RenderPassAttachmentLoadOperation::DontCare: return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			default: break;
 		}
