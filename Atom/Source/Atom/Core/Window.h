@@ -4,6 +4,8 @@
 #include "Atom/Graphics/GraphicsContext.h"
 #include "Atom/Graphics/SwapChain.h"
 
+#include "Atom/Events/WindowEvent.h"
+
 #include <string>
 
 struct GLFWwindow;
@@ -28,6 +30,8 @@ namespace Atom
 	public:
 		Window(const WindowOptions& options);
 		~Window();
+
+		void ResizeSwapChain(uint32_t width, uint32_t height);
 
 		void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
 
