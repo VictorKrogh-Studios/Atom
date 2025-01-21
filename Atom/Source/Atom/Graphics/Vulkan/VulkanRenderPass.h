@@ -32,22 +32,10 @@ namespace Atom
 
 		inline VkClearValue GetVkClearValue() const
 		{
-			return GetClearColor();
-		}
-
-		inline VkExtent2D GetRenderAreaExtent() const
-		{
-			return GetRenderArea();
-		}
-	private:
-		void CreateRenderPass(VkDevice device);
-
-		inline VkClearValue GetClearColor() const
-		{
 			return { m_CreateInfo.ClearColor.r, m_CreateInfo.ClearColor.g, m_CreateInfo.ClearColor.b, m_CreateInfo.ClearColor.a };
 		}
 
-		inline VkExtent2D GetRenderArea() const
+		inline VkExtent2D GetRenderAreaExtent() const
 		{
 			VkExtent2D extent{};
 			extent.width = m_CreateInfo.RenderArea.x;
@@ -67,6 +55,8 @@ namespace Atom
 			AT_CORE_ASSERT(true, "Unknown subpass contents");
 			return VK_SUBPASS_CONTENTS_MAX_ENUM;
 		}
+	private:
+		void CreateRenderPass(VkDevice device);
 	private:
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 

@@ -73,10 +73,15 @@ void SandboxLayer::OnAttach()
 #endif
 
 	m_Renderer = Atom::TestRenderer::Create();
+
+	m_Renderer2D = new Atom::Renderer2D({});
 }
 
 void SandboxLayer::OnDetach()
 {
+	delete m_Renderer2D;
+	m_Renderer2D = nullptr;
+
 	delete m_Renderer;
 	m_Renderer = nullptr;
 
@@ -101,6 +106,7 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float deltaTime)
 {
+#if 1
 	static auto startTime = std::chrono::high_resolution_clock::now();
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
@@ -128,11 +134,46 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndRenderPass();
 
 	m_Renderer->EndScene();
+#endif
+
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition); 
+	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	view = glm::inverse(view);
+
+#if 0
+	float m_OrthographicSize = 10.0f;
+	float m_AspectRatio = 1600 / (float)900;
+
+	float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
+	float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
+	float orthoBottom = -m_OrthographicSize * 0.5f;
+	float orthoTop = m_OrthographicSize * 0.5f;
+	glm::mat4 projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f);
+#else
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
+	// projection[1][1] *= -1;
+#endif
+
+	m_Renderer2D->Begin(projection, view);
+
+	for (size_t i = 0; i < 900; i++)
+	{
+		m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+	}
+	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+	m_Renderer2D->End();
 }
 
 void SandboxLayer::OnImGui()
 {
 	ImGui::ShowDemoWindow();
+
+	if (ImGui::Begin("Debug"))
+	{
+		ImGui::DragFloat3("Camera Position", &m_CameraPosition[0], 0.1f);
+	}
+	ImGui::End();
 
 	static int location = 1;
 	ImGuiIO& io = ImGui::GetIO();
