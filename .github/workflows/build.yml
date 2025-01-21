@@ -44,9 +44,7 @@ jobs:
     - name: Setup
       working-directory: ${{env.GITHUB_WORKSPACE}}
       shell: cmd
-      run: | 
-        ls
-        ./Generate-Win.bat
+      run: ./Generate-Win.bat
 
     - uses: microsoft/setup-msbuild@v1.1
       with:
@@ -54,6 +52,11 @@ jobs:
 
     - name: Build
       run: MSBuild ${{env.SOLUTION_FILE_PATH}} /m /p:Configuration=${{matrix.build-configuration}} -fl -flp:logfile=logs/Build-${{matrix.build-configuration}}.log
+
+    - name: Copy sandbox assets
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      shell: cmd
+      run: .\Copy-SandboxAssets.bat
 
     - name: Upload Atom build artifacts
       uses: actions/upload-artifact@v4
