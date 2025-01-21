@@ -28,6 +28,18 @@ jobs:
         submodules: recursive
         lfs: true
 
+    - name: Install Vulkan SDK
+      uses: humbletim/install-vulkan-sdk@v1.1.1
+      with:
+        version: 1.3.296.0
+
+    - name: Setup Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2.0
+      with:
+        vulkan-query-version: 1.3.296.0
+        vulkan-components: Vulkan-Headers
+        vulkan-use-cache: true
+
     - name: Setup
       working-directory: ${{env.GITHUB_WORKSPACE}}
       shell: cmd
@@ -38,18 +50,6 @@ jobs:
     - uses: microsoft/setup-msbuild@v1.1
       with:
         msbuild-architecture: x64
-
-    - name: Install Vulkan SDK
-      uses: humbletim/install-vulkan-sdk@v1.1.1
-      with:
-        version: 1.3.296.0
-
-    # - name: Setup Vulkan SDK
-    #   uses: humbletim/setup-vulkan-sdk@v1.2.0
-    #   with:
-    #     vulkan-query-version: 1.3.296.0
-    #     vulkan-components: Vulkan-Headers
-    #     vulkan-use-cache: true
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
