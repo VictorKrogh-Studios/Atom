@@ -24,8 +24,10 @@ namespace Atom
 		SwapChain(const SwapChainOptions& options);
 		virtual ~SwapChain() = default;
 
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
+
 		virtual uint32_t AquireNextImage(uint32_t frameIndex) = 0;
-		virtual void Present(uint32_t frameIndex, bool wait) const = 0;
+		virtual void Present(uint32_t frameIndex, bool wait) = 0;
 
 		uint32_t GetWidth() const { return m_Options.Width; }
 		uint32_t GetHeight() const { return m_Options.Height; }

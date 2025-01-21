@@ -25,9 +25,11 @@ namespace Atom
 
 		FindImageFormatAndColorSpace(physicalDevice);
 
-		CreateSwapChain(physicalDevice, device);
-
 		CreateRenderPass(device);
+
+		CreateSwapChain(physicalDevice, device, nullptr);
+
+		CreateImageViews(device);
 
 		CreateFramebuffers(device);
 
@@ -40,13 +42,6 @@ namespace Atom
 	{
 		VkInstance instance = VulkanGraphicsContext::GetVkInstance();
 		VkDevice device = VulkanGraphicsContext::Get()->m_Device->m_Device;
-
-		vkDeviceWaitIdle(device);
-
-		if (m_RenderPass)
-		{
-			vkDestroyRenderPass(device, m_RenderPass, nullptr);
-		}
 
 		for (auto& framebuffer : m_Framebuffers)
 		{
@@ -62,6 +57,11 @@ namespace Atom
 		m_SwapChainImages.clear();
 
 		vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
+
+		if (m_RenderPass)
+		{
+			vkDestroyRenderPass(device, m_RenderPass, nullptr);
+		}
 
 		vkDestroySurfaceKHR(instance, m_Surface, nullptr);
 
@@ -81,6 +81,24 @@ namespace Atom
 		vkDeviceWaitIdle(device);
 	}
 
+	void VulkanSwapChain::Resize(uint32_t width, uint32_t height)
+	{
+		VkPhysicalDevice physicalDevice = VulkanGraphicsContext::GetPhysicalDevice()->GetVkPhysicalDevice();
+		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
+
+		vkDeviceWaitIdle(device);
+
+		VkSwapchainKHR oldSwapChain = m_SwapChain;
+
+		//CleanupSwapChain(device);
+
+		CreateSwapChain(physicalDevice, device, oldSwapChain);
+
+		CreateImageViews(device);
+
+		CreateFramebuffers(device);
+	}
+
 	uint32_t VulkanSwapChain::AquireNextImage(uint32_t frameIndex)
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->m_Device;
@@ -97,17 +115,16 @@ namespace Atom
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
-				// Resize swapchain!
+				Resize(m_Width, m_Height);
 
 				result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_SwapChainSemaphores[frameIndex].ImageAvailableSemaphore, VK_NULL_HANDLE, &m_CurrentImageIndex);
-				//result = vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphores[frameIndex], VK_NULL_HANDLE, &m_CurrentImageIndex);
 			}
 		}
 
 		return m_CurrentImageIndex;
 	}
 
-	void VulkanSwapChain::Present(uint32_t frameIndex, bool wait) const
+	void VulkanSwapChain::Present(uint32_t frameIndex, bool wait) 
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -121,7 +138,7 @@ namespace Atom
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
-				// Resize swapchain!
+				Resize(m_Width, m_Height);
 			}
 			else
 			{
@@ -246,14 +263,63 @@ namespace Atom
 				m_ColorSpace = surfaceFormats[0].colorSpace;
 			}
 		}
-
 	}
 
-	void VulkanSwapChain::CreateSwapChain(VkPhysicalDevice physicalDevice, VkDevice device)
+	void VulkanSwapChain::CreateRenderPass(VkDevice device)
+	{
+		// Color attachment
+		VkAttachmentDescription colorAttachmentDesc = {};
+		colorAttachmentDesc.format = m_ColorFormat;
+		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colorReference = {};
+		colorReference.attachment = 0;
+		colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference depthReference = {};
+		depthReference.attachment = 1;
+		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpassDescription = {};
+		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpassDescription.colorAttachmentCount = 1;
+		subpassDescription.pColorAttachments = &colorReference;
+		subpassDescription.inputAttachmentCount = 0;
+		subpassDescription.pInputAttachments = nullptr;
+		subpassDescription.preserveAttachmentCount = 0;
+		subpassDescription.pPreserveAttachments = nullptr;
+		subpassDescription.pResolveAttachments = nullptr;
+
+		VkSubpassDependency dependency = {};
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass = 0;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		VkRenderPassCreateInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = 1;
+		renderPassInfo.pAttachments = &colorAttachmentDesc;
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpassDescription;
+		renderPassInfo.dependencyCount = 1;
+		renderPassInfo.pDependencies = &dependency;
+
+		VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+	}
+
+	void VulkanSwapChain::CreateSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR oldSwapChain)
 	{
 		m_VSync = m_Options.VSync;
-
-		VkSwapchainKHR oldSwapChain = m_SwapChain;
 
 		// Get physical device surface properties and formats
 		VkSurfaceCapabilitiesKHR surfCaps;
@@ -409,6 +475,15 @@ namespace Atom
 		m_SwapChainImages.resize(m_ImageCount);
 		result = vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_SwapChainImages.data());
 		AT_CORE_ASSERT(result == VK_SUCCESS);
+	}
+
+	void VulkanSwapChain::CreateImageViews(VkDevice device)
+	{
+		for (VkImageView imageView : m_SwapChainImageViews)
+		{
+			vkDestroyImageView(device, imageView, nullptr);
+		}
+		m_SwapChainImageViews.clear();
 
 		m_SwapChainImageViews.resize(m_ImageCount);
 		for (size_t i = 0; i < m_ImageCount; i++)
@@ -432,61 +507,9 @@ namespace Atom
 			colorAttachmentView.viewType = VK_IMAGE_VIEW_TYPE_2D;
 			colorAttachmentView.flags = 0;
 
-			result = vkCreateImageView(device, &colorAttachmentView, nullptr, &m_SwapChainImageViews[i]);
+			VkResult result = vkCreateImageView(device, &colorAttachmentView, nullptr, &m_SwapChainImageViews[i]);
 			AT_CORE_ASSERT(result == VK_SUCCESS);
 		}
-	}
-
-	void VulkanSwapChain::CreateRenderPass(VkDevice device)
-	{
-		// Color attachment
-		VkAttachmentDescription colorAttachmentDesc = {};
-		colorAttachmentDesc.format = m_ColorFormat;
-		colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorReference = {};
-		colorReference.attachment = 0;
-		colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference depthReference = {};
-		depthReference.attachment = 1;
-		depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpassDescription = {};
-		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpassDescription.colorAttachmentCount = 1;
-		subpassDescription.pColorAttachments = &colorReference;
-		subpassDescription.inputAttachmentCount = 0;
-		subpassDescription.pInputAttachments = nullptr;
-		subpassDescription.preserveAttachmentCount = 0;
-		subpassDescription.pPreserveAttachments = nullptr;
-		subpassDescription.pResolveAttachments = nullptr;
-
-		VkSubpassDependency dependency = {};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachmentDesc;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpassDescription;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-
-		VkResult result = vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass);
-		AT_CORE_ASSERT(result == VK_SUCCESS);
 	}
 
 	void VulkanSwapChain::CreateFramebuffers(VkDevice device)
@@ -515,24 +538,6 @@ namespace Atom
 
 	void VulkanSwapChain::CreateSyncObjects(VkDevice device)
 	{
-		//if (m_ImageAvailableSemaphores.size() != m_Options.FramesInFlight)
-		//{
-		//	m_ImageAvailableSemaphores.resize(m_Options.FramesInFlight);
-		//	m_RenderFinishedSemaphores.resize(m_Options.FramesInFlight);
-
-		//	VkSemaphoreCreateInfo semaphoreCreateInfo{};
-		//	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-		//	for (size_t i = 0; i < m_Options.FramesInFlight; i++)
-		//	{
-		//		VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_ImageAvailableSemaphores[i]);
-		//		AT_CORE_ASSERT(result == VK_SUCCESS);
-
-		//		result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &m_RenderFinishedSemaphores[i]);
-		//		AT_CORE_ASSERT(result == VK_SUCCESS);
-		//	}
-		//}
-
 		VkSemaphoreCreateInfo semaphoreCreateInfo{};
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
