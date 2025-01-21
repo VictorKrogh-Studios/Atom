@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build-windows:
-    runs-on: [Windows]
+    runs-on: [windows-latest]
     strategy:
       fail-fast: false
       matrix:
