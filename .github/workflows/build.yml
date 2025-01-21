@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main", "development", "feature/build-pipeline" ]
+  pull_request:
+    branches: [ "main", "development" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: "Atom.sln"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: [Windows]
+    strategy:
+      fail-fast: false
+      matrix:
+        build-configuration: [Debug]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: 'VictorKrogh-Studios/Atom'
+        submodules: recursive
+        lfs: true
+
+    - name: Setup
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: Generate-Win.bat
+
+    - uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
+
+    - name: Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: MSBuild ${{env.SOLUTION_FILE_PATH}} /m /p:Configuration=${{matrix.build-configuration}} -fl -flp:logfile=logs/Build-${{matrix.build-configuration}}.log
