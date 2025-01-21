@@ -34,8 +34,6 @@ namespace Atom
 		m_WindowHandle = CreateWindowHandle();
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
-		//glfwMakeContextCurrent(m_WindowHandle);
-
 		InitializeGraphicsContext();
 
 		InitializeSwapChain();
@@ -83,7 +81,6 @@ namespace Atom
 	void Window::Update()
 	{
 		glfwPollEvents();
-		//glfwSwapBuffers(m_WindowHandle);
 	}
 
 	void Window::InitializeGraphicsContext()
@@ -111,7 +108,7 @@ namespace Atom
 
 		m_SwapChain = SwapChain::Create(swapChainOptions);
 	}
-
+	
 	GLFWwindow* Window::CreateWindowHandle()
 	{
 		bool fullscreen = false;
