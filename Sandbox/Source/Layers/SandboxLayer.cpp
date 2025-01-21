@@ -40,6 +40,8 @@ struct UniformBufferObject
 	glm::mat4 proj;
 };
 
+static glm::mat4 s_Projection;
+
 void SandboxLayer::OnAttach()
 {
 	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
@@ -75,6 +77,20 @@ void SandboxLayer::OnAttach()
 	m_Renderer = Atom::TestRenderer::Create();
 
 	m_Renderer2D = new Atom::Renderer2D({});
+
+#if 0
+	float m_OrthographicSize = 10.0f;
+	float m_AspectRatio = 1600 / (float)900;
+
+	float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
+	float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
+	float orthoBottom = -m_OrthographicSize * 0.5f;
+	float orthoTop = m_OrthographicSize * 0.5f;
+	s_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f);
+#else
+	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
+	// projection[1][1] *= -1;
+#endif
 }
 
 void SandboxLayer::OnDetach()
@@ -115,7 +131,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	UniformBufferObject ubo{};
 	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	ubo.proj = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 10.0f);
+	ubo.proj = s_Projection; // glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 10.0f);
 	//ubo.proj[1][1] *= -1;
 
 	m_UniformBuffer->Upload((void*)&ubo, sizeof(ubo), Atom::Renderer::GetCurrentFrameIndex());
@@ -140,21 +156,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::inverse(view);
 
-#if 0
-	float m_OrthographicSize = 10.0f;
-	float m_AspectRatio = 1600 / (float)900;
-
-	float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
-	float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
-	float orthoBottom = -m_OrthographicSize * 0.5f;
-	float orthoTop = m_OrthographicSize * 0.5f;
-	glm::mat4 projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f);
-#else
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
-	// projection[1][1] *= -1;
-#endif
-
-	m_Renderer2D->Begin(projection, view);
+	m_Renderer2D->Begin(s_Projection, view);
 
 	for (size_t i = 0; i < 900; i++)
 	{
@@ -163,6 +165,14 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	m_Renderer2D->End();
+}
+
+void SandboxLayer::OnEvent(Atom::Event& event)
+{
+	m_Renderer2D->OnEvent(event);
+
+	Atom::EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<Atom::WindowResizeEvent>([this](Atom::WindowResizeEvent& e) { return OnWindowResizeEvent(e); });
 }
 
 void SandboxLayer::OnImGui()
@@ -196,6 +206,14 @@ void SandboxLayer::OnImGui()
 		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
 	}
 	ImGui::End();
+}
+
+bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
+{
+	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 100.0f);
+
+	m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
+	return false;
 }
 
 
