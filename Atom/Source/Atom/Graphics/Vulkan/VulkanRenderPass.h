@@ -14,6 +14,8 @@ namespace Atom
 		VulkanRenderPass(const RenderPassCreateInfo& renderPassCreateInfo);
 		~VulkanRenderPass();
 
+		virtual void Resize(uint32_t width, uint32_t height) override;
+
 		inline VkRenderPass GetVkRenderPass() const
 		{
 			return m_RenderPass;
@@ -37,10 +39,11 @@ namespace Atom
 
 		inline VkExtent2D GetRenderAreaExtent() const
 		{
-			VkExtent2D extent{};
-			extent.width = m_CreateInfo.RenderArea.x;
-			extent.height = m_CreateInfo.RenderArea.y;
-			return extent;
+			return m_RenderArea;
+			//VkExtent2D extent{};
+			//extent.width = m_CreateInfo.RenderArea.x;
+			//extent.height = m_CreateInfo.RenderArea.y;
+			//return extent;
 		}
 
 		inline VkSubpassContents GetVkSubpassContents()
@@ -59,6 +62,7 @@ namespace Atom
 		void CreateRenderPass(VkDevice device);
 	private:
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		VkExtent2D m_RenderArea;
 
 		friend class VulkanPipeline;
 		friend class VulkanRenderCommand;
