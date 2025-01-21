@@ -9,7 +9,7 @@ namespace Atom
 {
 
 	VulkanRenderPass::VulkanRenderPass(const RenderPassCreateInfo& renderPassCreateInfo)
-		: RenderPass(renderPassCreateInfo)
+		: RenderPass(renderPassCreateInfo), m_RenderArea({ renderPassCreateInfo.RenderArea.x, renderPassCreateInfo.RenderArea.y })
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
@@ -21,6 +21,11 @@ namespace Atom
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
+	}
+
+	void VulkanRenderPass::Resize(uint32_t width, uint32_t height)
+	{
+		m_RenderArea = { width, height };
 	}
 
 	void VulkanRenderPass::CreateRenderPass(VkDevice device)

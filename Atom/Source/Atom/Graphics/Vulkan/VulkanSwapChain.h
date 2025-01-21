@@ -18,8 +18,10 @@ namespace Atom
 		VulkanSwapChain(const SwapChainOptions& options);
 		~VulkanSwapChain();
 
+		virtual void Resize(uint32_t width, uint32_t height) override;
+
 		virtual uint32_t AquireNextImage(uint32_t frameIndex) override;
-		virtual void Present(uint32_t frameIndex, bool wait) const override;
+		virtual void Present(uint32_t frameIndex, bool wait) override;
 
 		// Internal to Vulkan components!
 
@@ -31,8 +33,9 @@ namespace Atom
 		void CreateSurface();
 		void FindSuitablePresentQueueIndex(VkPhysicalDevice physicalDevice);
 		void FindImageFormatAndColorSpace(VkPhysicalDevice physicalDevice);
-		void CreateSwapChain(VkPhysicalDevice physicalDevice, VkDevice device);
 		void CreateRenderPass(VkDevice device);
+		void CreateSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSwapchainKHR oldSwapChain);
+		void CreateImageViews(VkDevice device);
 		void CreateFramebuffers(VkDevice device);
 		void CreateSyncObjects(VkDevice device);
 	private:
@@ -47,9 +50,6 @@ namespace Atom
 
 		// Sync objects
 		std::vector<SwapChainSemaphores> m_SwapChainSemaphores;
-
-		//std::vector<VkSemaphore> m_ImageAvailableSemaphores;
-		//std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 		std::vector<VkFence> m_Fences;
 
 		VkRenderPass m_RenderPass;

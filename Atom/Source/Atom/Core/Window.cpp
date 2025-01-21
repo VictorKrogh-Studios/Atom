@@ -34,8 +34,6 @@ namespace Atom
 		m_WindowHandle = CreateWindowHandle();
 		AT_CORE_ASSERT(m_WindowHandle, "Failed to create GLFW window.");
 
-		//glfwMakeContextCurrent(m_WindowHandle);
-
 		InitializeGraphicsContext();
 
 		InitializeSwapChain();
@@ -47,6 +45,18 @@ namespace Atom
 			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
 
 			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
+
+		glfwSetWindowSizeCallback(m_WindowHandle, [](GLFWwindow* window, int32_t newWidth, int32_t newHeight)
+		{
+			auto& data = *((WindowData*)glfwGetWindowUserPointer(window));
+
+			WindowResizeEvent event((uint32_t)newWidth, (uint32_t)newHeight);
+
+			data.Width = (uint32_t)newWidth;
+			data.Height = (uint32_t)newHeight;
+
 			data.EventCallback(event);
 		});
 	}
@@ -63,10 +73,14 @@ namespace Atom
 		glfwTerminate();
 	}
 
+	void Window::ResizeSwapChain(uint32_t width, uint32_t height)
+	{
+		m_SwapChain->Resize(width, height);
+	}
+
 	void Window::Update()
 	{
 		glfwPollEvents();
-		//glfwSwapBuffers(m_WindowHandle);
 	}
 
 	void Window::InitializeGraphicsContext()
@@ -94,7 +108,7 @@ namespace Atom
 
 		m_SwapChain = SwapChain::Create(swapChainOptions);
 	}
-
+	
 	GLFWwindow* Window::CreateWindowHandle()
 	{
 		bool fullscreen = false;

@@ -7,6 +7,8 @@
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
 
+#include "Atom/Events/WindowEvent.h"
+
 #include <glm/glm.hpp>
 
 namespace Atom
@@ -33,6 +35,8 @@ namespace Atom
 		Renderer2D(const Renderer2DCapabilities& capabilities);
 		~Renderer2D();
 
+		void OnEvent(Event& event);
+
 		void Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 		void End();
 
@@ -40,6 +44,8 @@ namespace Atom
 		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
 	private:
+		bool OnWindowResizeEvent(WindowResizeEvent& event);
+
 		void StartBatch();
 		void Flush();
 		void NextBatch();

@@ -99,12 +99,28 @@ namespace Atom
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) { return OnWindowCloseEvent(e); });
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) { return OnWindowResizeEvent(e); });
+
+		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+		{
+			(*--it)->OnEvent(event);
+			if (event.Handled)
+			{
+				break;
+			}
+		}
 	}
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& event)
 	{
 		m_IsRunning = false;
 		return true;
+	}
+
+	bool Application::OnWindowResizeEvent(WindowResizeEvent& event)
+	{
+		m_Window->ResizeSwapChain(event.GetWidth(), event.GetHeight());
+		return false;
 	}
 
 }

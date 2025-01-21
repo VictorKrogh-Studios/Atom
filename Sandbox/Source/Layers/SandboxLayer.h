@@ -12,7 +12,10 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 	virtual void OnUpdate(float deltaTime) override;
+	virtual void OnEvent(Atom::Event& event) override;
 	virtual void OnImGui() override;
+private:
+	bool OnWindowResizeEvent(Atom::WindowResizeEvent& event);
 private:
 	Atom::Shader* m_Shader = nullptr;
 	Atom::RenderPass* m_RenderPass = nullptr;

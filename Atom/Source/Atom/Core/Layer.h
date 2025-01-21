@@ -1,4 +1,5 @@
 #pragma once
+#include "Atom/Events/Event.h"
 
 namespace Atom
 {
@@ -12,6 +13,7 @@ namespace Atom
 		virtual void OnAttach() {}
 		virtual void OnDetach() {}
 		virtual void OnUpdate(float deltaTime) {}
+		virtual void OnEvent(Event& event) {}
 		virtual void OnImGui() {}
 	private:
 		std::string m_DebugName;

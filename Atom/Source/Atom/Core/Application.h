@@ -37,6 +37,7 @@ namespace Atom
 	private:
 		void OnEvent(Event& event);
 		bool OnWindowCloseEvent(WindowCloseEvent& event);
+		bool OnWindowResizeEvent(WindowResizeEvent& event);
 	private:
 		ApplicationCreateInfo m_CreateInfo;
 		bool m_IsRunning = true;

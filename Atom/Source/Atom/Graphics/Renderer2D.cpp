@@ -72,6 +72,12 @@ namespace Atom
 		m_CommandBuffer = nullptr;
 	}
 
+	void Renderer2D::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) { return OnWindowResizeEvent(e); });
+	}
+
 	void Renderer2D::Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 	{
 		m_CameraUBO.Projection = projectionMatrix;
@@ -141,6 +147,12 @@ namespace Atom
 		}
 
 		m_QuadPipeline.IndexCount += 6;
+	}
+
+	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
+	{
+		m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
+		return false;
 	}
 
 	void Renderer2D::StartBatch()
