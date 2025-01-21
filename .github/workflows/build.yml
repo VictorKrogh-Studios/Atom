@@ -30,7 +30,9 @@ jobs:
 
     - name: Setup
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: Generate-Win.bat
+      run: | 
+        ls
+        Generate-Win.bat
 
     - uses: microsoft/setup-msbuild@v1.1
       with:
