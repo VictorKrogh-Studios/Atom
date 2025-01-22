@@ -61,6 +61,7 @@ namespace Atom
 		GraphicsContext* m_GraphicsContext = nullptr;
 		SwapChain* m_SwapChain = nullptr;
 
+		friend class Input;
 		friend class ImGuiLayer;
 	};
 

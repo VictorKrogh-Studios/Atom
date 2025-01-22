@@ -29,6 +29,8 @@ namespace Atom
 	public:
 		void Run();
 
+		void Close();
+
 		static Application& Get() { return *s_Instance; };
 		Window* GetWindow() const { return m_Window; }
 	protected:

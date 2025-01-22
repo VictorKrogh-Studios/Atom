@@ -85,6 +85,11 @@ namespace Atom
 		}
 	}
 
+	void Application::Close()
+	{
+		m_IsRunning = false;
+	}
+
 	void Application::PushLayer(Layer* layer)
 	{
 		m_LayerStack.PushLayer(layer);
