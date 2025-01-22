@@ -122,6 +122,29 @@ void SandboxLayer::OnDetach()
 
 void SandboxLayer::OnUpdate(float deltaTime)
 {
+	if (Atom::Input::IsKeyPressed(AT_KEY_ESCAPE))
+	{
+		Atom::Application::Get().Close();
+	}
+
+	if (Atom::Input::IsKeyPressed(Atom::Enumerations::KeyCode::A))
+	{
+		m_CameraPosition.x -= 1.0f * deltaTime;
+	}
+	else if (Atom::Input::IsKeyPressed(Atom::Enumerations::KeyCode::D))
+	{
+		m_CameraPosition.x += 1.0f * deltaTime;
+	}
+
+	if (Atom::Input::IsKeyPressed(Atom::Enumerations::KeyCode::W))
+	{
+		m_CameraPosition.y -= 1.0f * deltaTime;
+	}
+	else if (Atom::Input::IsKeyPressed(Atom::Enumerations::KeyCode::S))
+	{
+		m_CameraPosition.y += 1.0f * deltaTime;
+	}
+
 #if 1
 	static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -152,7 +175,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndScene();
 #endif
 
-	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition); 
+	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition);
 	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::inverse(view);
 
@@ -181,6 +204,7 @@ void SandboxLayer::OnImGui()
 
 	if (ImGui::Begin("Debug"))
 	{
+		ImGui::Text("Use WASD to move the camera around");
 		ImGui::DragFloat3("Camera Position", &m_CameraPosition[0], 0.1f);
 	}
 	ImGui::End();
