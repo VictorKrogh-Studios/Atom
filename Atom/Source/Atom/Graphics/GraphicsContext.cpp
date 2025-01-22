@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "GraphicsContext.h"
+#include "Atom/Graphics/GraphicsContext.h"
 
 #include "Atom/Graphics/Vulkan/VulkanGraphicsContext.h"
 

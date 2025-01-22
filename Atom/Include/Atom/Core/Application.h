@@ -4,8 +4,6 @@
 
 #include "Atom/Events/WindowEvent.h"
 
-#include "Atom/ImGui/ImGuiLayer.h"
-
 namespace Atom
 {
 
@@ -20,6 +18,8 @@ namespace Atom
 		CommandLineArgs Args;
 		uint32_t FramesInFlight = 3;
 	};
+
+	class ImGuiLayer;
 
 	class Application
 	{

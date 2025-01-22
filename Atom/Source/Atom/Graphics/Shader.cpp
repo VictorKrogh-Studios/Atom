@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "Shader.h"
+#include "Atom/Graphics/Shader.h"
 
 #include "Vulkan/VulkanShader.h"
 

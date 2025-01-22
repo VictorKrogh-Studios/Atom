@@ -13,7 +13,7 @@ project "Sandbox"
 	}
 	
 	includedirs {
-		"%{wks.location}/Atom/Source",
+		"%{wks.location}/Atom/Include",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}"

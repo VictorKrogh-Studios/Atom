@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "IndexBuffer.h"
+#include "Atom/Graphics/IndexBuffer.h"
 
 #include "Atom/Graphics/Vulkan/VulkanIndexBuffer.h"
 

@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "VertexBuffer.h"
+#include "Atom/Graphics/VertexBuffer.h"
 
 #include "Atom/Graphics/Vulkan/VulkanVertexBuffer.h"
 

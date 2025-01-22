@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "SwapChain.h"
+#include "Atom/Graphics/SwapChain.h"
 
 #include "Vulkan/VulkanSwapChain.h"
 

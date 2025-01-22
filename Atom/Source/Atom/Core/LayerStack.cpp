@@ -1,6 +1,6 @@
 #include "ATPCH.h"
-#include "LayerStack.h"
-#include "Layer.h"
+#include "Atom/Core/LayerStack.h"
+#include "Atom/Core/Layer.h"
 
 namespace Atom
 {
