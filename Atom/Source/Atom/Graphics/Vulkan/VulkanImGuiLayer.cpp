@@ -35,7 +35,8 @@ namespace Atom
 		initInfo.ImageCount = swapChain->m_ImageCount;
 		initInfo.RenderPass = swapChain->m_RenderPass;
 
-		AT_CORE_ASSERT(ImGui_ImplVulkan_Init(&initInfo));
+		bool result = ImGui_ImplVulkan_Init(&initInfo);
+		AT_CORE_ASSERT(result);
 	}
 
 	void VulkanImGuiLayer::ShutdownResources()

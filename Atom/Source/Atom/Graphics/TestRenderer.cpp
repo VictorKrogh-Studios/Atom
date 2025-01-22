@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "TestRenderer.h"
+#include "Atom/Graphics/TestRenderer.h"
 
 #include "Atom/Graphics/Renderer.h"
 #include "Atom/Graphics/RenderCommand.h"

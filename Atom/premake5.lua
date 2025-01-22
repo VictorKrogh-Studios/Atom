@@ -12,13 +12,17 @@ project "Atom"
 
 	files {
 		"Source/**.h",
+		"Source/**.inl",
 		"Source/**.cpp",
+		"Include/**.h",
+		"Include/**.inl",
         "Vendor/glm/glm/**.hpp",
 		"Vendor/glm/glm/**.inl"
 	}
     
     includedirs {
 		"Source",
+		"Include",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.glfw}",
         "%{IncludeDir.glm}",

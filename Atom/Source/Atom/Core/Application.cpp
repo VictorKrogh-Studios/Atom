@@ -1,10 +1,12 @@
 #include "ATPCH.h"
-#include "Application.h"
+#include "Atom/Core/Application.h"
 
 #include "Atom/Core/Timer.h"
 #include "Atom/Core/Layer.h"
 
 #include "Atom/Graphics/Renderer.h"
+
+#include "Atom/ImGui/ImGuiLayer.h"
 
 namespace Atom
 {

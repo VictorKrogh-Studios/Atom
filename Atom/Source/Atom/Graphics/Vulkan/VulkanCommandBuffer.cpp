@@ -20,7 +20,7 @@ namespace Atom
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
-		vkFreeCommandBuffers(device, VulkanGraphicsContext::Get()->m_GraphicsCommandPool, m_CommandBuffers.size(), m_CommandBuffers.data());
+		vkFreeCommandBuffers(device, VulkanGraphicsContext::Get()->m_GraphicsCommandPool, (uint32_t)m_CommandBuffers.size(), m_CommandBuffers.data());
 		m_CommandBuffers.clear();
 	}
 

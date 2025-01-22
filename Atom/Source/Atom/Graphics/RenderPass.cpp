@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "RenderPass.h"
+#include "Atom/Graphics/RenderPass.h"
 
 #include "Atom/Graphics/Vulkan/VulkanRenderPass.h"
 

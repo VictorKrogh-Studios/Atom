@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "Window.h"
+#include "Atom/Core/Window.h"
 
 #include "Atom/Events/WindowEvent.h"
 
@@ -24,8 +24,9 @@ namespace Atom
 		m_Data.Title = m_Options.Title;
 		m_Data.Width = m_Options.Width;
 		m_Data.Height = m_Options.Height;
-
-		AT_CORE_ASSERT(glfwInit(), "Failed to initialize GLFW.");
+		
+		int result = glfwInit();
+		AT_CORE_ASSERT(result == GLFW_TRUE, "Failed to initialize GLFW.");
 
 		glfwSetErrorCallback(GLFWErrorCallback);
 
@@ -85,7 +86,8 @@ namespace Atom
 
 	void Window::InitializeGraphicsContext()
 	{
-		AT_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
+		int vulkanSupported = glfwVulkanSupported();
+		AT_CORE_ASSERT(vulkanSupported == GLFW_TRUE, "GLFW must support Vulkan!");
 
 		uint32_t count = 0;
 		const char** extensions = glfwGetRequiredInstanceExtensions(&count);

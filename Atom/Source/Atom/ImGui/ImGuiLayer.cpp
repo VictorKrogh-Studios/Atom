@@ -51,7 +51,8 @@ namespace Atom
 		}
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.15f, style.Colors[ImGuiCol_WindowBg].w);
 
-		AT_CORE_ASSERT(ImGui_ImplGlfw_InitForVulkan(m_WindowHandle, true));
+		bool result = ImGui_ImplGlfw_InitForVulkan(m_WindowHandle, true);
+		AT_CORE_ASSERT(result);
 
 		InitializeResources(Renderer::GetFramesInFlight());
 

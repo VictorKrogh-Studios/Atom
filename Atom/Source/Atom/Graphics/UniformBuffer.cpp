@@ -1,5 +1,5 @@
 #include "ATPCH.h"
-#include "UniformBuffer.h"
+#include "Atom/Graphics/UniformBuffer.h"
 #include "Atom/Graphics/Renderer.h"
 
 #include "Atom/Graphics/Vulkan/VulkanUniformBuffer.h"
