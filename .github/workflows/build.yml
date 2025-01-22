@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build-configuration: [Debug]
+        build-configuration: [Debug, Release]
 
     steps:
     - uses: actions/checkout@v4
@@ -62,5 +62,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Atom
-        path: .\bin\Debug-windows-x86_64\
+        path: .\bin\${{matrix.build-configuration}}-windows-x86_64\
 
