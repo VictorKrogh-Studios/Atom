@@ -206,6 +206,9 @@ void SandboxLayer::OnImGui()
 	{
 		ImGui::Text("Use WASD to move the camera around");
 		ImGui::DragFloat3("Camera Position", &m_CameraPosition[0], 0.1f);
+
+		glm::vec2 mousePos = Atom::Input::GetMousePosition();
+		ImGui::InputFloat2("Mouse Position", &mousePos[0]);
 	}
 	ImGui::End();
 

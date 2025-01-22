@@ -20,4 +20,23 @@ namespace Atom
 		return state == GLFW_RELEASE;
 	}
 
+	bool Input::IsMouseButtonPressed(Enumerations::MouseButton button)
+	{
+		int32_t state = glfwGetMouseButton(Application::Get().GetWindow()->m_WindowHandle, static_cast<int32_t>(button));
+		return state == GLFW_PRESS;
+	}
+
+	bool Input::IsMouseButtonReleased(Enumerations::MouseButton button)
+	{
+		int32_t state = glfwGetMouseButton(Application::Get().GetWindow()->m_WindowHandle, static_cast<int32_t>(button));
+		return state == GLFW_RELEASE;
+	}
+
+	glm::vec2 Input::GetMousePosition()
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(Application::Get().GetWindow()->m_WindowHandle, &xpos, &ypos);
+		return { (float)xpos, (float)ypos };
+	}
+
 }
