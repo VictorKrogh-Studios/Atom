@@ -1,13 +1,15 @@
 #include <Atom.h>
 
 #include "Layers/SandboxLayer.h"
+#include "Layers/FractalTreeLayer.h"
 
 class SandboxApplication : public Atom::Application
 {
 public:
 	SandboxApplication(const Atom::ApplicationCreateInfo& applicationCreateInfo) : Atom::Application(applicationCreateInfo)
 	{
-		PushLayer(new SandboxLayer());
+		//PushLayer(new SandboxLayer());
+		PushLayer(new FractalTreeLayer());
 	}
 };
 
