@@ -9,6 +9,7 @@ namespace Atom
 	{
 	public:
 		static bool IsKeyPressed(Enumerations::KeyCode keyCode);
+		static bool IsKeyReleased(Enumerations::KeyCode keyCode);
 	};
 
 }

@@ -14,4 +14,10 @@ namespace Atom
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
+	bool Input::IsKeyReleased(Enumerations::KeyCode keyCode)
+	{
+		int32_t state = glfwGetKey(Application::Get().GetWindow()->m_WindowHandle, static_cast<int32_t>(keyCode));
+		return state == GLFW_RELEASE;
+	}
+
 }
