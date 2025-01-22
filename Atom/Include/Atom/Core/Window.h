@@ -39,6 +39,9 @@ namespace Atom
 
 		SwapChain* GetSwapChain() const { return m_SwapChain; }
 		Enumerations::ImageFormat GetImageFormat() const { return m_SwapChain->GetImageFormat(); }
+
+		uint32_t GetWidth() const { return m_Data.Width; }
+		uint32_t GetHeight() const { return m_Data.Height; }
 	private:
 		void InitializeGraphicsContext();
 		void InitializeSwapChain();
