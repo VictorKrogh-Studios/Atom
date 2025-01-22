@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ "main", "development", "feature/build-pipeline" ]
+    branches: [ "development", "feature/build-pipeline" ]
   pull_request:
-    branches: [ "main", "development" ]
+    branches: [ "development" ]
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -20,6 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         build-configuration: [Debug, Release]
+        system: [windows]
+        architecture: [x86_64]
 
     steps:
     - uses: actions/checkout@v4
@@ -56,11 +58,11 @@ jobs:
     - name: Copy sandbox assets
       working-directory: ${{env.GITHUB_WORKSPACE}}
       shell: cmd
-      run: .\Copy-SandboxAssets.bat
+      run: .\Copy-Step.bat "${{matrix.build-configuration}}-${{matrix.system}}-${{matrix.architecture}}"
 
     - name: Upload Atom build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Atom-${{matrix.build-configuration}}
-        path: .\bin\${{matrix.build-configuration}}-windows-x86_64\
+        path: .\bin\${{matrix.build-configuration}}-${{matrix.system}}-${{matrix.architecture}}\
 
