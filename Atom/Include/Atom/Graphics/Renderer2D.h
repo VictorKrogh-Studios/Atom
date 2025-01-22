@@ -43,6 +43,9 @@ namespace Atom
 		void SubmitQuad(const glm::vec2& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
+
+		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
+		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 	private:
 		bool OnWindowResizeEvent(WindowResizeEvent& event);
 

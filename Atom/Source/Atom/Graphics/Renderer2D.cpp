@@ -149,6 +149,47 @@ namespace Atom
 		m_QuadPipeline.IndexCount += 6;
 	}
 
+	void Renderer2D::SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness)
+	{
+		SubmitLine({start.x, start.y, 0.0f}, { end.x, end.y, 0.0f }, color, thickness);
+	}
+
+	void Renderer2D::SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness)
+	{
+		if (m_QuadPipeline.IndexCount >= m_Capabilities.MaxIndices)
+		{
+			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
+			AT_CORE_ASSERT(false, "Resizing is needed!!");
+#if 0
+			NextBatch();
+#else
+			return;
+#endif
+		}
+
+		glm::vec2 normal = glm::normalize(glm::vec2(end.y - start.y, -(end.x - start.x))) * thickness;
+		glm::vec3 vertex1 = glm::vec3(start.x + normal.x, start.y + normal.y, 0.0f);
+		glm::vec3 vertex2 = glm::vec3(end.x + normal.x, end.y + normal.y, 0.0f);
+		glm::vec3 vertex3 = glm::vec3(end.x - normal.x, end.y - normal.y, 0.0f);
+		glm::vec3 vertex4 = glm::vec3(start.x - normal.x, start.y - normal.y, 0.0f);
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			glm::vec3 vertex;
+			if (i == 0) vertex = vertex1;
+			if (i == 1) vertex = vertex2;
+			if (i == 2) vertex = vertex3;
+			if (i == 3) vertex = vertex4;
+
+			m_QuadPipeline.VertexBufferPtr->Position = vertex;
+			m_QuadPipeline.VertexBufferPtr->Color = color;
+			m_QuadPipeline.VertexBufferPtr++;
+		}
+
+
+		m_QuadPipeline.IndexCount += 6;
+	}
+
 	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
 	{
 		m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
