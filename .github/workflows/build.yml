@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ "development", "feature/build-pipeline" ]
+    branches: [ "development" ]
   pull_request:
     branches: [ "development" ]
 
