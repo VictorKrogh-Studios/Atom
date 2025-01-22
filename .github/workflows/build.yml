@@ -61,6 +61,6 @@ jobs:
     - name: Upload Atom build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Atom
+        name: Atom-${{matrix.build-configuration}}
         path: .\bin\${{matrix.build-configuration}}-windows-x86_64\
 
