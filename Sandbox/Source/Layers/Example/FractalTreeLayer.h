@@ -13,7 +13,8 @@ public:
 	virtual void OnEvent(Atom::Event& event) override;
 	virtual void OnImGui() override;
 private:
-	void Branch(glm::vec2 startPosition, float length, float angle);
+	void DrawTree();
+	void DrawFractalTree(glm::vec2 start, float angle, float length, uint32_t depth);
 private:
 	Atom::Renderer2D* m_Renderer2D = nullptr;
 
@@ -23,6 +24,11 @@ private:
 	float m_OrthoTop = 0;
 	glm::mat4 m_Projection = glm::mat4(1.0f);
 	glm::mat4 m_View = glm::mat4(1.0f);
+
+	uint32_t m_Depth = 15;
+	float m_Length = 8.0f;
+	float m_AngleDegrees = 0.0f;
+	bool m_VariablesUpdated = false;
 };
 
 

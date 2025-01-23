@@ -21,7 +21,7 @@ namespace Atom
 
 		RenderPassCreateInfo renderPassCreateInfo{};
 		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
-		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Clear;
 		renderPassCreateInfo.RenderArea = { 1600, 900 };
 		renderPassCreateInfo.TargetSwapChain = true;
 		m_RenderPass = RenderPass::Create(renderPassCreateInfo);
@@ -158,11 +158,11 @@ namespace Atom
 	{
 		if (m_QuadPipeline.IndexCount >= m_Capabilities.MaxIndices)
 		{
-			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
-			AT_CORE_ASSERT(false, "Resizing is needed!!");
-#if 0
+#if 1
 			NextBatch();
 #else
+			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
+			AT_CORE_ASSERT(false, "Resizing is needed!!");
 			return;
 #endif
 		}

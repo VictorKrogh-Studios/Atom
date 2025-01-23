@@ -1,5 +1,7 @@
 #include "FractalTreeLayer.h"
 
+#include <imgui.h>
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,7 +11,7 @@ void FractalTreeLayer::OnAttach()
 	uint32_t windowWidth = Atom::Application::Get().GetWindow()->GetWidth();
 	uint32_t windowHeight = Atom::Application::Get().GetWindow()->GetHeight();
 
-	float m_OrthographicSize = 20.0f;
+	float m_OrthographicSize = 30.0f;
 	float m_AspectRatio = windowWidth / (float)windowHeight;
 
 	m_OrthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
@@ -20,7 +22,10 @@ void FractalTreeLayer::OnAttach()
 	m_Projection = glm::ortho(m_OrthoLeft, m_OrthoRight, m_OrthoBottom, m_OrthoTop, -1.0f, 1.0f);
 	m_View = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f });
 
-	m_Renderer2D = new Atom::Renderer2D({});
+	Atom::Renderer2DCapabilities caps(10000000);
+	m_Renderer2D = new Atom::Renderer2D(caps);
+
+	m_AngleDegrees = glm::degrees(glm::pi<float>() / 4.0f);
 }
 
 void FractalTreeLayer::OnDetach()
@@ -28,9 +33,6 @@ void FractalTreeLayer::OnDetach()
 	delete m_Renderer2D;
 	m_Renderer2D = nullptr;
 }
-
-static uint32_t count = 0;
-static uint32_t prev_count = 0;
 
 void FractalTreeLayer::OnUpdate(float deltaTime)
 {
@@ -40,19 +42,8 @@ void FractalTreeLayer::OnUpdate(float deltaTime)
 	}
 
 	m_Renderer2D->Begin(m_Projection, m_View);
-	uint32_t len = 9.0f;
 
-	m_Renderer2D->SubmitQuad({ 0.0f, -m_OrthoBottom }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-
-	count = 0;
-
-	Branch({ 0.0f, -m_OrthoBottom }, len, 0.0f);
-
-	if (prev_count != count)
-	{
-		AT_TRACE(count);
-		prev_count = count;
-	}
+	DrawTree();
 
 	m_Renderer2D->End();
 }
@@ -64,25 +55,61 @@ void FractalTreeLayer::OnEvent(Atom::Event& event)
 
 void FractalTreeLayer::OnImGui()
 {
-}
-
-static glm::vec2 CalculateEndPosition(const glm::vec2& start, float length, float angle)
-{
-	return { start.x + length * glm::cos(angle), start.y + length * glm::sin(angle) };
-}
-
-void FractalTreeLayer::Branch(glm::vec2 startPosition, float length, float angle)
-{
-	count++;
-	glm::vec2 endPosition = CalculateEndPosition(startPosition, length, angle) - length;
-
-	m_Renderer2D->SubmitQuad(startPosition, { 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-	m_Renderer2D->SubmitLine(startPosition, endPosition, { 1.0f, 1.0f, 1.0f, 1.0f }, 0.03f);
-	//m_Renderer2D->SubmitLine(startPosition, { 0.0f, -m_OrthoBottom - length }, { 1.0f, 1.0f, 1.0f, 1.0f }, 0.05f);
-
-	if (length > 2.5f)
+	static int location = 1;
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+	const float PAD = 10.0f;
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImVec2 work_pos = viewport->WorkPos; // Use work area to avoid menu-bar/task-bar, if any!
+	ImVec2 work_size = viewport->WorkSize;
+	ImVec2 window_pos, window_pos_pivot;
+	window_pos.x = (location & 1) ? (work_pos.x + work_size.x - PAD) : (work_pos.x + PAD);
+	window_pos.y = (location & 2) ? (work_pos.y + work_size.y - PAD) : (work_pos.y + PAD);
+	window_pos_pivot.x = (location & 1) ? 1.0f : 0.0f;
+	window_pos_pivot.y = (location & 2) ? 1.0f : 0.0f;
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	window_flags |= ImGuiWindowFlags_NoMove;
+	ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+	if (ImGui::Begin("Example: Simple overlay", nullptr, window_flags))
 	{
-		Branch(endPosition, length * 0.77f, glm::pi<float>() / 4.0f);
-		// m_Renderer2D->SubmitLine(endPosition, CalculateEndPosition(endPosition, length * 0.67f, -glm::pi<float>() / 4.0f), { 1.0f, 1.0f, 1.0f, 1.0f }, 0.04f);
+		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+
+		ImGui::Separator();
+
+		bool depthUpdated = ImGui::InputInt("Depth", (int32_t*) & m_Depth);
+		bool lengthUpdated = ImGui::InputFloat("Trunk Length", &m_Length, 0.5f);
+		bool angleUpdated = ImGui::InputFloat("Angle (Degrees)", &m_AngleDegrees, 0.5f);
+
+		m_VariablesUpdated = depthUpdated || lengthUpdated || angleUpdated;
 	}
+	ImGui::End();
+}
+
+void FractalTreeLayer::DrawTree()
+{
+	DrawFractalTree({ 0.0f, -m_OrthoBottom }, -glm::radians(90.0f), m_Length, m_Depth);
+}
+
+void FractalTreeLayer::DrawFractalTree(glm::vec2 start, float angle, float length, uint32_t depth)
+{
+	if (depth == 0)
+	{
+		if (!m_VariablesUpdated)
+		{
+			return;
+		}
+
+		depth = m_Depth;
+		m_VariablesUpdated = false;
+	}
+
+	glm::vec2 end = { start.x + length * glm::cos(angle), start.y + length * glm::sin(angle) };
+
+	m_Renderer2D->SubmitLine(start, end, { 1.0f, 1.0f, 1.0f ,1.0f });
+
+	float newLength = length * 0.7f;
+
+	DrawFractalTree(end, angle - glm::radians(m_AngleDegrees), newLength, depth - 1);
+	DrawFractalTree(end, angle + glm::radians(m_AngleDegrees), newLength, depth - 1);
 }
