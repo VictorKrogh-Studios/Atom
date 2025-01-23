@@ -56,7 +56,6 @@ namespace Atom
 		Renderer2DCapabilities m_Capabilities;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
-		RenderPass* m_RenderPass = nullptr;
 
 		struct Renderer2DCameraUBO
 		{
@@ -73,6 +72,7 @@ namespace Atom
 		struct Pipeline2D
 		{
 			Pipeline* Pipeline = nullptr;
+			RenderPass* RenderPass = nullptr;
 			VertexBuffer* VertexBuffer = nullptr;
 			Shader* Shader = nullptr;
 
@@ -93,6 +93,18 @@ namespace Atom
 
 		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline();
 		void DestroyQuadPipeline();
+
+	private: // LINE VERTEX PIPELINE
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+		};
+
+		Pipeline2D<LineVertex> m_LinePipeline = {};
+
+		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
+		void DestroyLinePipeline();
 	};
 
 }
