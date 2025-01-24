@@ -47,8 +47,10 @@ namespace Atom
 		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		m_QuadPipeline = CreateQuadPipeline();
-		m_LinePipeline = CreateLinePipeline();
+		m_QuadShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad.shader");
+
+		m_QuadPipeline = CreateQuadPipeline(m_QuadShader);
+		m_LinePipeline = CreateLinePipeline(m_QuadShader);
 	}
 
 	Renderer2D::~Renderer2D()
@@ -56,6 +58,9 @@ namespace Atom
 		DestroyLinePipeline();
 
 		DestroyQuadPipeline();
+
+		delete m_QuadShader;
+		m_QuadShader = nullptr;
 
 		delete m_QuadIndexBuffer;
 		m_QuadIndexBuffer = nullptr;
@@ -244,11 +249,9 @@ namespace Atom
 		StartBatch();
 	}
 
-	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline()
+	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline(Shader* shader)
 	{
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
-
-		Shader* shader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad_vert.spv", "Assets/Shaders/Renderer2D_Quad_frag.spv");
 
 		RenderPassCreateInfo renderPassCreateInfo{};
 		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
@@ -287,13 +290,6 @@ namespace Atom
 		delete m_QuadPipeline.RenderPass;
 		m_QuadPipeline.RenderPass = nullptr;
 
-		// Same shader as Line pipeline
-		//if (m_QuadPipeline.Shader)
-		//{
-		//	delete m_QuadPipeline.Shader;
-		//	m_QuadPipeline.Shader = nullptr;
-		//}
-
 		delete m_QuadPipeline.VertexBuffer;
 		m_QuadPipeline.VertexBuffer = nullptr;
 
@@ -302,13 +298,13 @@ namespace Atom
 		m_QuadPipeline.VertexBufferPtr = nullptr;
 	}
 
-	Renderer2D::Pipeline2D<Renderer2D::LineVertex> Renderer2D::CreateLinePipeline()
+	Renderer2D::Pipeline2D<Renderer2D::LineVertex> Renderer2D::CreateLinePipeline(Shader* shader)
 	{
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
 
 		RenderPassCreateInfo renderPassCreateInfo{};
 		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
-		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Clear;
+		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
 		renderPassCreateInfo.RenderArea = windowSize;
 		renderPassCreateInfo.TargetSwapChain = true;
 		RenderPass* renderPass = RenderPass::Create(renderPassCreateInfo);
@@ -318,7 +314,7 @@ namespace Atom
 			{ Enumerations::ShaderDataType::Float3, "inPosition" },
 			{ Enumerations::ShaderDataType::Float4, "inColor" }
 		};
-		pipelineOptions.Shader = m_QuadPipeline.Shader;
+		pipelineOptions.Shader = shader;
 		pipelineOptions.RenderPass = renderPass;
 		pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
 
@@ -327,8 +323,8 @@ namespace Atom
 		vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices;
 
 		Renderer2D::Pipeline2D<Renderer2D::LineVertex> pipeline{};
-		pipeline.Shader = m_QuadPipeline.Shader;
-		pipeline.Pipeline = Pipeline::Create(pipelineOptions);
+		pipeline.Shader = shader; 
+		pipeline.Pipeline = Pipeline::Create(pipelineOptions); 
 		pipeline.RenderPass = renderPass;
 		pipeline.VertexBuffer = VertexBuffer::Create(vertexBufferCreateInfo);
 		pipeline.VertexBufferBase = new Renderer2D::LineVertex[m_Capabilities.MaxVertices];
@@ -342,12 +338,6 @@ namespace Atom
 
 		delete m_LinePipeline.RenderPass;
 		m_LinePipeline.RenderPass = nullptr;
-
-		if (m_LinePipeline.Shader)
-		{
-			delete m_LinePipeline.Shader;
-			m_LinePipeline.Shader = nullptr;
-		}
 
 		delete m_LinePipeline.VertexBuffer;
 		m_LinePipeline.VertexBuffer = nullptr;

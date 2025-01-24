@@ -57,6 +57,9 @@ namespace Atom
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
 
+		// TODO: Move to a shader library later
+		Shader* m_QuadShader = nullptr;
+
 		struct Renderer2DCameraUBO
 		{
 			glm::mat4 Projection;
@@ -91,7 +94,7 @@ namespace Atom
 
 		Pipeline2D<QuadVertex> m_QuadPipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline();
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(Shader* shader);
 		void DestroyQuadPipeline();
 
 	private: // LINE VERTEX PIPELINE
@@ -103,7 +106,7 @@ namespace Atom
 
 		Pipeline2D<LineVertex> m_LinePipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
+		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline(Shader* shader);
 		void DestroyLinePipeline();
 	};
 
