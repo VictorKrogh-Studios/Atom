@@ -39,7 +39,7 @@ jobs:
     - name: Test
       working-directory: ${{env.GITHUB_WORKSPACE}}
       shell: cmd
-      run: ls ..\VULKAN_SDK\lib
+      run: ls
 
     - name: Setup
       working-directory: ${{env.GITHUB_WORKSPACE}}
