@@ -43,6 +43,9 @@ namespace Atom
 		void SubmitQuad(const glm::vec2& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
+
+		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
+		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 	private:
 		bool OnWindowResizeEvent(WindowResizeEvent& event);
 
@@ -53,7 +56,6 @@ namespace Atom
 		Renderer2DCapabilities m_Capabilities;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
-		RenderPass* m_RenderPass = nullptr;
 
 		struct Renderer2DCameraUBO
 		{
@@ -70,6 +72,7 @@ namespace Atom
 		struct Pipeline2D
 		{
 			Pipeline* Pipeline = nullptr;
+			RenderPass* RenderPass = nullptr;
 			VertexBuffer* VertexBuffer = nullptr;
 			Shader* Shader = nullptr;
 
@@ -90,6 +93,18 @@ namespace Atom
 
 		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline();
 		void DestroyQuadPipeline();
+
+	private: // LINE VERTEX PIPELINE
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+		};
+
+		Pipeline2D<LineVertex> m_LinePipeline = {};
+
+		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
+		void DestroyLinePipeline();
 	};
 
 }

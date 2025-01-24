@@ -187,6 +187,8 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	}
 	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
+	m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+
 	m_Renderer2D->End();
 }
 
