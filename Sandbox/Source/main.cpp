@@ -12,8 +12,8 @@ class SandboxApplication : public Atom::Application
 public:
 	SandboxApplication(const Atom::ApplicationCreateInfo& applicationCreateInfo) : Atom::Application(applicationCreateInfo)
 	{
-		//PushLayer(new SandboxLayer());
-		PushLayer(new FractalTreeLayer());
+		PushLayer(new SandboxLayer());
+		//PushLayer(new FractalTreeLayer());
 	}
 };
 

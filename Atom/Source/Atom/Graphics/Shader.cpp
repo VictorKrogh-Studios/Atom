@@ -6,9 +6,19 @@
 namespace Atom
 {
 
-	Shader* Shader::CreateFromFile(const std::string& vertexFilePath, const std::string& fragmentFilePath)
+	Shader* Shader::CreateFromFile(const std::string& name, const std::filesystem::path& filepath)
 	{
-		return new VulkanShader(vertexFilePath, fragmentFilePath);
+		return new VulkanShader(name, filepath);
+	}
+
+	Shader* Shader::CreateFromFile(const std::filesystem::path& filepath)
+	{
+		return new VulkanShader(filepath);
+	}
+
+	Shader::Shader(const std::string& name, const std::filesystem::path& filepath)
+		: m_Name(name), m_FilePath(filepath)
+	{
 	}
 
 	std::vector<char> Shader::ReadSpvFile(const std::string& filepath) const
@@ -25,6 +35,33 @@ namespace Atom
 		file.close();
 
 		return buffer;
+	}
+
+	std::string Shader::GetFileName(const std::filesystem::path& filepath) const
+	{
+		const std::string& filepathString = filepath.string();
+
+		// Extract name from filepath
+		auto lastSlash = filepathString.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filepathString.rfind('.');
+		auto count = lastDot == std::string::npos ? filepathString.size() - lastSlash : lastDot - lastSlash;
+		return filepathString.substr(lastSlash, count);
+	}
+
+	Enumerations::ShaderType Shader::GetShaderTypeFromString(const std::string& typeString) const
+	{
+		if (typeString == "vertex")
+		{
+			return Enumerations::ShaderType::Vertex;
+		}
+		if (typeString == "fragment" || typeString == "pixel")
+		{
+			return Enumerations::ShaderType::Fragment;
+		}
+
+		AT_CORE_ASSERT(false, "Unknown shader type");
+		return Enumerations::ShaderType::None;
 	}
 
 }
