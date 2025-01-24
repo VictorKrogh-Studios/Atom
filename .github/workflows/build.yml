@@ -37,9 +37,9 @@ jobs:
         cache: false
 
     - name: Test
-      working-directory: ${{env.GITHUB_WORKSPACE}}/Vulkan_SDK
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       shell: cmd
-      run: ls
+      run: ls Vulkan_SDK
 
     - name: Setup
       working-directory: ${{env.GITHUB_WORKSPACE}}
