@@ -46,7 +46,7 @@ void SandboxLayer::OnAttach()
 {
 	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
 
-	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo_vert.spv", "Assets/Shaders/shader_ubo_frag.spv");
+	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo.shader");
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
