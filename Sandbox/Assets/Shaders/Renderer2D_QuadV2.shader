@@ -40,16 +40,6 @@ mat4 Scale(vec3 scale) {
     return m;
 }
 
-mat4 TranslateAndScale(vec3 position, vec3 scale)
-{
-    mat4 m = mat4(1.0);
-    m[0][0] = scale.x;
-    m[1][1] = scale.y;
-    m[2][2] = scale.z;
-    m[3] = vec4(position, 1.0);
-    return m;
-}
-
 void main() {
     mat4 transform = Translate(quadData.quadVertexData[inQuadIndex].position) * Scale(quadData.quadVertexData[inQuadIndex].scale);
 
