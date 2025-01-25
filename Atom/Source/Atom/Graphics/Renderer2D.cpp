@@ -178,7 +178,6 @@ namespace Atom
 
 	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
 	{
-		//m_QuadPipeline.RenderPass->Resize(event.GetWidth(), event.GetHeight());
 		m_QuadPipeline.RenderPass->Resize(event.GetWidth(), event.GetHeight());
 		m_LinePipeline.RenderPass->Resize(event.GetWidth(), event.GetHeight());
 
@@ -187,9 +186,6 @@ namespace Atom
 
 	void Renderer2D::StartBatch()
 	{
-		//m_QuadPipeline.IndexCount = 0;
-		//m_QuadPipeline.VertexBufferPtr = m_QuadPipeline.VertexBufferBase;
-
 		m_QuadPipeline.IndexCount = 0;
 		m_QuadPipeline.VertexBufferPtr = m_QuadPipeline.VertexBufferBase;
 
