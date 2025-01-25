@@ -63,7 +63,7 @@ namespace Atom
 
 		StorageBuffer* m_StorageBuffer = nullptr;
 
-		// TODO: Move to a shader library later
+		// TODO: Move to a shader library
 		Shader* m_QuadShader = nullptr;
 		Shader* m_QuadV2Shader = nullptr;
 
@@ -71,7 +71,6 @@ namespace Atom
 		{
 			glm::mat4 Projection;
 			glm::mat4 View;
-			//	glm::mat4 Model = glm::mat4(1.0f);
 		};
 		Renderer2DCameraUBO m_CameraUBO;
 
