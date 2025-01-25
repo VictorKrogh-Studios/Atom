@@ -53,14 +53,14 @@ namespace Atom
 		m_QuadDataBase = new Renderer2D::QuadData[m_Capabilities.MaxQuads];
 		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadData) * m_Capabilities.MaxQuads);
 
-		m_QuadPipeline = CreateQuadV2Pipeline(m_QuadShader);
+		m_QuadPipeline = CreateQuadPipeline(m_QuadShader);
 		m_LinePipeline = CreateLinePipeline(m_LineShader);
 	}
 
 	Renderer2D::~Renderer2D()
 	{
 		DestroyLinePipeline();
-		DestroyQuadV2Pipeline();
+		DestroyQuadPipeline();
 
 		delete m_LineShader;
 		m_LineShader = nullptr;
@@ -258,7 +258,7 @@ namespace Atom
 		StartBatch();
 	}
 
-	Renderer2D::Pipeline2D<Renderer2D::QuadVertexV2> Renderer2D::CreateQuadV2Pipeline(Shader* shader)
+	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline(Shader* shader)
 	{
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
 
@@ -282,18 +282,18 @@ namespace Atom
 
 		VertexBufferCreateInfo vertexBufferCreateInfo{};
 		vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-		vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertexV2) * m_Capabilities.MaxVertices;
+		vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
 
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertexV2> pipeline{};
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> pipeline{};
 		pipeline.Shader = shader;
 		pipeline.Pipeline = Pipeline::Create(pipelineOptions);
 		pipeline.RenderPass = renderPass;
 		pipeline.VertexBuffer = VertexBuffer::Create(vertexBufferCreateInfo);
-		pipeline.VertexBufferBase = new Renderer2D::QuadVertexV2[m_Capabilities.MaxVertices];
+		pipeline.VertexBufferBase = new Renderer2D::QuadVertex[m_Capabilities.MaxVertices];
 		return pipeline;
 	}
 
-	void Renderer2D::DestroyQuadV2Pipeline()
+	void Renderer2D::DestroyQuadPipeline()
 	{
 		delete m_QuadPipeline.Pipeline;
 		m_QuadPipeline.Pipeline = nullptr;

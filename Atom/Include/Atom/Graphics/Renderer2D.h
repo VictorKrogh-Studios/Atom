@@ -88,7 +88,7 @@ namespace Atom
 		};
 
 	private: // QUAD VERTEX PIPELINE
-		struct QuadVertexV2
+		struct QuadVertex
 		{
 			glm::vec4 VertexPosition;
 			glm::vec4 Color;
@@ -107,10 +107,10 @@ namespace Atom
 		QuadData* m_QuadDataBase;
 		QuadData* m_QuadDataPtr;
 
-		Pipeline2D<QuadVertexV2> m_QuadPipeline = {};
+		Pipeline2D<QuadVertex> m_QuadPipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertexV2> CreateQuadV2Pipeline(Shader* shader);
-		void DestroyQuadV2Pipeline();
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(Shader* shader);
+		void DestroyQuadPipeline();
 
 	private: // LINE VERTEX PIPELINE
 		struct LineVertex
