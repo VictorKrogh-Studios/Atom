@@ -76,7 +76,8 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	m_Renderer2D = new Atom::Renderer2D({});
+	Atom::Renderer2DCapabilities caps(100000);
+	m_Renderer2D = new Atom::Renderer2D(caps);
 
 #if 0
 	float m_OrthographicSize = 10.0f;
@@ -175,19 +176,46 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndScene();
 #endif
 
+
+
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition);
 	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::inverse(view);
 
 	m_Renderer2D->Begin(s_Projection, view);
 
-	for (size_t i = 0; i < 900; i++)
-	{
-		m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
-	}
+	//for (size_t i = 0; i < 900; i++)
+	//{
+	//	m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+	//}
 	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-	m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+	//for (size_t i = 0; i < 900; i++)
+	//{
+	//	m_Renderer2D->SubmitQuadV2({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 0.2f, 1.0f, 0.2f, 1.0f });
+	//}
+
+	//m_Renderer2D->SubmitQuadV2({ 0.51f, 0.51f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+	// m_Renderer2D->SubmitQuadV2({ -0.51f, 0.51f }, { 1.0f, 1.0f }, { 0.2f, 0.2f, 1.0f, 1.0f });
+
+
+#if 0
+	m_Renderer2D->SubmitQuadV2({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuadV2({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuadV2({ 2.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuadV2({ 3.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+#else
+	constexpr uint32_t size = 100;
+	for (uint32_t x = 0; x < size; x++)
+	{
+		for (uint32_t y = 0; y < size; y++)
+		{
+			m_Renderer2D->SubmitQuadV2({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+		}
+	}
+#endif
+
+	//m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
 
 	m_Renderer2D->End();
 }
@@ -197,7 +225,10 @@ void SandboxLayer::OnEvent(Atom::Event& event)
 	m_Renderer2D->OnEvent(event);
 
 	Atom::EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<Atom::WindowResizeEvent>([this](Atom::WindowResizeEvent& e) { return OnWindowResizeEvent(e); });
+	dispatcher.Dispatch<Atom::WindowResizeEvent>([this](Atom::WindowResizeEvent& e)
+	{
+		return OnWindowResizeEvent(e);
+	});
 }
 
 void SandboxLayer::OnImGui()
