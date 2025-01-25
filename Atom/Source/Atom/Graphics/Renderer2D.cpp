@@ -119,6 +119,8 @@ namespace Atom
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color)
 	{
+		// TODO: We need to resize the buffers, so that we don't crash when we have used it all...
+
 		for (size_t i = 0; i < 4; i++)
 		{
 			m_QuadPipeline.VertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
