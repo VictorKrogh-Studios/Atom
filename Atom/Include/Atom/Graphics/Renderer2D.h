@@ -41,12 +41,8 @@ namespace Atom
 		void Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 		void End();
 
-		void SubmitQuadV2(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-		void SubmitQuadV2(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
-
-		void SubmitQuad(const glm::vec2& position, const glm::vec2 size, const glm::vec4& color);
-		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
-		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
+		void SubmitQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		void SubmitQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
 
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
@@ -64,8 +60,8 @@ namespace Atom
 		StorageBuffer* m_StorageBuffer = nullptr;
 
 		// TODO: Move to a shader library
+		Shader* m_LineShader = nullptr;
 		Shader* m_QuadShader = nullptr;
-		Shader* m_QuadV2Shader = nullptr;
 
 		struct Renderer2DCameraUBO
 		{
@@ -92,18 +88,6 @@ namespace Atom
 		};
 
 	private: // QUAD VERTEX PIPELINE
-		struct QuadVertex
-		{
-			glm::vec3 Position;
-			glm::vec4 Color;
-		};
-
-		Pipeline2D<QuadVertex> m_QuadPipeline = {};
-
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(Shader* shader);
-		void DestroyQuadPipeline();
-
-	private: // QUAD V2 VERTEX PIPELINE
 		struct QuadVertexV2
 		{
 			glm::vec4 VertexPosition;
@@ -123,7 +107,7 @@ namespace Atom
 		QuadData* m_QuadDataBase;
 		QuadData* m_QuadDataPtr;
 
-		Pipeline2D<QuadVertexV2> m_QuadV2Pipeline = {};
+		Pipeline2D<QuadVertexV2> m_QuadPipeline = {};
 
 		Renderer2D::Pipeline2D<Renderer2D::QuadVertexV2> CreateQuadV2Pipeline(Shader* shader);
 		void DestroyQuadV2Pipeline();

@@ -190,27 +190,19 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	//}
 	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-	//for (size_t i = 0; i < 900; i++)
-	//{
-	//	m_Renderer2D->SubmitQuadV2({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 0.2f, 1.0f, 0.2f, 1.0f });
-	//}
-
-	//m_Renderer2D->SubmitQuadV2({ 0.51f, 0.51f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f });
-	// m_Renderer2D->SubmitQuadV2({ -0.51f, 0.51f }, { 1.0f, 1.0f }, { 0.2f, 0.2f, 1.0f, 1.0f });
-
 
 #if 0
-	m_Renderer2D->SubmitQuadV2({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuadV2({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuadV2({ 2.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuadV2({ 3.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuad({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuad({ 2.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+	m_Renderer2D->SubmitQuad({ 3.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
 #else
 	constexpr uint32_t size = 100;
 	for (uint32_t x = 0; x < size; x++)
 	{
 		for (uint32_t y = 0; y < size; y++)
 		{
-			m_Renderer2D->SubmitQuadV2({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+			m_Renderer2D->SubmitQuad({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
 		}
 	}
 #endif
