@@ -601,6 +601,7 @@ namespace Atom::Vulkan::Utils
 			case Atom::Enumerations::ShaderDataType::Float2: return VkFormat::VK_FORMAT_R32G32_SFLOAT;
 			case Atom::Enumerations::ShaderDataType::Float3: return VkFormat::VK_FORMAT_R32G32B32_SFLOAT;
 			case Atom::Enumerations::ShaderDataType::Float4: return VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
+			case Atom::Enumerations::ShaderDataType::Int: return VkFormat::VK_FORMAT_R32_SINT;
 			case Atom::Enumerations::ShaderDataType::None:
 			default: break;
 		}
