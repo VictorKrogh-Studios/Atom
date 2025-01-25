@@ -24,20 +24,6 @@ layout(location = 0) out vec4 fragColor;
 
 mat4 Translate(vec3 delta)
 {
-    // return mat4(
-    //     vec4(1.0, 0.0, 0.0, 0.0),
-    //     vec4(0.0, 1.0, 0.0, 0.0),
-    //     vec4(0.0, 0.0, 1.0, 0.0),
-    //     vec4(delta.xyz,     1.0)
-    // );
-
-    // return mat4(
-    //     vec4(1.0, 0.0, 0.0, delta.x),
-    //     vec4(0.0, 1.0, 0.0, delta.y),
-    //     vec4(1.0, 0.0, 1.0, delta.z),
-    //     vec4(0.0, 0.0, 0.0, 1.0)
-    // );
-
     mat4 m = mat4(1.0);
     m[0][0] = 1;
     m[1][1] = 1;
@@ -66,7 +52,6 @@ mat4 TranslateAndScale(vec3 position, vec3 scale)
 
 void main() {
     mat4 transform = Translate(quadData.quadVertexData[inQuadIndex].position) * Scale(quadData.quadVertexData[inQuadIndex].scale);
-    //mat4 transform = TranslateAndScale(quadData.quadVertexData[inQuadIndex].position, quadData.quadVertexData[inQuadIndex].scale);
 
     gl_Position = ubo.proj * ubo.view * (transform * inVertexPosition);
     fragColor = inColor;
