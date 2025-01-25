@@ -6,6 +6,7 @@
 #include "Atom/Graphics/Shader.h"
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
+#include "Atom/Graphics/StorageBuffer.h"
 
 #include "Atom/Events/WindowEvent.h"
 
@@ -25,7 +26,7 @@ namespace Atom
 		uint32_t MaxQuads = 1000;
 		uint32_t MaxVertices;
 		uint32_t MaxIndices;
-		
+
 		friend class Renderer2D;
 	};
 
@@ -39,6 +40,9 @@ namespace Atom
 
 		void Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 		void End();
+
+		void SubmitQuadV2(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		void SubmitQuadV2(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
 
 		void SubmitQuad(const glm::vec2& position, const glm::vec2 size, const glm::vec4& color);
 		void SubmitQuad(const glm::vec3& position, const glm::vec2 size, const glm::vec4& color);
@@ -57,14 +61,17 @@ namespace Atom
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
 
+		StorageBuffer* m_StorageBuffer = nullptr;
+
 		// TODO: Move to a shader library later
 		Shader* m_QuadShader = nullptr;
+		Shader* m_QuadV2Shader = nullptr;
 
 		struct Renderer2DCameraUBO
 		{
 			glm::mat4 Projection;
 			glm::mat4 View;
-		//	glm::mat4 Model = glm::mat4(1.0f);
+			//	glm::mat4 Model = glm::mat4(1.0f);
 		};
 		Renderer2DCameraUBO m_CameraUBO;
 
@@ -96,6 +103,31 @@ namespace Atom
 
 		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(Shader* shader);
 		void DestroyQuadPipeline();
+
+	private: // QUAD V2 VERTEX PIPELINE
+		struct QuadVertexV2
+		{
+			glm::vec4 VertexPosition;
+			glm::vec4 Color;
+			int32_t QuadIndex;
+		};
+
+		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
+
+		struct QuadData
+		{
+			alignas(16) glm::vec3 Position;
+			alignas(16) glm::vec3 Scale;
+		};
+
+		uint32_t m_QuadCount = 0;
+		QuadData* m_QuadDataBase;
+		QuadData* m_QuadDataPtr;
+
+		Pipeline2D<QuadVertexV2> m_QuadV2Pipeline = {};
+
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertexV2> CreateQuadV2Pipeline(Shader* shader);
+		void DestroyQuadV2Pipeline();
 
 	private: // LINE VERTEX PIPELINE
 		struct LineVertex
