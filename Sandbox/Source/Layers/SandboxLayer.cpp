@@ -88,7 +88,7 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	Atom::Renderer2DCapabilities caps(10000);
+	Atom::Renderer2DCapabilities caps(15000);
 	m_Renderer2D = new Atom::Renderer2D(caps);
 
 #if 0
@@ -200,7 +200,6 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	//{
 	//	m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
 	//}
-	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 
 #if 0
@@ -219,6 +218,8 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	}
 #endif
 
+	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 	//m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
 
 	m_Renderer2D->End();
