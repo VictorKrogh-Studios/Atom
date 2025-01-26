@@ -191,16 +191,9 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition);
-	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::inverse(view);
 
 	m_Renderer2D->Begin(s_Projection, view);
-
-	//for (size_t i = 0; i < 900; i++)
-	//{
-	//	m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
-	//}
-
 
 #if 0
 	m_Renderer2D->SubmitQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
@@ -220,7 +213,6 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-	//m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
 
 	m_Renderer2D->End();
 }
