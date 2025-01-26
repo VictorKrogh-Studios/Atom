@@ -12,6 +12,10 @@ static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
 {
 	ImGui::Text("Renderer2D statistics:");
 	ImGui::Text("Quad Count: %d", stats.QuadCount);
+	ImGui::Text(" - Vertices: %d", stats.GetQuadVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
+
+
 	ImGui::Text("Line Count: %d", stats.LineCount);
 	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 }
