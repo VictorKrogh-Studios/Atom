@@ -30,6 +30,13 @@ namespace Atom
 		friend class Renderer2D;
 	};
 
+	struct Renderer2DStatistics
+	{
+		uint32_t DrawCalls = 0;
+		uint32_t QuadCount = 0;
+		uint32_t LineCount = 0;
+	};
+
 	class Renderer2D
 	{
 	public:
@@ -46,6 +53,8 @@ namespace Atom
 
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
+
+		const Renderer2DStatistics& GetStatistics() const { return m_Statistics; }
 	private:
 		bool OnWindowResizeEvent(WindowResizeEvent& event);
 
@@ -54,6 +63,7 @@ namespace Atom
 		void NextBatch();
 	private:
 		Renderer2DCapabilities m_Capabilities;
+		Renderer2DStatistics m_Statistics;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
 
