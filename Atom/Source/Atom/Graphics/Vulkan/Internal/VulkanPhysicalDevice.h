@@ -25,6 +25,8 @@ namespace Atom::Internal
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
 		VkPhysicalDevice GetVkPhysicalDevice() const { return m_PhysicalDevice; }
+		const VkPhysicalDeviceProperties& GetProperties() const { return m_Properties; }
+		const VkPhysicalDeviceFeatures& GetFeatures() const { return m_Features; }
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);

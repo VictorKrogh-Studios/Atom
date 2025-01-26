@@ -6,6 +6,7 @@
 #include "VulkanRenderPass.h"
 #include "VulkanUniformBuffer.h"
 #include "VulkanStorageBuffer.h"
+#include "VulkanTexture.h"
 
 namespace Atom
 {
@@ -36,21 +37,43 @@ namespace Atom
 
 	void VulkanPipeline::CreateDescriptorSetLayout(VkDevice device)
 	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+		std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-		VkDescriptorSetLayoutBinding sboLayoutBinding{};
-		sboLayoutBinding.binding = 1;
-		sboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		sboLayoutBinding.descriptorCount = 1;
-		sboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		sboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+		if (m_Options.UniformBuffer)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding{};
+			uboLayoutBinding.binding = 0;
+			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-		std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding, sboLayoutBinding };
+			bindings.push_back(uboLayoutBinding);
+		}
+
+		if (m_Options.StorageBuffer)
+		{
+			VkDescriptorSetLayoutBinding sboLayoutBinding{};
+			sboLayoutBinding.binding = 1;
+			sboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			sboLayoutBinding.descriptorCount = 1;
+			sboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			sboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			bindings.push_back(sboLayoutBinding);
+		}
+
+		if (m_Options.Texture)
+		{
+			VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+			samplerLayoutBinding.binding = 2;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.descriptorCount = 1;
+			samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+			samplerLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+			bindings.push_back(samplerLayoutBinding);
+		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -64,8 +87,9 @@ namespace Atom
 	void VulkanPipeline::CreateDescriptorPool(VkDevice device)
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes = {
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 }, // 3 = Frames in Flight
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 }, // 3 = Frames in Flight
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 } // 3 = Frames in Flight
 		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
@@ -92,27 +116,30 @@ namespace Atom
 		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, m_DescriptorSets.data());
 		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to allocate Descriptor Sets");
 
-		VulkanUniformBuffer* uniformBuffer = static_cast<VulkanUniformBuffer*>(m_Options.UniformBuffer);
-
-		for (size_t i = 0; i < 3; i++)
+		if (m_Options.UniformBuffer)
 		{
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = uniformBuffer->m_Buffers[i];
-			bufferInfo.offset = 0;
-			bufferInfo.range = uniformBuffer->GetSize();
+			VulkanUniformBuffer* uniformBuffer = static_cast<VulkanUniformBuffer*>(m_Options.UniformBuffer);
 
-			VkWriteDescriptorSet descriptorWrite{};
-			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite.dstSet = m_DescriptorSets[i];
-			descriptorWrite.dstBinding = 0;
-			descriptorWrite.dstArrayElement = 0;
-			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite.descriptorCount = 1;
-			descriptorWrite.pBufferInfo = &bufferInfo;
-			descriptorWrite.pImageInfo = nullptr; // Optional
-			descriptorWrite.pTexelBufferView = nullptr; // Optional
+			for (size_t i = 0; i < 3; i++)
+			{
+				VkDescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = uniformBuffer->m_Buffers[i];
+				bufferInfo.offset = 0;
+				bufferInfo.range = uniformBuffer->GetSize();
 
-			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+				VkWriteDescriptorSet descriptorWrite{};
+				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet = m_DescriptorSets[i];
+				descriptorWrite.dstBinding = 0;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo = &bufferInfo;
+				descriptorWrite.pImageInfo = nullptr; // Optional
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+			}
 		}
 
 		if (m_Options.StorageBuffer)
@@ -135,6 +162,32 @@ namespace Atom
 				descriptorWrite.descriptorCount = 1;
 				descriptorWrite.pBufferInfo = &bufferInfo;
 				descriptorWrite.pImageInfo = nullptr; // Optional
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+			}
+		}
+
+		if (m_Options.Texture)
+		{
+			VulkanTexture* texture = static_cast<VulkanTexture*>(m_Options.Texture);
+
+			for (size_t i = 0; i < 3; i++)
+			{
+				VkDescriptorImageInfo imageInfo{};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = texture->m_ImageView;
+				imageInfo.sampler = texture->m_Sampler;
+
+				VkWriteDescriptorSet descriptorWrite{};
+				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet = m_DescriptorSets[i];
+				descriptorWrite.dstBinding = 2;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo = nullptr; // Optional
+				descriptorWrite.pImageInfo = &imageInfo;
 				descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 				vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);

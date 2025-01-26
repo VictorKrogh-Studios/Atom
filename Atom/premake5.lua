@@ -17,7 +17,9 @@ project "Atom"
 		"Include/**.h",
 		"Include/**.inl",
         "Vendor/glm/glm/**.hpp",
-		"Vendor/glm/glm/**.inl"
+		"Vendor/glm/glm/**.inl",
+		"Vendor/stb_image/**.h",
+		"Vendor/stb_image/**.cpp"
 	}
     
     includedirs {
@@ -27,7 +29,8 @@ project "Atom"
         "%{IncludeDir.glfw}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.ImGui}",
-        "%{IncludeDir.vulkan}"
+        "%{IncludeDir.vulkan}",
+        "%{IncludeDir.stb_image}"
     }
 	
 	links {

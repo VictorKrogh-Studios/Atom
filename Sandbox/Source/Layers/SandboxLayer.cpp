@@ -57,6 +57,9 @@ void SandboxLayer::OnAttach()
 {
 	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
 
+	Atom::Texture* texture = Atom::Texture::Create("Assets/Textures/texture.jpg");
+	delete texture;
+
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo.shader");
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
