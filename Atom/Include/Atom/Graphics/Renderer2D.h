@@ -129,7 +129,7 @@ namespace Atom
 
 		Pipeline2D<QuadVertex> m_QuadPipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(Shader* shader);
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline();
 		void DestroyQuadPipeline();
 
 	private: // LINE VERTEX PIPELINE
@@ -141,7 +141,7 @@ namespace Atom
 
 		Pipeline2D<LineVertex> m_LinePipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline(Shader* shader);
+		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
 		void DestroyLinePipeline();
 	};
 

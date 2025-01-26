@@ -16,6 +16,9 @@ namespace Atom
 	Renderer2D::Renderer2D(const Renderer2DCapabilities& capabilities)
 		: m_Capabilities(capabilities), m_Statistics({}), m_CameraUBO({})
 	{
+		Renderer::GetShaderLibrary()->Load("Renderer2D_Quad", "Assets/Shaders/Renderer2D_Quad.shader");
+		Renderer::GetShaderLibrary()->Load("Renderer2D_Line", "Assets/Shaders/Renderer2D_Line.shader");
+
 		CommandBufferCreateInfo commandBufferCreateInfo{};
 		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Secondary;
 		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::RENDER_PASS_CONTINUE_BIT;
@@ -47,14 +50,11 @@ namespace Atom
 		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		m_LineShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Line.shader");
-		m_QuadShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad.shader");
-
 		m_QuadTransformDataBase = new Renderer2D::QuadTransformData[m_Capabilities.MaxQuads];
 		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
 
-		m_QuadPipeline = CreateQuadPipeline(m_QuadShader);
-		m_LinePipeline = CreateLinePipeline(m_LineShader);
+		m_QuadPipeline = CreateQuadPipeline();
+		m_LinePipeline = CreateLinePipeline();
 	}
 
 	Renderer2D::~Renderer2D()
@@ -273,9 +273,10 @@ namespace Atom
 		StartBatch();
 	}
 
-	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline(Shader* shader)
+	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline()
 	{
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
+		Shader* shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Quad");
 
 		RenderPassCreateInfo renderPassCreateInfo{};
 		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
@@ -324,9 +325,10 @@ namespace Atom
 		m_QuadPipeline.VertexBufferPtr = nullptr;
 	}
 
-	Renderer2D::Pipeline2D<Renderer2D::LineVertex> Renderer2D::CreateLinePipeline(Shader* shader)
+	Renderer2D::Pipeline2D<Renderer2D::LineVertex> Renderer2D::CreateLinePipeline()
 	{
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
+		Shader* shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Line");
 
 		RenderPassCreateInfo renderPassCreateInfo{};
 		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
