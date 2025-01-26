@@ -50,8 +50,8 @@ namespace Atom
 		m_LineShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Line.shader");
 		m_QuadShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad.shader");
 
-		m_QuadDataBase = new Renderer2D::QuadData[m_Capabilities.MaxQuads];
-		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadData) * m_Capabilities.MaxQuads);
+		m_QuadTransformDataBase = new Renderer2D::QuadTransformData[m_Capabilities.MaxQuads];
+		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
 
 		m_QuadPipeline = CreateQuadPipeline(m_QuadShader);
 		m_LinePipeline = CreateLinePipeline(m_LineShader);
@@ -124,22 +124,20 @@ namespace Atom
 			NextBatch();
 		}
 
-		// TODO: We need to resize the buffers, so that we don't crash when we have used it all...
-
 		for (size_t i = 0; i < 4; i++)
 		{
 			m_QuadPipeline.VertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
 			m_QuadPipeline.VertexBufferPtr->Color = color;
-			m_QuadPipeline.VertexBufferPtr->QuadIndex = m_QuadCount;
+			m_QuadPipeline.VertexBufferPtr->QuadIndex = m_QuadTransformDataCount;
 			m_QuadPipeline.VertexBufferPtr++;
 		}
 
-		m_QuadDataPtr->Position = position;
-		m_QuadDataPtr->Scale = size;
-		m_QuadDataPtr++;
+		m_QuadTransformDataPtr->Position = position;
+		m_QuadTransformDataPtr->Scale = size;
+		m_QuadTransformDataPtr++;
 
 		m_QuadPipeline.IndexCount += 6;
-		m_QuadCount++;
+		m_QuadTransformDataCount++;
 	}
 
 	void Renderer2D::SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness)
@@ -151,7 +149,7 @@ namespace Atom
 	{
 		if (m_LinePipeline.IndexCount >= m_Capabilities.MaxIndices)
 		{
-#if 0
+#if 1
 			NextBatch();
 #else
 			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
@@ -196,8 +194,8 @@ namespace Atom
 		m_QuadPipeline.IndexCount = 0;
 		m_QuadPipeline.VertexBufferPtr = m_QuadPipeline.VertexBufferBase;
 
-		m_QuadCount = 0;
-		m_QuadDataPtr = m_QuadDataBase;
+		m_QuadTransformDataCount = 0;
+		m_QuadTransformDataPtr = m_QuadTransformDataBase;
 
 		m_LinePipeline.IndexCount = 0;
 		m_LinePipeline.VertexBufferPtr = m_LinePipeline.VertexBufferBase;
@@ -234,10 +232,10 @@ namespace Atom
 		{	// QUAD
 			if (m_QuadPipeline.IndexCount)
 			{
-				if (m_QuadCount)
+				if (m_QuadTransformDataCount)
 				{
-					uint32_t size = (uint32_t)((uint8_t*)m_QuadDataPtr - (uint8_t*)m_QuadDataBase);
-					m_StorageBuffer->Upload(size, m_QuadDataBase, Renderer::GetCurrentFrameIndex());
+					uint32_t size = (uint32_t)((uint8_t*)m_QuadTransformDataPtr - (uint8_t*)m_QuadTransformDataBase);
+					m_StorageBuffer->Upload(size, m_QuadTransformDataBase, Renderer::GetCurrentFrameIndex());
 				}
 
 				renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, Renderer::GetCurrentFrameIndex());

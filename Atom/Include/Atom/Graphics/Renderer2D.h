@@ -97,15 +97,15 @@ namespace Atom
 
 		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
 
-		struct QuadData
+		struct QuadTransformData
 		{
 			alignas(16) glm::vec3 Position;
 			alignas(16) glm::vec3 Scale;
 		};
 
-		uint32_t m_QuadCount = 0;
-		QuadData* m_QuadDataBase;
-		QuadData* m_QuadDataPtr;
+		uint32_t m_QuadTransformDataCount = 0;
+		QuadTransformData* m_QuadTransformDataBase;
+		QuadTransformData* m_QuadTransformDataPtr;
 
 		Pipeline2D<QuadVertex> m_QuadPipeline = {};
 
