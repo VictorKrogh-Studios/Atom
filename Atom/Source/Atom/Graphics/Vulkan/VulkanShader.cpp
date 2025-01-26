@@ -14,6 +14,17 @@ namespace Atom
 	VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filepath)
 		: Shader(name, filepath)
 	{
+		std::string source = ReadFile(filepath);
+		std::unordered_map<Enumerations::ShaderType, std::string> shaderSources = PreProcess(source);
+		m_SPIRVData = CompileVulkanSpvBinaries(shaderSources);
+
+		m_VertexShaderModule = CreateShaderModule(m_SPIRVData[Enumerations::ShaderType::Vertex]);
+		m_FragmentShaderModule = CreateShaderModule(m_SPIRVData[Enumerations::ShaderType::Fragment]);
+
+		m_PipelineShaderStageCreateInfos = CreatePipelineShaderStageCreateInfos();
+
+		s// TODO: Cache SPIRV binaries
+		// TODO: Do SPIRV Reflection
 	}
 
 	VulkanShader::VulkanShader(const std::filesystem::path& filepath)
