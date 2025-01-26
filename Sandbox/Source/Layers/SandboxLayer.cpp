@@ -76,7 +76,7 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	Atom::Renderer2DCapabilities caps(100000);
+	Atom::Renderer2DCapabilities caps(10000);
 	m_Renderer2D = new Atom::Renderer2D(caps);
 
 #if 0

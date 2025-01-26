@@ -149,7 +149,7 @@ namespace Atom
 	{
 		if (m_LinePipeline.IndexCount >= m_Capabilities.MaxIndices)
 		{
-#if 1
+#if 0
 			NextBatch();
 #else
 			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
