@@ -35,6 +35,16 @@ namespace Atom
 		uint32_t DrawCalls = 0;
 		uint32_t QuadCount = 0;
 		uint32_t LineCount = 0;
+
+		uint32_t GetQuadVertexCount() const
+		{
+			return QuadCount * 4;
+		}
+
+		uint32_t GetQuadIndexCount() const
+		{
+			return QuadCount * 6;
+		}
 	};
 
 	class Renderer2D
