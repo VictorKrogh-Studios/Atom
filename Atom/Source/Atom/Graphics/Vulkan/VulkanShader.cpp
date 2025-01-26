@@ -23,7 +23,7 @@ namespace Atom
 
 		m_PipelineShaderStageCreateInfos = CreatePipelineShaderStageCreateInfos();
 
-		s// TODO: Cache SPIRV binaries
+		// TODO: Cache SPIRV binaries
 		// TODO: Do SPIRV Reflection
 	}
 
