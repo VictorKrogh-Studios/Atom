@@ -8,6 +8,14 @@
 
 #include <imgui.h>
 
+static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
+{
+	ImGui::Text("Renderer2D statistics:");
+	ImGui::Text("Quad Count: %d", stats.QuadCount);
+	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+}
+
 struct Vertex
 {
 	glm::vec2 pos;
@@ -256,6 +264,10 @@ void SandboxLayer::OnImGui()
 	if (ImGui::Begin("Example: Simple overlay", nullptr, window_flags))
 	{
 		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+
+		ImGui::Separator();
+
+		DrawRenderer2DStats(m_Renderer2D->GetStatistics());
 	}
 	ImGui::End();
 }
