@@ -47,8 +47,8 @@ namespace Atom
 		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		m_LineShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad.shader");
-		m_QuadShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_QuadV2.shader");
+		m_LineShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Line.shader");
+		m_QuadShader = Shader::CreateFromFile("Assets/Shaders/Renderer2D_Quad.shader");
 
 		m_QuadDataBase = new Renderer2D::QuadData[m_Capabilities.MaxQuads];
 		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadData) * m_Capabilities.MaxQuads);
@@ -119,6 +119,11 @@ namespace Atom
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color)
 	{
+		if (m_QuadPipeline.IndexCount >= m_Capabilities.MaxIndices)
+		{
+			NextBatch();
+		}
+
 		// TODO: We need to resize the buffers, so that we don't crash when we have used it all...
 
 		for (size_t i = 0; i < 4; i++)
