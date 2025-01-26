@@ -6,6 +6,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
+{
+	ImGui::Text("Renderer2D statistics:");
+	ImGui::Text("Quad Count: %d", stats.QuadCount);
+	ImGui::Text(" - Vertices: %d", stats.GetQuadVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
+
+	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+}
+
 void FractalTreeLayer::OnAttach()
 {
 	uint32_t windowWidth = Atom::Application::Get().GetWindow()->GetWidth();
@@ -74,6 +85,10 @@ void FractalTreeLayer::OnImGui()
 	if (ImGui::Begin("Example: Simple overlay", nullptr, window_flags))
 	{
 		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+
+		ImGui::Separator();
+
+		DrawRenderer2DStats(m_Renderer2D->GetStatistics());
 
 		ImGui::Separator();
 

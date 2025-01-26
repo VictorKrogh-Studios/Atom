@@ -14,7 +14,7 @@ namespace Atom
 {
 
 	Renderer2D::Renderer2D(const Renderer2DCapabilities& capabilities)
-		: m_Capabilities(capabilities), m_CameraUBO({})
+		: m_Capabilities(capabilities), m_Statistics({}), m_CameraUBO({})
 	{
 		CommandBufferCreateInfo commandBufferCreateInfo{};
 		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Secondary;
@@ -92,6 +92,8 @@ namespace Atom
 
 	void Renderer2D::Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 	{
+		memset(&m_Statistics, 0, sizeof(Renderer2DStatistics));
+
 		m_CameraUBO.Projection = projectionMatrix;
 		m_CameraUBO.View = viewMatrix;
 		m_CameraUniformBuffer->Upload((void*)&m_CameraUBO, sizeof(m_CameraUBO), Renderer::GetCurrentFrameIndex());
@@ -138,6 +140,8 @@ namespace Atom
 
 		m_QuadPipeline.IndexCount += 6;
 		m_QuadTransformDataCount++;
+
+		m_Statistics.QuadCount++;
 	}
 
 	void Renderer2D::SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness)
@@ -179,6 +183,8 @@ namespace Atom
 
 
 		m_LinePipeline.IndexCount += 6;
+
+		m_Statistics.LineCount++;
 	}
 
 	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
@@ -202,7 +208,7 @@ namespace Atom
 	}
 
 	template<typename T>
-	static void DrawPipeline(RenderCommand* renderCommand, CommandBuffer* commandBuffer, Renderer2D::Pipeline2D<T>& pipeline, IndexBuffer* indexBuffer, uint32_t frameIndex)
+	static void DrawPipeline(RenderCommand* renderCommand, CommandBuffer* commandBuffer, Renderer2D::Pipeline2D<T>& pipeline, IndexBuffer* indexBuffer, uint32_t frameIndex, Renderer2DStatistics& stats)
 	{
 		if (pipeline.IndexCount == 0)
 		{
@@ -222,6 +228,8 @@ namespace Atom
 		renderCommand->EndRenderPass(commandBuffer, frameIndex);
 
 		pipeline.PreviousIndexCount = pipeline.IndexCount;
+
+		stats.DrawCalls++;
 	}
 
 	void Renderer2D::Flush()
@@ -251,10 +259,12 @@ namespace Atom
 				renderCommand->EndRenderPass(drawCommandBuffer, Renderer::GetCurrentFrameIndex());
 
 				m_QuadPipeline.PreviousIndexCount = m_QuadPipeline.IndexCount;
+
+				m_Statistics.DrawCalls++;
 			}
 		}
 
-		DrawPipeline(renderCommand, drawCommandBuffer, m_LinePipeline, m_QuadIndexBuffer, Renderer::GetCurrentFrameIndex());
+		DrawPipeline(renderCommand, drawCommandBuffer, m_LinePipeline, m_QuadIndexBuffer, Renderer::GetCurrentFrameIndex(), m_Statistics);
 	}
 
 	void Renderer2D::NextBatch()

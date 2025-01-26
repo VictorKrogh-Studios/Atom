@@ -8,6 +8,17 @@
 
 #include <imgui.h>
 
+static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
+{
+	ImGui::Text("Renderer2D statistics:");
+	ImGui::Text("Quad Count: %d", stats.QuadCount);
+	ImGui::Text(" - Vertices: %d", stats.GetQuadVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
+
+	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+}
+
 struct Vertex
 {
 	glm::vec2 pos;
@@ -76,7 +87,7 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	Atom::Renderer2DCapabilities caps(10000);
+	Atom::Renderer2DCapabilities caps(15000);
 	m_Renderer2D = new Atom::Renderer2D(caps);
 
 #if 0
@@ -179,17 +190,9 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition);
-	//glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::inverse(view);
 
 	m_Renderer2D->Begin(s_Projection, view);
-
-	//for (size_t i = 0; i < 900; i++)
-	//{
-	//	m_Renderer2D->SubmitQuad({ 0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
-	//}
-	m_Renderer2D->SubmitQuad({ -0.51f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-
 
 #if 0
 	m_Renderer2D->SubmitQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
@@ -207,7 +210,8 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	}
 #endif
 
-	//m_Renderer2D->SubmitLine({-0.6f, -0.6f }, { 0.6f, 0.6f }, { 1.0f, 0.0f, 0.0f, 1.0f });
+	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	m_Renderer2D->End();
 }
@@ -256,6 +260,10 @@ void SandboxLayer::OnImGui()
 	if (ImGui::Begin("Example: Simple overlay", nullptr, window_flags))
 	{
 		ImGui::Text("FPS: %.1f (%.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+
+		ImGui::Separator();
+
+		DrawRenderer2DStats(m_Renderer2D->GetStatistics());
 	}
 	ImGui::End();
 }
