@@ -14,6 +14,7 @@ namespace Atom
 		SwapChain* SwapChain;
 		RenderCommand* RenderCommand;
 		CommandBuffer* DrawCommandBuffers;
+		ShaderLibrary* ShaderLibrary;
 	};
 
 	static RendererData* s_Data = nullptr;
@@ -24,6 +25,7 @@ namespace Atom
 		s_Data->InitializeInfo = initializeInfo;
 		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
 		s_Data->RenderCommand = RenderCommand::Create();
+		s_Data->ShaderLibrary = new ShaderLibrary();
 
 		CommandBufferCreateInfo commandBufferCreateInfo{};
 		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Primary;
@@ -34,6 +36,9 @@ namespace Atom
 
 	void Renderer::Shutdown()
 	{
+		delete s_Data->ShaderLibrary;
+		s_Data->ShaderLibrary = nullptr;
+
 		delete s_Data->RenderCommand;
 		s_Data->RenderCommand = nullptr;
 
@@ -80,6 +85,11 @@ namespace Atom
 	CommandBuffer* Renderer::GetDrawCommandBuffer()
 	{
 		return s_Data->DrawCommandBuffers;
+	}
+
+	ShaderLibrary* Renderer::GetShaderLibrary()
+	{
+		return s_Data->ShaderLibrary;
 	}
 
 }

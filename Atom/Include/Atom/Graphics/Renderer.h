@@ -1,4 +1,5 @@
 #pragma once
+#include "Atom/Graphics/ShaderLibrary.h"
 #include "Atom/Graphics/CommandBuffer.h"
 
 namespace Atom
@@ -27,6 +28,7 @@ namespace Atom
 		static uint32_t GetFramesInFlight();
 		static RenderCommand* GetRenderCommand();
 		static CommandBuffer* GetDrawCommandBuffer();
+		static ShaderLibrary* GetShaderLibrary();
 	};
 
 }
