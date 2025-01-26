@@ -5,6 +5,7 @@
 #include "VulkanUtils.h"
 #include "VulkanRenderPass.h"
 #include "VulkanUniformBuffer.h"
+#include "VulkanStorageBuffer.h"
 
 namespace Atom
 {
@@ -42,10 +43,19 @@ namespace Atom
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
+		VkDescriptorSetLayoutBinding sboLayoutBinding{};
+		sboLayoutBinding.binding = 1;
+		sboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		sboLayoutBinding.descriptorCount = 1;
+		sboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		sboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+		std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding, sboLayoutBinding };
+
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+		layoutInfo.pBindings = bindings.data();
 
 		VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &m_DescriptorSetLayout);
 		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create Descriptor Set Layout");
@@ -53,14 +63,15 @@ namespace Atom
 
 	void VulkanPipeline::CreateDescriptorPool(VkDevice device)
 	{
-		VkDescriptorPoolSize poolSize{};
-		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize.descriptorCount = static_cast<uint32_t>(3); // 3 = Frames in Flight
+		std::vector<VkDescriptorPoolSize> poolSizes = {
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+		};
 
 		VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
 		descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		descriptorPoolCreateInfo.poolSizeCount = 1;
-		descriptorPoolCreateInfo.pPoolSizes = &poolSize;
+		descriptorPoolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		descriptorPoolCreateInfo.pPoolSizes = poolSizes.data();
 		descriptorPoolCreateInfo.maxSets = 3; // 3 = Frames in Flight
 
 		VkResult result = vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &m_DescriptorPool);
@@ -102,6 +113,32 @@ namespace Atom
 			descriptorWrite.pTexelBufferView = nullptr; // Optional
 
 			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		}
+
+		if (m_Options.StorageBuffer)
+		{
+			VulkanStorageBuffer* storageBuffer = static_cast<VulkanStorageBuffer*>(m_Options.StorageBuffer);
+
+			for (size_t i = 0; i < 3; i++)
+			{
+				VkDescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = storageBuffer->m_Buffers[i];
+				bufferInfo.offset = 0;
+				bufferInfo.range = storageBuffer->GetSize();
+
+				VkWriteDescriptorSet descriptorWrite{};
+				descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrite.dstSet = m_DescriptorSets[i];
+				descriptorWrite.dstBinding = 1;
+				descriptorWrite.dstArrayElement = 0;
+				descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				descriptorWrite.descriptorCount = 1;
+				descriptorWrite.pBufferInfo = &bufferInfo;
+				descriptorWrite.pImageInfo = nullptr; // Optional
+				descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+				vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+			}
 		}
 	}
 

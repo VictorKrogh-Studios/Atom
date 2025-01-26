@@ -7,6 +7,7 @@ namespace Atom
 	class Shader;
 	class RenderPass;
 	class UniformBuffer;
+	class StorageBuffer;
 
 	struct PipelineOptions
 	{
@@ -14,6 +15,7 @@ namespace Atom
 		Shader* Shader;
 		RenderPass* RenderPass;
 		UniformBuffer* UniformBuffer;
+		StorageBuffer* StorageBuffer;
 	};
 
 	class Pipeline
