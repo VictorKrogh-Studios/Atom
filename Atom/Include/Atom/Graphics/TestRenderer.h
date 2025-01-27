@@ -5,11 +5,10 @@
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
 #include "Atom/Graphics/RenderPass.h"
+#include "Atom/Graphics/Texture.h"
 
 namespace Atom
 {
-
-	class RenderCommand;
 
 	class TestRenderer
 	{
@@ -28,8 +27,8 @@ namespace Atom
 		void DrawStaticTriangle(Pipeline* pipeline);
 		void DrawVertices(Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount);
 		void DrawIndexed(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount);
-	private:
-		RenderCommand* m_RenderCommand = nullptr;
+
+		void DrawTexturedQuad(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, Texture* texture);
 	};
 
 }

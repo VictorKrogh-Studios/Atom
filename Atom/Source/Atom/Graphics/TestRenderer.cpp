@@ -13,7 +13,6 @@ namespace Atom
 	}
 
 	TestRenderer::TestRenderer()
-		: m_RenderCommand(Renderer::GetRenderCommand())
 	{
 	}
 
@@ -31,27 +30,31 @@ namespace Atom
 
 	void TestRenderer::BeginRenderPass(RenderPass* renderPass) const
 	{
-		m_RenderCommand->BeginRenderPass(Renderer::GetDrawCommandBuffer(), renderPass, Renderer::GetCurrentFrameIndex());
+		Renderer::GetRenderCommand()->BeginRenderPass(Renderer::GetDrawCommandBuffer(), renderPass, Renderer::GetCurrentFrameIndex());
 	}
 
 	void TestRenderer::EndRenderPass() const
 	{
-		m_RenderCommand->EndRenderPass(Renderer::GetDrawCommandBuffer(), Renderer::GetCurrentFrameIndex());
+		Renderer::GetRenderCommand()->EndRenderPass(Renderer::GetDrawCommandBuffer(), Renderer::GetCurrentFrameIndex());
 	}
 
 	void TestRenderer::DrawStaticTriangle(Pipeline* pipeline)
 	{
-		m_RenderCommand->RenderStaticPipeline(Renderer::GetDrawCommandBuffer(), pipeline, 3, Renderer::GetCurrentFrameIndex());
+		Renderer::GetRenderCommand()->RenderStaticPipeline(Renderer::GetDrawCommandBuffer(), pipeline, 3, Renderer::GetCurrentFrameIndex());
 	}
 
 	void TestRenderer::DrawVertices(Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount)
 	{
-		m_RenderCommand->DrawVertices(Renderer::GetDrawCommandBuffer(), pipeline, vertexBuffer, vertexCount, Renderer::GetCurrentFrameIndex());
+		Renderer::GetRenderCommand()->DrawVertices(Renderer::GetDrawCommandBuffer(), pipeline, vertexBuffer, vertexCount, Renderer::GetCurrentFrameIndex());
 	}
 
 	void TestRenderer::DrawIndexed(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, uint32_t indexCount)
 	{
-		m_RenderCommand->DrawIndexed(Renderer::GetDrawCommandBuffer(), pipeline, vertexBuffer, indexBuffer, indexCount, Renderer::GetCurrentFrameIndex());
+		Renderer::GetRenderCommand()->DrawIndexed(Renderer::GetDrawCommandBuffer(), pipeline, vertexBuffer, indexBuffer, indexCount, Renderer::GetCurrentFrameIndex());
+	}
+
+	void TestRenderer::DrawTexturedQuad(Pipeline* pipeline, VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, Texture* texture)
+	{
 	}
 
 }

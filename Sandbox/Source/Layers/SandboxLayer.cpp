@@ -44,6 +44,17 @@ const std::vector<uint32_t> indices = {
 };
 #endif
 
+const std::vector<Vertex> textureVertices = {
+	{ {-0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+	{ { 0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f } },
+	{ {-0.5f,  0.5f }, { 1.0f, 1.0f, 1.0f } }
+};
+
+const std::vector<uint32_t> indices = {
+	0, 1, 2, 2, 3, 0
+};
+
 struct UniformBufferObject
 {
 	glm::mat4 model;
@@ -105,12 +116,17 @@ void SandboxLayer::OnAttach()
 	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
 	// projection[1][1] *= -1;
 #endif
+
+	m_TexturePipeline = new TexturePipeline(m_Texture);
 }
 
 void SandboxLayer::OnDetach()
 {
 	delete m_Texture;
 	m_Texture = nullptr;
+
+	delete m_TexturePipeline;
+	m_TexturePipeline = nullptr;
 
 	delete m_Renderer2D;
 	m_Renderer2D = nullptr;
@@ -281,4 +297,52 @@ bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
 	return false;
 }
 
+#pragma region Texture pipeline
 
+SandboxLayer::TexturePipeline::TexturePipeline(Atom::Texture* texture)
+	: m_Texture(texture)
+{
+	Atom::RenderPassCreateInfo renderPassCreateInfo{};
+	renderPassCreateInfo.TargetSwapChain = true;
+	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
+
+	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/texture.shader");
+
+	Atom::PipelineOptions pipelineOptions{};
+	pipelineOptions.RenderPass = m_RenderPass;
+	pipelineOptions.Layout = {
+		{ Atom::Enumerations::ShaderDataType::Float2, "position" },
+		{ Atom::Enumerations::ShaderDataType::Float3, "color" },
+		{ Atom::Enumerations::ShaderDataType::Float2, "texCoord" }
+	};
+	pipelineOptions.Shader = m_Shader;
+	pipelineOptions.Texture = m_Texture;
+	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
+
+}
+
+SandboxLayer::TexturePipeline::~TexturePipeline()
+{
+	delete m_Pipeline;
+	m_Pipeline = nullptr;
+
+	delete m_Shader;
+	m_Shader = nullptr;
+
+	delete m_RenderPass;
+	m_RenderPass = nullptr;
+}
+
+void SandboxLayer::TexturePipeline::Draw()
+{
+	Atom::RenderCommand* renderCommand = Atom::Renderer::GetRenderCommand();
+	Atom::CommandBuffer* commandBuffer = Atom::Renderer::GetDrawCommandBuffer();
+
+	renderCommand->BeginRenderPass(commandBuffer, m_RenderPass, Atom::Renderer::GetCurrentFrameIndex());
+
+	renderCommand->DrawIndexed(commandBuffer, m_Pipeline, m_VertexBuffer, m_IndexBuffer, 0, Atom::Renderer::GetCurrentFrameIndex());
+
+	renderCommand->EndRenderPass(commandBuffer, Atom::Renderer::GetCurrentFrameIndex());
+}
+
+#pragma endregion
