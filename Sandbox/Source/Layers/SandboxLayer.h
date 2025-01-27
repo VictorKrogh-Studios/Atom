@@ -25,6 +25,7 @@ private:
 	Atom::UniformBuffer* m_UniformBuffer = nullptr;
 	Atom::TestRenderer* m_Renderer = nullptr;
 	Atom::Renderer2D* m_Renderer2D = nullptr;
+	Atom::Texture* m_Texture = nullptr;
 
 	glm::vec3 m_CameraPosition = { 0,0,10 };
 };

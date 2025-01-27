@@ -57,8 +57,7 @@ void SandboxLayer::OnAttach()
 {
 	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
 
-	Atom::Texture* texture = Atom::Texture::Create("Assets/Textures/texture.jpg");
-	delete texture;
+	m_Texture = Atom::Texture::Create("Assets/Textures/texture.jpg");
 
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo.shader");
 
@@ -110,6 +109,9 @@ void SandboxLayer::OnAttach()
 
 void SandboxLayer::OnDetach()
 {
+	delete m_Texture;
+	m_Texture = nullptr;
+
 	delete m_Renderer2D;
 	m_Renderer2D = nullptr;
 
