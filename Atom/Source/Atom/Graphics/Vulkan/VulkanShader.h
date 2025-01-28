@@ -1,6 +1,7 @@
 #pragma once
 #include "Atom/Graphics/Shader.h"
 #include "Atom/Graphics/Enumerations/ShaderType.h"
+#include "Atom/Graphics/Shader/ShaderCompiler.h"
 
 #include <vulkan/vulkan.h>
 
@@ -9,20 +10,32 @@ namespace Atom
 
 	class VulkanShader : public Shader
 	{
+	private:
+		struct ShaderDescriptorData : public ShaderCompilationResult
+		{
+			Enumerations::ShaderType Type;
+		};
 	public:
 		VulkanShader(const std::string& name, const std::filesystem::path& filepath);
 		VulkanShader(const std::filesystem::path& filepath);
 		virtual ~VulkanShader();
+
+		virtual void SetUniformBuffer(uint32_t binding, UniformBuffer* uniformBuffer) const override;
+		virtual void SetStorageBuffer(uint32_t binding, StorageBuffer* storageBuffer) const override;
+		virtual void SetTexture(uint32_t binding, Texture* texture) const override;
 	private:
 		std::string ReadFile(const std::filesystem::path& filepath) const;
-		std::unordered_map<Enumerations::ShaderType, std::string> PreProcess(const std::string& source) const;
-		std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> CompileVulkanSpvBinaries(const std::unordered_map<Enumerations::ShaderType, std::string>& sources) const;
-
+		
+		void CreateDescriptorSetLayout(VkDevice device, const std::vector<ShaderDescriptorData>& shaderDescriptors);
+		void CreateDescriptorPool(VkDevice device, const std::vector<ShaderDescriptorData>& shaderDescriptors);
+		void CreateDescriptorSets(VkDevice device, const std::vector<ShaderDescriptorData>& shaderDescriptors);
 
 		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& shaderCode);
 		std::vector<VkPipelineShaderStageCreateInfo> CreatePipelineShaderStageCreateInfos() const;
 	private:
-		std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> m_SPIRVData;
+		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
+		VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
+		std::vector<VkDescriptorSet> m_DescriptorSets;
 
 		VkShaderModule m_VertexShaderModule = VK_NULL_HANDLE;
 		VkShaderModule m_FragmentShaderModule = VK_NULL_HANDLE;
