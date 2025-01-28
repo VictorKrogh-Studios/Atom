@@ -21,6 +21,7 @@ namespace Atom
 		VkSampler m_Sampler = VK_NULL_HANDLE;
 
 		friend class VulkanPipeline;
+		friend class VulkanShader;
 	};
 
 }

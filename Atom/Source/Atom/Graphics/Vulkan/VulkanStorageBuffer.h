@@ -20,6 +20,7 @@ namespace Atom
 		std::vector<VkDeviceMemory> m_BufferMemories;
 
 		friend class VulkanPipeline;
+		friend class VulkanShader;
 	};
 
 }
