@@ -8,6 +8,7 @@ namespace Atom
 	class RenderPass;
 	class UniformBuffer;
 	class StorageBuffer;
+	class Texture;
 
 	struct PipelineOptions
 	{
@@ -16,6 +17,7 @@ namespace Atom
 		RenderPass* RenderPass;
 		UniformBuffer* UniformBuffer;
 		StorageBuffer* StorageBuffer;
+		Texture* Texture;
 	};
 
 	class Pipeline

@@ -22,6 +22,7 @@ IncludeDir['glfw'] = "%{wks.location}/Atom/Vendor/glfw/include";
 IncludeDir['glm'] = "%{wks.location}/Atom/Vendor/glm";
 IncludeDir["ImGui"] = "%{wks.location}/Atom/Vendor/imgui";
 IncludeDir['vulkan'] = "%{VULKAN_SDK}/Include";
+IncludeDir["stb_image"] = "%{wks.location}/Atom/vendor/stb_image";
 
 LibraryDir = {}
 LibraryDir['vulkan'] = "%{VULKAN_SDK}/lib";

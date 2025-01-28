@@ -25,7 +25,45 @@ private:
 	Atom::UniformBuffer* m_UniformBuffer = nullptr;
 	Atom::TestRenderer* m_Renderer = nullptr;
 	Atom::Renderer2D* m_Renderer2D = nullptr;
+	Atom::Texture* m_Texture = nullptr;
 
 	glm::vec3 m_CameraPosition = { 0,0,10 };
+
+private:
+	class TexturePipeline
+	{
+	public:
+		TexturePipeline(Atom::UniformBuffer* uniformBuffer, Atom::Texture* texture);
+		~TexturePipeline();
+
+		void Draw();
+	private:
+		Atom::RenderPass* m_RenderPass = nullptr;
+		Atom::Shader* m_Shader = nullptr;
+		Atom::Pipeline* m_Pipeline = nullptr;
+		Atom::VertexBuffer* m_VertexBuffer = nullptr;
+		Atom::IndexBuffer* m_IndexBuffer = nullptr;
+		Atom::Texture* m_Texture = nullptr;
+	private:
+		struct Vertex_PositionColorTexCoord
+		{
+			glm::vec2 position;
+			glm::vec3 color;
+			glm::vec2 texCoord;
+		};
+		typedef Vertex_PositionColorTexCoord Vertex;
+
+		const std::vector<Vertex> vertices = {
+			{ {-0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+			{ { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+			{ { 0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+			{ {-0.5f,  0.5f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
+		};
+
+		const std::vector<uint32_t> indices = { 
+			0, 1, 2, 2, 3, 0
+		};
+	};
+	TexturePipeline* m_TexturePipeline = nullptr;
 };
 

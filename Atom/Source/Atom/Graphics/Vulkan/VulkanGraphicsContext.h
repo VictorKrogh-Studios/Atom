@@ -17,12 +17,13 @@ namespace Atom
 		VulkanGraphicsContext(const GraphicsContextOptions& options);
 		virtual ~VulkanGraphicsContext();
 
-	private:
+	public:
 		static VulkanGraphicsContext* Get() { return s_Instance; }
-		static VkInstance GetVkInstance() { return Get()->m_VkInstance; }
-
 		static Internal::VulkanPhysicalDevice* GetPhysicalDevice() { return Get()->m_PhysicalDevice; }
 		static Internal::VulkanDevice* GetDevice() { return Get()->m_Device; }
+
+	private:
+		static VkInstance GetVkInstance() { return Get()->m_VkInstance; }
 
 		void CreateVkInstance();
 		VkCommandPool CreateCommandPool(uint32_t familyIndex);
@@ -45,6 +46,7 @@ namespace Atom
 		friend class VulkanRenderCommand;
 		friend class VulkanCommandBuffer;
 		friend class VulkanRenderPass;
+		friend class VulkanTexture;
 
 		friend class Atom::Internal::VulkanBuffer;
 		friend class VulkanVertexBuffer;

@@ -57,6 +57,8 @@ void SandboxLayer::OnAttach()
 {
 	m_UniformBuffer = Atom::UniformBuffer::Create(sizeof(UniformBufferObject));
 
+	m_Texture = Atom::Texture::Create("Assets/Textures/texture.jpg");
+
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/shader_ubo.shader");
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
@@ -103,10 +105,18 @@ void SandboxLayer::OnAttach()
 	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
 	// projection[1][1] *= -1;
 #endif
+
+	m_TexturePipeline = new TexturePipeline(m_UniformBuffer, m_Texture);
 }
 
 void SandboxLayer::OnDetach()
 {
+	delete m_TexturePipeline;
+	m_TexturePipeline = nullptr;
+
+	delete m_Texture;
+	m_Texture = nullptr;
+
 	delete m_Renderer2D;
 	m_Renderer2D = nullptr;
 
@@ -187,7 +197,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer->EndScene();
 #endif
 
-
+	m_TexturePipeline->Draw();
 
 	glm::mat4 view = glm::translate(glm::mat4(1.0f), m_CameraPosition);
 	view = glm::inverse(view);
@@ -276,4 +286,65 @@ bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
 	return false;
 }
 
+#pragma region Texture pipeline
 
+SandboxLayer::TexturePipeline::TexturePipeline(Atom::UniformBuffer* uniformBuffer, Atom::Texture* texture)
+	: m_Texture(texture)
+{
+	Atom::RenderPassCreateInfo renderPassCreateInfo{};
+	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
+	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.RenderArea = { Atom::Application::Get().GetWindow()->GetWidth(), Atom::Application::Get().GetWindow()->GetHeight() };
+	renderPassCreateInfo.TargetSwapChain = true;
+	renderPassCreateInfo.LoadOperation = Atom::Enumerations::RenderPassAttachmentLoadOperation::Load;
+	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
+
+	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/texture.shader");
+
+	Atom::PipelineOptions pipelineOptions{};
+	pipelineOptions.RenderPass = m_RenderPass;
+	pipelineOptions.Layout = {
+		{ Atom::Enumerations::ShaderDataType::Float2, "position" },
+		{ Atom::Enumerations::ShaderDataType::Float3, "color" },
+		{ Atom::Enumerations::ShaderDataType::Float2, "texCoord" }
+	};
+	pipelineOptions.Shader = m_Shader;
+	pipelineOptions.UniformBuffer = uniformBuffer;
+	pipelineOptions.Texture = m_Texture;
+	m_Pipeline = Atom::Pipeline::Create(pipelineOptions);
+
+	m_VertexBuffer = Atom::VertexBuffer::Create(vertices.size() * sizeof(Vertex), (void*)vertices.data());
+	m_IndexBuffer = Atom::IndexBuffer::Create((uint32_t)indices.size(), (uint32_t*)indices.data());
+}
+
+SandboxLayer::TexturePipeline::~TexturePipeline()
+{
+	delete m_VertexBuffer;
+	m_VertexBuffer = nullptr;
+
+	delete m_IndexBuffer;
+	m_IndexBuffer = nullptr;
+
+	delete m_Pipeline;
+	m_Pipeline = nullptr;
+
+	delete m_Shader;
+	m_Shader = nullptr;
+
+	delete m_RenderPass;
+	m_RenderPass = nullptr;
+}
+
+void SandboxLayer::TexturePipeline::Draw()
+{
+	Atom::RenderCommand* renderCommand = Atom::Renderer::GetRenderCommand();
+	Atom::CommandBuffer* commandBuffer = Atom::Renderer::GetDrawCommandBuffer();
+
+	renderCommand->BeginRenderPass(commandBuffer, m_RenderPass, Atom::Renderer::GetCurrentFrameIndex());
+
+	renderCommand->DrawIndexed(commandBuffer, m_Pipeline, m_VertexBuffer, m_IndexBuffer, 0, Atom::Renderer::GetCurrentFrameIndex());
+
+	renderCommand->EndRenderPass(commandBuffer, Atom::Renderer::GetCurrentFrameIndex());
+}
+
+#pragma endregion

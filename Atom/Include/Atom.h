@@ -15,6 +15,7 @@
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
 #include "Atom/Graphics/UniformBuffer.h"
+#include "Atom/Graphics/Texture.h"
 #include "Atom/Graphics/Renderer.h"
 #include "Atom/Graphics/Renderer2D.h"
 

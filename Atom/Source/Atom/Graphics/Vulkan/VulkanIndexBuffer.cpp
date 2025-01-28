@@ -6,6 +6,7 @@ namespace Atom
 {
 
 	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t count, uint32_t* indices)
+		: IndexBuffer(count)
 	{
 		uint64_t size = count * sizeof(uint32_t);
 

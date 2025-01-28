@@ -1,12 +1,12 @@
 #pragma once
 #include "Atom/Graphics/ShaderLibrary.h"
 #include "Atom/Graphics/CommandBuffer.h"
+#include "Atom/Graphics/RenderCommand.h"
 
 namespace Atom
 {
 
 	class SwapChain;
-	class RenderCommand;
 
 	struct RendererInitializeInfo
 	{

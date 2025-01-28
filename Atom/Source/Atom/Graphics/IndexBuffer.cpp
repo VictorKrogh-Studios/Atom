@@ -11,4 +11,9 @@ namespace Atom
 		return new VulkanIndexBuffer(count, indices);
 	}
 
+	IndexBuffer::IndexBuffer(uint32_t count)
+		: m_Count(count)
+	{
+	}
+
 }
