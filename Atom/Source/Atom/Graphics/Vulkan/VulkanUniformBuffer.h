@@ -20,6 +20,7 @@ namespace Atom
 		std::vector<void*> m_BufferMemoriesMapped;
 
 		friend class VulkanPipeline;
+		friend class VulkanShader;
 	};
 
 }

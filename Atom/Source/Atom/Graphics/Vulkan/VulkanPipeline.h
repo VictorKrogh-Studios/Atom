@@ -12,14 +12,9 @@ namespace Atom
 		VulkanPipeline(const PipelineOptions& options);
 		virtual ~VulkanPipeline();
 	private:
-		void CreateDescriptorSetLayout(VkDevice device);
-		void CreateDescriptorPool(VkDevice device);
-		void CreateDescriptorSet(VkDevice device);
 		void CreatePipelineLayout(VkDevice device);
 		void CreateGraphicsPipeline(VkDevice device);
 	private:
-		VkDescriptorSetLayout m_DescriptorSetLayout = VK_NULL_HANDLE;
-		VkDescriptorPool m_DescriptorPool = VK_NULL_HANDLE;
 		std::vector<VkDescriptorSet> m_DescriptorSets;
 
 		VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
