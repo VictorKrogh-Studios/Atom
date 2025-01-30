@@ -1,13 +1,13 @@
 [submodule "Atom/Vendor/spdlog"]
 	path = Atom/Vendor/spdlog
-	url = https://github.com/VictorKrogh-Studios/spdlog.git
+	url = https://github.com/KingoBoiii/spdlog.git
 [submodule "Atom/Vendor/glfw"]
 	path = Atom/Vendor/glfw
-	url = https://github.com/VictorKrogh-Studios/glfw.git
+	url = https://github.com/KingoBoiii/glfw.git
 [submodule "Atom/Vendor/glm"]
 	path = Atom/Vendor/glm
-	url = https://github.com/VictorKrogh-Studios/glm.git
+	url = https://github.com/KingoBoiii/glm.git
 [submodule "Atom/Vendor/imgui"]
 	path = Atom/Vendor/imgui
-	url = https://github.com/VictorKrogh-Studios/imgui.git
+	url = https://github.com/KingoBoiii/imgui.git
 	branch = docking
