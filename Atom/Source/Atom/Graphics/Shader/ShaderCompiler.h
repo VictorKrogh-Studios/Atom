@@ -1,8 +1,6 @@
 #pragma once
 #include "Atom/Graphics/Shader/ShaderUtils.h"
 
-#include <spirv_cross/spirv_cross.hpp>
-
 namespace Atom
 {
 
