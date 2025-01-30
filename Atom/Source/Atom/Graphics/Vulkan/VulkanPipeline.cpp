@@ -18,15 +18,15 @@ namespace Atom
 
 		if (m_Options.UniformBuffer)
 		{
-			m_Options.Shader->SetUniformBuffer(0, m_Options.UniformBuffer);
+			m_Options.Shader->Set(0, m_Options.UniformBuffer);
 		}
 		if (m_Options.StorageBuffer)
 		{
-			m_Options.Shader->SetStorageBuffer(1, m_Options.StorageBuffer);
+			m_Options.Shader->Set(1, m_Options.StorageBuffer);
 		}
 		if (m_Options.Texture)
 		{
-			m_Options.Shader->SetTexture(2, m_Options.Texture);
+			m_Options.Shader->Set(2, m_Options.Texture);
 		}
 
 		CreatePipelineLayout(device);

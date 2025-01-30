@@ -19,9 +19,9 @@ namespace Atom
 		VulkanShader(const std::filesystem::path& filepath);
 		virtual ~VulkanShader();
 
-		virtual void SetUniformBuffer(uint32_t binding, UniformBuffer* uniformBuffer) const override;
-		virtual void SetStorageBuffer(uint32_t binding, StorageBuffer* storageBuffer) const override;
-		virtual void SetTexture(uint32_t binding, Texture* texture) const override;
+		virtual void Set(uint32_t binding, UniformBuffer* uniformBuffer) const override;
+		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const override;
+		virtual void Set(uint32_t binding, Texture* texture) const override;
 	private:
 		std::string ReadFile(const std::filesystem::path& filepath) const;
 		

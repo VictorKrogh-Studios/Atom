@@ -16,9 +16,9 @@ namespace Atom
 		Shader(const std::string& name, const std::filesystem::path& filepath);
 		virtual ~Shader() = default;
 
-		virtual void SetUniformBuffer(uint32_t binding, UniformBuffer* uniformBuffer) const = 0;
-		virtual void SetStorageBuffer(uint32_t binding, StorageBuffer* storageBuffer) const = 0;
-		virtual void SetTexture(uint32_t binding, Texture* texture) const = 0;
+		virtual void Set(uint32_t binding, UniformBuffer* uniformBuffer) const = 0;
+		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const = 0;
+		virtual void Set(uint32_t binding, Texture* texture) const = 0;
 
 		const std::string& GetName() const { return m_Name; }
 	protected:

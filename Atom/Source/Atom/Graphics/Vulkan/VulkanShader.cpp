@@ -98,7 +98,7 @@ namespace Atom
 		vkDestroyShaderModule(device, m_FragmentShaderModule, nullptr);
 	}
 
-	void VulkanShader::SetUniformBuffer(uint32_t binding, UniformBuffer* uniformBuffer) const
+	void VulkanShader::Set(uint32_t binding, UniformBuffer* uniformBuffer) const
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
@@ -126,7 +126,7 @@ namespace Atom
 		}
 	}
 
-	void VulkanShader::SetStorageBuffer(uint32_t binding, StorageBuffer* storageBuffer) const
+	void VulkanShader::Set(uint32_t binding, StorageBuffer* storageBuffer) const
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
@@ -154,7 +154,7 @@ namespace Atom
 		}
 	}
 
-	void VulkanShader::SetTexture(uint32_t binding, Texture* texture) const
+	void VulkanShader::Set(uint32_t binding, Texture* texture) const
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
