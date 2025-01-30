@@ -1,5 +1,4 @@
 #pragma once
-#include "Atom/Graphics/Enumerations/ShaderType.h"
 
 namespace Atom
 {
@@ -25,8 +24,6 @@ namespace Atom
 	protected:
 		virtual std::vector<char> ReadSpvFile(const std::string& filepath) const;
 		virtual std::string GetFileName(const std::filesystem::path& filepath) const;
-
-		virtual Enumerations::ShaderType GetShaderTypeFromString(const std::string& typeString) const;
 	protected:
 		std::string m_Name;
 		std::filesystem::path m_FilePath;

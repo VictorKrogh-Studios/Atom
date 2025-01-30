@@ -43,8 +43,8 @@ namespace Atom
 		CreateDescriptorPool(device, shaderDescriptors);
 		CreateDescriptorSets(device, shaderDescriptors);
 
-		m_VertexShaderModule = CreateShaderModule(result[Enumerations::ShaderType::Vertex].SPIRVData);
-		m_FragmentShaderModule = CreateShaderModule(result[Enumerations::ShaderType::Fragment].SPIRVData);
+		m_VertexShaderModule = CreateShaderModule(result[shaderc_vertex_shader].SPIRVData);
+		m_FragmentShaderModule = CreateShaderModule(result[shaderc_fragment_shader].SPIRVData);
 
 		m_PipelineShaderStageCreateInfos = CreatePipelineShaderStageCreateInfos();
 
@@ -79,8 +79,8 @@ namespace Atom
 		CreateDescriptorPool(device, shaderDescriptors);
 		CreateDescriptorSets(device, shaderDescriptors);
 
-		m_VertexShaderModule = CreateShaderModule(result[Enumerations::ShaderType::Vertex].SPIRVData);
-		m_FragmentShaderModule = CreateShaderModule(result[Enumerations::ShaderType::Fragment].SPIRVData);
+		m_VertexShaderModule = CreateShaderModule(result[shaderc_vertex_shader].SPIRVData);
+		m_FragmentShaderModule = CreateShaderModule(result[shaderc_fragment_shader].SPIRVData);
 
 		m_PipelineShaderStageCreateInfos = CreatePipelineShaderStageCreateInfos();
 
@@ -208,13 +208,13 @@ namespace Atom
 		return result;
 	}
 
-	inline static VkShaderStageFlags GetShaderStageByShaderType(Enumerations::ShaderType shaderType)
+	inline static VkShaderStageFlags GetShaderStageByShaderKind(shaderc_shader_kind shaderKind)
 	{
-		switch (shaderType)
+		switch (shaderKind)
 		{
-			case Atom::Enumerations::ShaderType::Vertex: return VK_SHADER_STAGE_VERTEX_BIT;
-			case Atom::Enumerations::ShaderType::Fragment: return VK_SHADER_STAGE_FRAGMENT_BIT;
-			case Atom::Enumerations::ShaderType::None:
+			case shaderc_vertex_shader:  return VK_SHADER_STAGE_VERTEX_BIT;
+			case shaderc_fragment_shader:  return VK_SHADER_STAGE_FRAGMENT_BIT;
+			case shaderc_anyhit_shader:
 			default: break;
 		}
 
@@ -234,7 +234,7 @@ namespace Atom
 				descriptorSetLayoutBinding.binding = uniformBufferDescriptor.Binding;
 				descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				descriptorSetLayoutBinding.descriptorCount = 1;
-				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderType(shaderDescriptor.Type);
+				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderKind(shaderDescriptor.ShaderKind);
 				descriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 				bindings.push_back(descriptorSetLayoutBinding);
@@ -246,7 +246,7 @@ namespace Atom
 				descriptorSetLayoutBinding.binding = storageBufferDescriptor.Binding;
 				descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				descriptorSetLayoutBinding.descriptorCount = 1;
-				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderType(shaderDescriptor.Type);
+				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderKind(shaderDescriptor.ShaderKind);
 				descriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 				bindings.push_back(descriptorSetLayoutBinding);
@@ -258,7 +258,7 @@ namespace Atom
 				descriptorSetLayoutBinding.binding = imageSamplerDescriptor.Binding;
 				descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptorSetLayoutBinding.descriptorCount = 1;
-				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderType(shaderDescriptor.Type);
+				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderKind(shaderDescriptor.ShaderKind);
 				descriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 				bindings.push_back(descriptorSetLayoutBinding);

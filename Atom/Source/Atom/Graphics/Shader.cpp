@@ -49,19 +49,4 @@ namespace Atom
 		return filepathString.substr(lastSlash, count);
 	}
 
-	Enumerations::ShaderType Shader::GetShaderTypeFromString(const std::string& typeString) const
-	{
-		if (typeString == "vertex")
-		{
-			return Enumerations::ShaderType::Vertex;
-		}
-		if (typeString == "fragment" || typeString == "pixel")
-		{
-			return Enumerations::ShaderType::Fragment;
-		}
-
-		AT_CORE_ASSERT(false, "Unknown shader type");
-		return Enumerations::ShaderType::None;
-	}
-
 }

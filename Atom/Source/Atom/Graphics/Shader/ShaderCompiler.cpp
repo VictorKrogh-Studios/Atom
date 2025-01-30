@@ -6,66 +6,32 @@
 namespace Atom
 {
 
-	namespace Utils
-	{
-
-		inline static Enumerations::ShaderType GetShaderTypeFromString(const std::string& typeString)
-		{
-			if (typeString == "vertex")
-			{
-				return Enumerations::ShaderType::Vertex;
-			}
-			if (typeString == "fragment" || typeString == "pixel")
-			{
-				return Enumerations::ShaderType::Fragment;
-			}
-
-			AT_CORE_ASSERT(false, "Unknown shader type");
-			return Enumerations::ShaderType::None;
-		}
-
-		inline static shaderc_shader_kind GetShaderKindByShaderType(Enumerations::ShaderType shaderType)
-		{
-			switch (shaderType)
-			{
-				case Atom::Enumerations::ShaderType::Vertex: return shaderc_vertex_shader;
-				case Atom::Enumerations::ShaderType::Fragment: return shaderc_fragment_shader;
-				case Atom::Enumerations::ShaderType::None:
-				default: break;
-			}
-
-			AT_CORE_ASSERT(false, "Failed to determine shaderc shader kind");
-			return shaderc_anyhit_shader;
-		}
-
-	}
-
 	ShaderCompiler::ShaderCompiler(const ShaderCompilerOptions& options)
 		: m_Options(options)
 	{
 	}
 
-	std::unordered_map<Enumerations::ShaderType, ShaderCompilationResult> ShaderCompiler::CompileAndReflect(const std::string& name, const std::string& source) const
+	std::unordered_map<shaderc_shader_kind, ShaderCompilationResult> ShaderCompiler::CompileAndReflect(const std::string& name, const std::string& source) const
 	{
-		std::unordered_map<Enumerations::ShaderType, std::string> sources = PreProcess(source);
+		std::unordered_map<shaderc_shader_kind, std::string> sources = PreProcess(source);
 
-		std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> spirvData = CompileSpvBinaries(name, sources);
+		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> spirvData = CompileSpvBinaries(name, sources);
 
-		std::unordered_map<Enumerations::ShaderType, ShaderReflectionData> reflectionData = ReflectSpvBinaries(spirvData);
+		std::unordered_map<shaderc_shader_kind, ShaderReflectionData> reflectionData = ReflectSpvBinaries(spirvData);
 		
-		std::unordered_map<Enumerations::ShaderType, ShaderCompilationResult> result;
+		std::unordered_map<shaderc_shader_kind, ShaderCompilationResult> result;
 
-		for (auto& [type, _] : sources)
+		for (auto& [kind, _] : sources)
 		{
-			result[type] = { spirvData[type], reflectionData[type] };
+			result[kind] = { spirvData[kind], reflectionData[kind] };
 		}
 
 		return result;
 	}
 
-	std::unordered_map<Enumerations::ShaderType, std::string> ShaderCompiler::PreProcess(const std::string& source) const
+	std::unordered_map<shaderc_shader_kind, std::string> ShaderCompiler::PreProcess(const std::string& source) const
 	{
-		std::unordered_map<Enumerations::ShaderType, std::string> result;
+		std::unordered_map<shaderc_shader_kind, std::string> result;
 
 		const char* typeToken = "#type";
 		uint64_t typeTokenLength = strlen(typeToken);
@@ -79,29 +45,24 @@ namespace Atom
 			std::string type = source.substr(begin, eol - begin);
 			AT_CORE_ASSERT(!type.empty(), "Shader type not found");
 
-			std::transform(type.begin(), type.end(), type.begin(), [](unsigned char c)
-			{
-				return std::tolower(c);
-			});
-
-			Enumerations::ShaderType shaderType = Utils::GetShaderTypeFromString(type);
-			AT_CORE_ASSERT(shaderType != Enumerations::ShaderType::None, "Invalid shader type specified");
+			shaderc_shader_kind shaderKind = shaderc_utils::ShaderKindFromString(type);
+			AT_CORE_ASSERT(shaderKind != shaderc_anyhit_shader, "Invalid shader kind specified");
 
 			uint64_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			AT_CORE_ASSERT(nextLinePos != std::string::npos, "Syntax error");
 			pos = source.find(typeToken, nextLinePos);
 
-			result[shaderType] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
+			result[shaderKind] = (pos == std::string::npos) ? source.substr(nextLinePos) : source.substr(nextLinePos, pos - nextLinePos);
 		}
 
 		return result;
 	}
 
-	std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> ShaderCompiler::CompileSpvBinaries(const std::string& name, const std::unordered_map<Enumerations::ShaderType, std::string>& sources) const
+	std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> ShaderCompiler::CompileSpvBinaries(const std::string& name, const std::unordered_map<shaderc_shader_kind, std::string>& sources) const
 	{
 		Timer timer;
 
-		std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> result;
+		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> result;
 
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
@@ -118,16 +79,16 @@ namespace Atom
 
 		options.SetSourceLanguage(shaderc_source_language_glsl);
 
-		for (auto&& [type, source] : sources)
+		for (auto&& [kind, source] : sources)
 		{
-			shaderc::SpvCompilationResult compilationResult = compiler.CompileGlslToSpv(source, Utils::GetShaderKindByShaderType(type), name.c_str(), options);
+			shaderc::SpvCompilationResult compilationResult = compiler.CompileGlslToSpv(source, kind, name.c_str(), options);
 			if (compilationResult.GetCompilationStatus() != shaderc_compilation_status_success)
 			{
 				AT_CORE_ERROR(compilationResult.GetErrorMessage());
 				AT_CORE_ASSERT(false);
 			}
 
-			result[type] = std::vector<uint32_t>(compilationResult.begin(), compilationResult.end());
+			result[kind] = std::vector<uint32_t>(compilationResult.begin(), compilationResult.end());
 		}
 
 		AT_CORE_TRACE("Successfully compiled shader '{0}', took {1}ms", name, timer.ElapsedMilliseconds());
@@ -135,13 +96,13 @@ namespace Atom
 		return result;
 	}
 
-	std::unordered_map<Enumerations::ShaderType, ShaderReflectionData> ShaderCompiler::ReflectSpvBinaries(const std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>>& spirvData) const
+	std::unordered_map<shaderc_shader_kind, ShaderReflectionData> ShaderCompiler::ReflectSpvBinaries(const std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>>& spirvData) const
 	{
-		std::unordered_map<Enumerations::ShaderType, ShaderReflectionData> result;
+		std::unordered_map<shaderc_shader_kind, ShaderReflectionData> result;
 
-		for (auto& [type, data] : spirvData)
+		for (auto& [kind, data] : spirvData)
 		{
-			result[type] = Reflect(data);
+			result[kind] = Reflect(data);
 		}
 
 		return result;

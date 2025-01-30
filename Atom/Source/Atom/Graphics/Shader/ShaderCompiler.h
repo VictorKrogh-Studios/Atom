@@ -1,7 +1,6 @@
 #pragma once
-#include "Atom/Graphics/Enumerations/ShaderType.h"
+#include "Atom/Graphics/Shader/ShaderUtils.h"
 
-#include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 
 namespace Atom
@@ -60,11 +59,11 @@ namespace Atom
 		ShaderCompiler(const ShaderCompilerOptions& options = {});
 		~ShaderCompiler() = default;
 
-		std::unordered_map<Enumerations::ShaderType, ShaderCompilationResult> CompileAndReflect(const std::string& name, const std::string& source) const;
+		std::unordered_map<shaderc_shader_kind, ShaderCompilationResult> CompileAndReflect(const std::string& name, const std::string& source) const;
 
-		std::unordered_map<Enumerations::ShaderType, std::string> PreProcess(const std::string& source) const;
-		std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>> CompileSpvBinaries(const std::string& name, const std::unordered_map<Enumerations::ShaderType, std::string>& sources) const;
-		std::unordered_map<Enumerations::ShaderType, ShaderReflectionData> ReflectSpvBinaries(const std::unordered_map<Enumerations::ShaderType, std::vector<uint32_t>>& spirvData) const;
+		std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source) const;
+		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> CompileSpvBinaries(const std::string& name, const std::unordered_map<shaderc_shader_kind, std::string>& sources) const;
+		std::unordered_map<shaderc_shader_kind, ShaderReflectionData> ReflectSpvBinaries(const std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>>& spirvData) const;
 		ShaderReflectionData Reflect(const std::vector<uint32_t>& data) const;
 	private:
 		ShaderCompilerOptions m_Options;

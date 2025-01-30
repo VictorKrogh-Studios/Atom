@@ -1,6 +1,5 @@
 #pragma once
 #include "Atom/Graphics/Shader.h"
-#include "Atom/Graphics/Enumerations/ShaderType.h"
 #include "Atom/Graphics/Shader/ShaderCompiler.h"
 
 #include <vulkan/vulkan.h>
@@ -13,7 +12,7 @@ namespace Atom
 	private:
 		struct ShaderDescriptorData : public ShaderCompilationResult
 		{
-			Enumerations::ShaderType Type;
+			shaderc_shader_kind ShaderKind;
 		};
 	public:
 		VulkanShader(const std::string& name, const std::filesystem::path& filepath);
