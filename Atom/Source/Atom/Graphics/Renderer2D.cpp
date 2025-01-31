@@ -51,7 +51,7 @@ namespace Atom
 		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		m_QuadTransformDataBase = new Renderer2D::QuadTransformData[m_Capabilities.MaxQuads];
-		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
+		m_QuadTransformDataStorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
 
 		m_QuadPipeline = CreateQuadPipeline();
 		m_LinePipeline = CreateLinePipeline();
@@ -68,8 +68,8 @@ namespace Atom
 		delete m_QuadShader;
 		m_QuadShader = nullptr;
 
-		delete m_StorageBuffer;
-		m_StorageBuffer = nullptr;
+		delete m_QuadTransformDataStorageBuffer;
+		m_QuadTransformDataStorageBuffer = nullptr;
 
 		delete m_QuadIndexBuffer;
 		m_QuadIndexBuffer = nullptr;
@@ -243,16 +243,16 @@ namespace Atom
 				if (m_QuadTransformDataCount)
 				{
 					uint32_t size = (uint32_t)((uint8_t*)m_QuadTransformDataPtr - (uint8_t*)m_QuadTransformDataBase);
-					m_StorageBuffer->Upload(size, m_QuadTransformDataBase, Renderer::GetCurrentFrameIndex());
+					m_QuadTransformDataStorageBuffer->Upload(size, m_QuadTransformDataBase, Renderer::GetCurrentFrameIndex());
 				}
-
-				renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, Renderer::GetCurrentFrameIndex());
 
 				if (m_QuadPipeline.IndexCount != m_QuadPipeline.PreviousIndexCount)
 				{
 					uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadPipeline.VertexBufferPtr - (uint8_t*)m_QuadPipeline.VertexBufferBase);
 					m_QuadPipeline.VertexBuffer->Upload(dataSize, m_QuadPipeline.VertexBufferBase);
 				}
+
+				renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, Renderer::GetCurrentFrameIndex());
 
 				renderCommand->DrawIndexed(drawCommandBuffer, m_QuadPipeline.Pipeline, m_QuadPipeline.VertexBuffer, m_QuadIndexBuffer, m_QuadPipeline.IndexCount, Renderer::GetCurrentFrameIndex());
 
@@ -294,7 +294,7 @@ namespace Atom
 		pipelineOptions.Shader = shader;
 		pipelineOptions.RenderPass = renderPass;
 		pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
-		pipelineOptions.StorageBuffer = m_StorageBuffer;
+		pipelineOptions.StorageBuffer = m_QuadTransformDataStorageBuffer;
 
 		VertexBufferCreateInfo vertexBufferCreateInfo{};
 		vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;

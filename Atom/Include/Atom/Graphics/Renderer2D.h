@@ -77,7 +77,7 @@ namespace Atom
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
 
-		StorageBuffer* m_StorageBuffer = nullptr;
+		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
 
 		// TODO: Move to a shader library
 		Shader* m_LineShader = nullptr;
