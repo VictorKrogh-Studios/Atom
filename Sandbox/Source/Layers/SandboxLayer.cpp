@@ -102,7 +102,7 @@ void SandboxLayer::OnAttach()
 	float orthoTop = m_OrthographicSize * 0.5f;
 	s_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f);
 #else
-	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
+	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 1000.0f);
 	// projection[1][1] *= -1;
 #endif
 
@@ -280,7 +280,7 @@ void SandboxLayer::OnImGui()
 
 bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
 {
-	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 100.0f);
+	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 1000.0f);
 
 	m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
 	return false;
