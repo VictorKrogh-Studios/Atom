@@ -15,6 +15,7 @@ namespace Atom
 		virtual ~VulkanStorageBuffer();
 
 		virtual void Upload(uint64_t size, void* data, uint32_t index) const override;
+		virtual void Resize(uint64_t size, uint32_t index) override;
 	private:
 		std::vector<VkBuffer> m_Buffers;
 		std::vector<VkDeviceMemory> m_BufferMemories;
