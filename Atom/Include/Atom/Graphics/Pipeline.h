@@ -27,6 +27,8 @@ namespace Atom
 	public:
 		Pipeline(const PipelineOptions& options);
 		virtual ~Pipeline() = default;
+
+		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const = 0;
 	protected:
 		PipelineOptions m_Options;
 	};
