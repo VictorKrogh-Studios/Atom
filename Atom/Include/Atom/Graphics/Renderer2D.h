@@ -17,13 +17,13 @@ namespace Atom
 
 	struct Renderer2DCapabilities
 	{
-		Renderer2DCapabilities(uint32_t maxQuads = 1000)
+		Renderer2DCapabilities(uint32_t maxQuads = 10000)
 			: MaxQuads(maxQuads), MaxVertices(maxQuads * 4), MaxIndices(maxQuads * 6)
 		{
 		}
 
 	private:
-		uint32_t MaxQuads = 1000;
+		uint32_t MaxQuads;
 		uint32_t MaxVertices;
 		uint32_t MaxIndices;
 
@@ -49,8 +49,23 @@ namespace Atom
 
 	class Renderer2D
 	{
+	private:
+		struct QuadVertex
+		{
+			glm::vec4 VertexPosition;
+			glm::vec4 Color;
+			int32_t QuadIndex;
+		};
+
+		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
+
+		struct QuadTransformData
+		{
+			alignas(16) glm::vec3 Position;
+			alignas(16) glm::vec3 Scale;
+		};
 	public:
-		Renderer2D(const Renderer2DCapabilities& capabilities);
+		Renderer2D(const Renderer2DCapabilities& capabilities = Renderer2DCapabilities());
 		~Renderer2D();
 
 		void OnEvent(Event& event);
@@ -68,6 +83,10 @@ namespace Atom
 	private:
 		bool OnWindowResizeEvent(WindowResizeEvent& event);
 
+		void AddQuadVertexBuffer();
+		Renderer2D::QuadVertex*& GetWriteableQuadBuffer();
+		Renderer2D::QuadTransformData& GetQuadTransformDataPtr();
+
 		void StartBatch();
 		void Flush();
 		void NextBatch();
@@ -76,8 +95,6 @@ namespace Atom
 		Renderer2DStatistics m_Statistics;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
-
-		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
 
 		// TODO: Move to a shader library
 		Shader* m_LineShader = nullptr;
@@ -108,28 +125,19 @@ namespace Atom
 		};
 
 	private: // QUAD VERTEX PIPELINE
-		struct QuadVertex
-		{
-			glm::vec4 VertexPosition;
-			glm::vec4 Color;
-			int32_t QuadIndex;
-		};
-
-		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
-
-		struct QuadTransformData
-		{
-			alignas(16) glm::vec3 Position;
-			alignas(16) glm::vec3 Scale;
-		};
+		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
+		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
+		std::vector<QuadVertex*> m_QuadVertexBufferPtr;
+		uint32_t m_QuadIndexCount = 0;
+		uint32_t m_QuadBufferWriteIndex = 0;
 
 		uint32_t m_QuadTransformDataCount = 0;
-		QuadTransformData* m_QuadTransformDataBase;
-		QuadTransformData* m_QuadTransformDataPtr;
+		std::vector<QuadTransformData> m_QuadTransformDatas;
+		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
 
 		Pipeline2D<QuadVertex> m_QuadPipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline();
+		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(uint32_t framesInFlight);
 		void DestroyQuadPipeline();
 
 	private: // LINE VERTEX PIPELINE
