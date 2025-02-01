@@ -68,12 +68,6 @@ namespace Atom
 		DestroyLinePipeline();
 		DestroyQuadPipeline();
 
-		delete m_LineShader;
-		m_LineShader = nullptr;
-
-		delete m_QuadShader;
-		m_QuadShader = nullptr;
-
 		delete m_QuadTransformDataStorageBuffer;
 		m_QuadTransformDataStorageBuffer = nullptr;
 
@@ -141,7 +135,9 @@ namespace Atom
 			if (dataSize)
 			{
 				m_QuadVertexBuffers[i][frameIndex]->Upload(dataSize, m_QuadVertexBufferBases[i][frameIndex]);
+
 				uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+				
 				renderCommand->DrawIndexed(m_CommandBuffer, m_QuadPipeline.Pipeline, m_QuadVertexBuffers[i][frameIndex], m_QuadIndexBuffer, indexCount, frameIndex);
 
 				m_Statistics.DrawCalls++;

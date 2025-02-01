@@ -96,10 +96,6 @@ namespace Atom
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
 
-		// TODO: Move to a shader library
-		Shader* m_LineShader = nullptr;
-		Shader* m_QuadShader = nullptr;
-
 		struct Renderer2DCameraUBO
 		{
 			glm::mat4 Projection;
