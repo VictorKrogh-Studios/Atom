@@ -45,6 +45,16 @@ namespace Atom
 		{
 			return QuadCount * 6;
 		}
+
+		uint32_t GetLineVertexCount() const
+		{
+			return LineCount * 4;
+		}
+
+		uint32_t GetLineIndexCount() const
+		{
+			return LineCount * 6;
+		}
 	};
 
 	class Renderer2D
@@ -96,6 +106,9 @@ namespace Atom
 		Renderer2D::QuadVertex*& GetWriteableQuadBuffer();
 		Renderer2D::QuadTransformData& GetQuadTransformDataPtr();
 
+		void AddLineVertexBuffer();
+		Renderer2D::LineVertex*& GetWriteableLinePtr();
+
 		void StartBatch();
 		void Flush();
 		void NextBatch();
@@ -113,24 +126,12 @@ namespace Atom
 		Renderer2DCameraUBO m_CameraUBO;
 
 		glm::vec4 m_QuadVertexPositions[4];
-		IndexBuffer* m_QuadIndexBuffer = nullptr;
 
-		template<typename T>
-		struct Pipeline2D
-		{
-			Pipeline* Pipeline = nullptr;
-			RenderPass* RenderPass = nullptr;
-			VertexBuffer* VertexBuffer = nullptr;
-			Shader* Shader = nullptr;
-
-			uint32_t IndexCount = 0;
-			uint32_t PreviousIndexCount = 0;
-			T* VertexBufferBase = nullptr;
-			T* VertexBufferPtr = nullptr;
-		};
-	private: // QUAD VERTEX PIPELINE
+	private:
+		// QUAD VERTEX PIPELINE
 		Pipeline* m_QuadPipeline = nullptr;
 		RenderPass* m_QuadRenderPass = nullptr;
+		IndexBuffer* m_QuadIndexBuffer = nullptr;
 
 		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
 		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
@@ -141,11 +142,17 @@ namespace Atom
 		uint32_t m_QuadTransformDataCount = 0;
 		std::vector<QuadTransformData> m_QuadTransformDatas;
 		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
-	private: // LINE VERTEX PIPELINE
-		Pipeline2D<LineVertex> m_LinePipeline = {};
 
-		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
-		void DestroyLinePipeline();
+		// LINE VERTEX PIPELINE
+		Pipeline* m_LinePipeline = nullptr;
+		RenderPass* m_LineRenderPass = nullptr;
+		IndexBuffer* m_LineIndexBuffer = nullptr;
+
+		std::vector<std::vector<VertexBuffer*>> m_LineVertexBuffers;
+		std::vector<std::vector<LineVertex*>> m_LineVertexBufferBases;
+		std::vector<LineVertex*> m_LineVertexBufferPtr;
+		uint32_t m_LineIndexCount = 0;
+		uint32_t m_LineBufferWriteIndex = 0;
 	};
 
 }
