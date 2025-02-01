@@ -121,34 +121,6 @@ namespace Atom
 			m_QuadPipeline.Pipeline->Set(1, m_QuadTransformDataStorageBuffer);
 		}
 
-		CommandBuffer* drawCommandBuffer = Renderer::GetDrawCommandBuffer();
-		RenderCommand* renderCommand = Renderer::GetRenderCommand();
-
-		renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, frameIndex);
-
-		m_CommandBuffer->Begin(m_QuadPipeline.RenderPass, frameIndex);
-
-		renderCommand->SetViewport(m_CommandBuffer, m_QuadPipeline.RenderPass, frameIndex);
-		for (uint32_t i = 0; i <= m_QuadBufferWriteIndex; i++)
-		{
-			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr[i] - (uint8_t*)m_QuadVertexBufferBases[i][frameIndex]);
-			if (dataSize)
-			{
-				m_QuadVertexBuffers[i][frameIndex]->Upload(dataSize, m_QuadVertexBufferBases[i][frameIndex]);
-
-				uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
-				
-				renderCommand->DrawIndexed(m_CommandBuffer, m_QuadPipeline.Pipeline, m_QuadVertexBuffers[i][frameIndex], m_QuadIndexBuffer, indexCount, frameIndex);
-
-				m_Statistics.DrawCalls++;
-			}
-		}
-
-		m_CommandBuffer->End(frameIndex);
-		m_CommandBuffer->Execute(drawCommandBuffer, frameIndex);
-
-		renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
-
 		Flush();
 	}
 
@@ -317,6 +289,34 @@ namespace Atom
 		CommandBuffer* drawCommandBuffer = Renderer::GetDrawCommandBuffer();
 		RenderCommand* renderCommand = Renderer::GetRenderCommand();
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+		CommandBuffer* drawCommandBuffer = Renderer::GetDrawCommandBuffer();
+		RenderCommand* renderCommand = Renderer::GetRenderCommand();
+
+		renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, frameIndex);
+
+		m_CommandBuffer->Begin(m_QuadPipeline.RenderPass, frameIndex);
+
+		renderCommand->SetViewport(m_CommandBuffer, m_QuadPipeline.RenderPass, frameIndex);
+		for (uint32_t i = 0; i <= m_QuadBufferWriteIndex; i++)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr[i] - (uint8_t*)m_QuadVertexBufferBases[i][frameIndex]);
+			if (dataSize)
+			{
+				m_QuadVertexBuffers[i][frameIndex]->Upload(dataSize, m_QuadVertexBufferBases[i][frameIndex]);
+
+				uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+
+				renderCommand->DrawIndexed(m_CommandBuffer, m_QuadPipeline.Pipeline, m_QuadVertexBuffers[i][frameIndex], m_QuadIndexBuffer, indexCount, frameIndex);
+
+				m_Statistics.DrawCalls++;
+			}
+		}
+
+		m_CommandBuffer->End(frameIndex);
+		m_CommandBuffer->Execute(drawCommandBuffer, frameIndex);
+
+		renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
 
 		DrawPipeline(renderCommand, drawCommandBuffer, m_LinePipeline, m_QuadIndexBuffer, Renderer::GetCurrentFrameIndex(), m_Statistics);
 	}
