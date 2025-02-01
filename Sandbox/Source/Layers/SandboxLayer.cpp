@@ -89,8 +89,7 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	Atom::Renderer2DCapabilities caps(15000);
-	m_Renderer2D = new Atom::Renderer2D(caps);
+	m_Renderer2D = new Atom::Renderer2D();
 
 #if 0
 	float m_OrthographicSize = 10.0f;
@@ -204,13 +203,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 	m_Renderer2D->Begin(s_Projection, view);
 
-#if 0
-	m_Renderer2D->SubmitQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 2.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 3.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-#else
-	constexpr uint32_t size = 100;
+	constexpr uint32_t size = 150;
 	for (uint32_t x = 0; x < size; x++)
 	{
 		for (uint32_t y = 0; y < size; y++)
@@ -218,7 +211,6 @@ void SandboxLayer::OnUpdate(float deltaTime)
 			m_Renderer2D->SubmitQuad({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
 		}
 	}
-#endif
 
 	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
