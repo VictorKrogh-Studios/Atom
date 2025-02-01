@@ -16,6 +16,9 @@ static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
 	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
 
 	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text(" - Vertices: %d", stats.GetLineVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetLineIndexCount());
+
 	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 }
 
@@ -208,12 +211,34 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	{
 		for (uint32_t y = 0; y < size; y++)
 		{
-			m_Renderer2D->SubmitQuad({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+			m_Renderer2D->SubmitQuad({ x, y }, { 0.75f, 0.75f }, { 0.05f, 0.5f, 0.05f, 1.0f });
 		}
 	}
 
 	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+	m_Renderer2D->SubmitLine({ 1.0f, 1.0f}, { -1.0f, -1.0f}, { 1.0f, 0.0f, 1.0f, 1.0f});
+
+	{
+		const glm::vec2 position = { 0.0f, 0.0f };
+		const float radius = 10.0f;
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		int segments = 10240;
+		for (int i = 0; i < segments; i++)
+		{
+			float angle = 2.0f * glm::pi<float>() * (float)i / segments;
+			glm::vec4 startPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			angle = 2.0f * glm::pi<float>() * (float)((i + 1) % segments) / segments;
+			glm::vec4 endPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+
+			glm::vec3 p0 = transform * startPosition;
+			glm::vec3 p1 = transform * endPosition;
+			m_Renderer2D->SubmitLine(p0, p1, { 1.0f, 0.0f, 1.0f, 1.0f }, 0.07f);
+		}
+	}
 
 	m_Renderer2D->End();
 }
