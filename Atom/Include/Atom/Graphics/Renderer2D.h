@@ -129,6 +129,9 @@ namespace Atom
 			T* VertexBufferPtr = nullptr;
 		};
 	private: // QUAD VERTEX PIPELINE
+		Pipeline* m_QuadPipeline = nullptr;
+		RenderPass* m_QuadRenderPass = nullptr;
+
 		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
 		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
 		std::vector<QuadVertex*> m_QuadVertexBufferPtr;
@@ -138,12 +141,6 @@ namespace Atom
 		uint32_t m_QuadTransformDataCount = 0;
 		std::vector<QuadTransformData> m_QuadTransformDatas;
 		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
-
-		Pipeline2D<QuadVertex> m_QuadPipeline = {};
-
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> CreateQuadPipeline(uint32_t framesInFlight);
-		void DestroyQuadPipeline();
-
 	private: // LINE VERTEX PIPELINE
 		Pipeline2D<LineVertex> m_LinePipeline = {};
 
