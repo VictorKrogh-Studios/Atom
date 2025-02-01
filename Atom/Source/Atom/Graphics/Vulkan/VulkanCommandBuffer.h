@@ -21,8 +21,10 @@ namespace Atom
 
 		virtual void Reset(uint32_t index) const override;
 		virtual void Begin(uint32_t index) const override;
+		virtual void Begin(RenderPass* renderPass, uint32_t index) const override;
 		virtual void End(uint32_t index) const override;
 		virtual void Submit(uint32_t index) const override;
+		virtual void Execute(CommandBuffer* commandBuffer, uint32_t index) const override;
 	private:
 		void CreateCommandBuffer(VkDevice device);
 	private:

@@ -5,6 +5,8 @@
 namespace Atom
 {
 
+	class RenderPass;
+
 	struct CommandBufferCreateInfo
 	{
 		Enumerations::CommandBufferLevel Level;
@@ -23,8 +25,10 @@ namespace Atom
 
 		virtual void Reset(uint32_t index) const = 0;
 		virtual void Begin(uint32_t index) const = 0;
+		virtual void Begin(RenderPass* renderPass, uint32_t index) const = 0;
 		virtual void End(uint32_t index) const = 0;
 		virtual void Submit(uint32_t index) const = 0;
+		virtual void Execute(CommandBuffer* commandBuffer, uint32_t index) const = 0;
 	protected:
 		CommandBufferCreateInfo m_CommandBufferCreateInfo;
 		uint32_t m_Count;

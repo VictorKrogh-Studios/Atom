@@ -4,6 +4,7 @@
 #include "Internal/VulkanPhysicalDevice.h"
 
 #include "Atom/Graphics/Vulkan/VulkanUtils.h"
+#include "VulkanRenderPass.h"
 
 namespace Atom
 {
@@ -35,6 +36,27 @@ namespace Atom
 		VkCommandBufferBeginInfo commandBufferBeginInfo{};
 		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		commandBufferBeginInfo.flags = Vulkan::Utils::GetVkCommandBufferUsageFlags(m_CommandBufferCreateInfo.Usage);
+
+		VkResult result = vkBeginCommandBuffer(m_CommandBuffers[index], &commandBufferBeginInfo);
+		AT_CORE_ASSERT(result == VK_SUCCESS);
+	}
+
+	void VulkanCommandBuffer::Begin(RenderPass* renderPass, uint32_t index) const
+	{
+		VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(renderPass);
+
+		VkCommandBufferInheritanceInfo inheritanceInfo{};
+		if (m_CommandBufferCreateInfo.Level == Enumerations::CommandBufferLevel::Secondary)
+		{
+			inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			inheritanceInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
+			inheritanceInfo.framebuffer = vulkanRenderPass->GetVkFramebuffer();
+		} 
+
+		VkCommandBufferBeginInfo commandBufferBeginInfo{};
+		commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		commandBufferBeginInfo.flags = Vulkan::Utils::GetVkCommandBufferUsageFlags(m_CommandBufferCreateInfo.Usage);
+		commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
 		VkResult result = vkBeginCommandBuffer(m_CommandBuffers[index], &commandBufferBeginInfo);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
@@ -81,6 +103,13 @@ namespace Atom
 
 		VkResult result = vkQueueSubmit(vulkanDevice->m_GraphicsQueue, 1, &submitInfo, fence);
 		AT_CORE_ASSERT(result == VK_SUCCESS);
+	}
+
+	void VulkanCommandBuffer::Execute(CommandBuffer* commandBuffer, uint32_t index) const
+	{
+		VulkanCommandBuffer* vulkanCommandBuffer  = static_cast<VulkanCommandBuffer*>(commandBuffer);
+
+		vkCmdExecuteCommands(vulkanCommandBuffer->m_CommandBuffers[index], 1, &m_CommandBuffers[index]);
 	}
 
 	void VulkanCommandBuffer::CreateCommandBuffer(VkDevice device)
