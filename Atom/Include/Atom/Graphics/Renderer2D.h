@@ -49,21 +49,6 @@ namespace Atom
 
 	class Renderer2D
 	{
-	private:
-		struct QuadVertex
-		{
-			glm::vec4 VertexPosition;
-			glm::vec4 Color;
-			int32_t QuadIndex;
-		};
-
-		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
-
-		struct QuadTransformData
-		{
-			alignas(16) glm::vec3 Position;
-			alignas(16) glm::vec3 Scale;
-		};
 	public:
 		Renderer2D(const Renderer2DCapabilities& capabilities = Renderer2DCapabilities());
 		~Renderer2D();
@@ -79,7 +64,31 @@ namespace Atom
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 
-		const Renderer2DStatistics& GetStatistics() const { return m_Statistics; }
+		const Renderer2DStatistics& GetStatistics() const
+		{
+			return m_Statistics;
+		}
+	private:
+		struct QuadVertex
+		{
+			glm::vec4 VertexPosition;
+			glm::vec4 Color;
+			int32_t QuadIndex;
+		};
+
+		// For alignment issues; Use alignas(16) or extra padding members in the C++ struct.
+
+		struct QuadTransformData
+		{
+			alignas(16) glm::vec3 Position;
+			alignas(16) glm::vec3 Scale;
+		};
+
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+		};
 	private:
 		bool OnWindowResizeEvent(WindowResizeEvent& event);
 
@@ -119,7 +128,6 @@ namespace Atom
 			T* VertexBufferBase = nullptr;
 			T* VertexBufferPtr = nullptr;
 		};
-
 	private: // QUAD VERTEX PIPELINE
 		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
 		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
@@ -137,12 +145,6 @@ namespace Atom
 		void DestroyQuadPipeline();
 
 	private: // LINE VERTEX PIPELINE
-		struct LineVertex
-		{
-			glm::vec3 Position;
-			glm::vec4 Color;
-		};
-
 		Pipeline2D<LineVertex> m_LinePipeline = {};
 
 		Renderer2D::Pipeline2D<Renderer2D::LineVertex> CreateLinePipeline();
