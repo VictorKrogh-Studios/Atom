@@ -12,6 +12,7 @@ namespace Atom
 		virtual ~StorageBuffer() = default;
 
 		virtual void Upload(uint64_t size, void* data, uint32_t index) const = 0;
+		virtual void Resize(uint64_t size, uint32_t index) = 0;
 
 		virtual uint64_t GetSize() const { return m_Size; }
 	protected:

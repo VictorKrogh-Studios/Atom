@@ -14,6 +14,9 @@ static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
 	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
 
 	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text(" - Vertices: %d", stats.GetLineVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetLineIndexCount());
+
 	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 }
 
@@ -33,8 +36,7 @@ void FractalTreeLayer::OnAttach()
 	m_Projection = glm::ortho(m_OrthoLeft, m_OrthoRight, m_OrthoBottom, m_OrthoTop, -1.0f, 1.0f);
 	m_View = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f });
 
-	Atom::Renderer2DCapabilities caps(10000000);
-	m_Renderer2D = new Atom::Renderer2D(caps);
+	m_Renderer2D = new Atom::Renderer2D();
 
 	m_AngleDegrees = glm::degrees(glm::pi<float>() / 4.0f);
 }

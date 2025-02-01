@@ -24,6 +24,17 @@ namespace Atom
 		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::RENDER_PASS_CONTINUE_BIT;
 		m_CommandBuffer = CommandBuffer::Create(commandBufferCreateInfo);
 
+		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(m_CameraUBO));
+
+		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
+
+		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
+
 		uint32_t maxIndices = m_Capabilities.MaxIndices;
 		uint32_t* quadIndices = new uint32_t[maxIndices];
 
@@ -41,38 +52,154 @@ namespace Atom
 			offset += 4;
 		}
 
-		m_QuadIndexBuffer = IndexBuffer::Create(maxIndices, quadIndices);
+		{	// Setup quad pipeline
+			m_QuadTransformDatas.resize(m_Capabilities.MaxQuads);
+			m_QuadTransformDataStorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
 
-		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(m_CameraUBO));
+			RenderPassCreateInfo renderPassCreateInfo{};
+			renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
+			renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+			renderPassCreateInfo.RenderArea = windowSize;
+			renderPassCreateInfo.TargetSwapChain = true;
+			renderPassCreateInfo.ImplicitSetViewport = false;
+			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
+			m_QuadRenderPass = RenderPass::Create(renderPassCreateInfo);
 
-		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+			PipelineOptions pipelineOptions{};
+			pipelineOptions.Layout = {
+				 { Enumerations::ShaderDataType::Float4, "inVertexPosition" },
+				 { Enumerations::ShaderDataType::Float4, "inColor" },
+				 { Enumerations::ShaderDataType::Int, "inQuadIndex" }
+			};
+			pipelineOptions.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Quad");
+			pipelineOptions.RenderPass = m_QuadRenderPass;
+			pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
+			pipelineOptions.StorageBuffer = m_QuadTransformDataStorageBuffer;
+			m_QuadPipeline = Pipeline::Create(pipelineOptions);
 
-		m_QuadTransformDataBase = new Renderer2D::QuadTransformData[m_Capabilities.MaxQuads];
-		m_StorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
+			m_QuadIndexBuffer = IndexBuffer::Create(maxIndices, quadIndices);
 
-		m_QuadPipeline = CreateQuadPipeline();
-		m_LinePipeline = CreateLinePipeline();
+			VertexBufferCreateInfo vertexBufferCreateInfo{};
+			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
+
+			m_QuadVertexBuffers.resize(1);
+			m_QuadVertexBufferBases.resize(1);
+			m_QuadVertexBufferPtr.resize(1);
+
+			m_QuadVertexBuffers[0].resize(framesInFlight);
+			m_QuadVertexBufferBases[0].resize(framesInFlight);
+			for (uint32_t i = 0; i < framesInFlight; i++)
+			{
+				m_QuadVertexBuffers[0][i] = VertexBuffer::Create(vertexBufferCreateInfo);
+				m_QuadVertexBufferBases[0][i] = new QuadVertex[m_Capabilities.MaxVertices];
+			}
+		}
+
+		{	// Setup line pipeline
+			RenderPassCreateInfo renderPassCreateInfo{};
+			renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
+			renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+			renderPassCreateInfo.RenderArea = windowSize;
+			renderPassCreateInfo.TargetSwapChain = true;
+			renderPassCreateInfo.ImplicitSetViewport = false;
+			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
+			m_LineRenderPass = RenderPass::Create(renderPassCreateInfo);
+
+			PipelineOptions pipelineOptions{};
+			pipelineOptions.Layout = {
+				{ Enumerations::ShaderDataType::Float3, "inPosition" },
+				{ Enumerations::ShaderDataType::Float4, "inColor" }
+			};
+			pipelineOptions.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Line");
+			pipelineOptions.RenderPass = m_LineRenderPass;
+			pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
+			m_LinePipeline = Pipeline::Create(pipelineOptions);
+
+			m_LineIndexBuffer = IndexBuffer::Create(maxIndices, quadIndices);
+
+			VertexBufferCreateInfo vertexBufferCreateInfo{};
+			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices;
+
+			m_LineVertexBuffers.resize(1);
+			m_LineVertexBufferBases.resize(1);
+			m_LineVertexBufferPtr.resize(1);
+
+			m_LineVertexBuffers[0].resize(framesInFlight);
+			m_LineVertexBufferBases[0].resize(framesInFlight);
+			for (uint32_t i = 0; i < framesInFlight; i++)
+			{
+				m_LineVertexBuffers[0][i] = VertexBuffer::Create(vertexBufferCreateInfo);
+				m_LineVertexBufferBases[0][i] = new LineVertex[m_Capabilities.MaxVertices];
+			}
+		}
+		 
+		delete[] quadIndices;
 	}
 
 	Renderer2D::~Renderer2D()
 	{
-		DestroyLinePipeline();
-		DestroyQuadPipeline();
+		{	// Destroy quad pipeline
+			for (auto& buffers : m_QuadVertexBufferBases)
+			{
+				for (auto buffer : buffers)
+				{
+					delete[] buffer;
+				}
+			}
+			m_QuadVertexBufferBases.clear();
 
-		delete m_LineShader;
-		m_LineShader = nullptr;
+			for (auto& buffers : m_QuadVertexBuffers)
+			{
+				for (auto buffer : buffers)
+				{
+					delete buffer;
+				}
+			}
+			m_QuadVertexBuffers.clear();
 
-		delete m_QuadShader;
-		m_QuadShader = nullptr;
+			delete m_QuadPipeline;
+			m_QuadPipeline = nullptr;
 
-		delete m_StorageBuffer;
-		m_StorageBuffer = nullptr;
+			delete m_QuadRenderPass;
+			m_QuadRenderPass = nullptr;
 
-		delete m_QuadIndexBuffer;
-		m_QuadIndexBuffer = nullptr;
+			delete m_QuadTransformDataStorageBuffer;
+			m_QuadTransformDataStorageBuffer = nullptr;
+
+			delete m_QuadIndexBuffer;
+			m_QuadIndexBuffer = nullptr;
+		}
+
+		{	// Destroy line pipeline
+			for (auto& buffers : m_LineVertexBufferBases)
+			{
+				for (auto buffer : buffers)
+				{
+					delete[] buffer;
+				}
+			}
+			m_LineVertexBufferBases.clear();
+
+			for (auto& buffers : m_LineVertexBuffers)
+			{
+				for (auto buffer : buffers)
+				{
+					delete buffer;
+				}
+			}
+			m_LineVertexBuffers.clear();
+
+			delete m_LinePipeline;
+			m_LinePipeline = nullptr;
+
+			delete m_LineRenderPass;
+			m_LineRenderPass = nullptr;
+
+			delete m_LineIndexBuffer;
+			m_LineIndexBuffer = nullptr;
+		}
 
 		delete m_CameraUniformBuffer;
 		m_CameraUniformBuffer = nullptr;
@@ -92,26 +219,30 @@ namespace Atom
 
 	void Renderer2D::Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
 	{
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
 		memset(&m_Statistics, 0, sizeof(Renderer2DStatistics));
 
 		m_CameraUBO.Projection = projectionMatrix;
 		m_CameraUBO.View = viewMatrix;
-		m_CameraUniformBuffer->Upload((void*)&m_CameraUBO, sizeof(m_CameraUBO), Renderer::GetCurrentFrameIndex());
+		m_CameraUniformBuffer->Upload((void*)&m_CameraUBO, sizeof(m_CameraUBO), frameIndex);
 
 		StartBatch();
 	}
 
 	void Renderer2D::End()
 	{
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+		if (m_QuadTransformDataCount)
+		{
+			uint32_t size = sizeof(Renderer2D::QuadTransformData) * m_QuadTransformDataCount;
+			m_QuadTransformDataStorageBuffer->Resize(size, frameIndex);
+			m_QuadTransformDataStorageBuffer->Upload(size, m_QuadTransformDatas.data(), frameIndex);
+			m_QuadPipeline->Set(1, m_QuadTransformDataStorageBuffer);
+		}
+
 		Flush();
-
-		/*m_CommandBuffer->Reset(Renderer::GetCurrentFrameIndex());
-		m_CommandBuffer->Begin(Renderer::GetCurrentFrameIndex());*/
-
-		// TODO: RENDER!!!
-
-		//m_CommandBuffer->End(Renderer::GetCurrentFrameIndex());
-		// TODO: CMDBUFFER->EXECUTE
 	}
 
 	void Renderer2D::SubmitQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -121,25 +252,22 @@ namespace Atom
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color)
 	{
-		if (m_QuadPipeline.IndexCount >= m_Capabilities.MaxIndices)
-		{
-			NextBatch();
-		}
+		auto& quadVertexBufferPtr = GetWriteableQuadBuffer();
+		auto& quadTransformDataPtr = GetQuadTransformDataPtr();
 
 		for (size_t i = 0; i < 4; i++)
 		{
-			m_QuadPipeline.VertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
-			m_QuadPipeline.VertexBufferPtr->Color = color;
-			m_QuadPipeline.VertexBufferPtr->QuadIndex = m_QuadTransformDataCount;
-			m_QuadPipeline.VertexBufferPtr++;
+			quadVertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
+			quadVertexBufferPtr->Color = color;
+			quadVertexBufferPtr->QuadIndex = m_QuadTransformDataCount;
+			quadVertexBufferPtr++;
 		}
 
-		m_QuadTransformDataPtr->Position = position;
-		m_QuadTransformDataPtr->Scale = size;
-		m_QuadTransformDataPtr++;
+		quadTransformDataPtr.Position = position;
+		quadTransformDataPtr.Scale = size;
 
-		m_QuadPipeline.IndexCount += 6;
 		m_QuadTransformDataCount++;
+		m_QuadIndexCount += 6;
 
 		m_Statistics.QuadCount++;
 	}
@@ -151,16 +279,7 @@ namespace Atom
 
 	void Renderer2D::SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness)
 	{
-		if (m_LinePipeline.IndexCount >= m_Capabilities.MaxIndices)
-		{
-#if 0
-			NextBatch();
-#else
-			// TODO: resize buffers (VertexBuffer, VertexBufferBase, probably IndexBuffer aswell)!
-			AT_CORE_ASSERT(false, "Resizing is needed!!");
-			return;
-#endif
-		}
+		auto& lineVertexBufferPtr = GetWriteableLinePtr();
 
 		glm::vec2 normal = glm::normalize(glm::vec2(end.y - start.y, -(end.x - start.x))) * thickness;
 		glm::vec3 vertex1 = glm::vec3(start.x + normal.x, start.y + normal.y, 0.0f);
@@ -176,203 +295,181 @@ namespace Atom
 			if (i == 2) vertex = vertex3;
 			if (i == 3) vertex = vertex4;
 
-			m_LinePipeline.VertexBufferPtr->Position = vertex;
-			m_LinePipeline.VertexBufferPtr->Color = color;
-			m_LinePipeline.VertexBufferPtr++;
+			lineVertexBufferPtr->Position = vertex;
+			lineVertexBufferPtr->Color = color;
+			lineVertexBufferPtr++;
 		}
 
-
-		m_LinePipeline.IndexCount += 6;
+		m_LineIndexCount += 6;
 
 		m_Statistics.LineCount++;
 	}
 
 	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
 	{
-		m_QuadPipeline.RenderPass->Resize(event.GetWidth(), event.GetHeight());
-		m_LinePipeline.RenderPass->Resize(event.GetWidth(), event.GetHeight());
+		m_QuadRenderPass->Resize(event.GetWidth(), event.GetHeight());
+		m_LineRenderPass->Resize(event.GetWidth(), event.GetHeight());
 
 		return false;
 	}
 
-	void Renderer2D::StartBatch()
+	void Renderer2D::AddQuadVertexBuffer()
 	{
-		m_QuadPipeline.IndexCount = 0;
-		m_QuadPipeline.VertexBufferPtr = m_QuadPipeline.VertexBufferBase;
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		m_QuadTransformDataCount = 0;
-		m_QuadTransformDataPtr = m_QuadTransformDataBase;
+		std::vector<VertexBuffer*>& newVertexBuffers = m_QuadVertexBuffers.emplace_back();
+		std::vector<QuadVertex*>& newVertexBufferBases = m_QuadVertexBufferBases.emplace_back();
 
-		m_LinePipeline.IndexCount = 0;
-		m_LinePipeline.VertexBufferPtr = m_LinePipeline.VertexBufferBase;
+		newVertexBuffers.resize(framesInFlight);
+		newVertexBufferBases.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++)
+		{
+			VertexBufferCreateInfo vertexBufferCreateInfo{};
+			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
+			newVertexBuffers[i] = VertexBuffer::Create(vertexBufferCreateInfo);
+			newVertexBufferBases[i] = new QuadVertex[m_Capabilities.MaxVertices];
+		}
 	}
 
-	template<typename T>
-	static void DrawPipeline(RenderCommand* renderCommand, CommandBuffer* commandBuffer, Renderer2D::Pipeline2D<T>& pipeline, IndexBuffer* indexBuffer, uint32_t frameIndex, Renderer2DStatistics& stats)
+	Renderer2D::QuadVertex*& Renderer2D::GetWriteableQuadBuffer()
 	{
-		if (pipeline.IndexCount == 0)
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+		m_QuadBufferWriteIndex = m_QuadIndexCount / m_Capabilities.MaxIndices;
+		if (m_QuadBufferWriteIndex >= m_QuadVertexBufferBases.size())
 		{
-			return;
+			AddQuadVertexBuffer();
+			m_QuadVertexBufferPtr.emplace_back();
+			m_QuadVertexBufferPtr[m_QuadBufferWriteIndex] = m_QuadVertexBufferBases[m_QuadBufferWriteIndex][frameIndex];
 		}
 
-		renderCommand->BeginRenderPass(commandBuffer, pipeline.RenderPass, frameIndex);
+		return m_QuadVertexBufferPtr[m_QuadBufferWriteIndex];
+	}
 
-		if (pipeline.IndexCount != pipeline.PreviousIndexCount)
+	Renderer2D::QuadTransformData& Atom::Renderer2D::GetQuadTransformDataPtr()
+	{
+		if (m_QuadTransformDataCount >= m_QuadTransformDatas.size())
 		{
-			uint32_t dataSize = (uint32_t)((uint8_t*)pipeline.VertexBufferPtr - (uint8_t*)pipeline.VertexBufferBase);
-			pipeline.VertexBuffer->Upload(dataSize, pipeline.VertexBufferBase);
+			m_QuadTransformDatas.emplace_back(Renderer2D::QuadTransformData{});
 		}
 
-		renderCommand->DrawIndexed(commandBuffer, pipeline.Pipeline, pipeline.VertexBuffer, indexBuffer, pipeline.IndexCount, frameIndex);
+		return m_QuadTransformDatas.at(m_QuadTransformDataCount);
+	}
 
-		renderCommand->EndRenderPass(commandBuffer, frameIndex);
+	void Renderer2D::AddLineVertexBuffer()
+	{
+		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
-		pipeline.PreviousIndexCount = pipeline.IndexCount;
+		std::vector<VertexBuffer*>& newVertexBuffers = m_LineVertexBuffers.emplace_back();
+		std::vector<LineVertex*>& newVertexBufferBases = m_LineVertexBufferBases.emplace_back();
 
-		stats.DrawCalls++;
+		newVertexBuffers.resize(framesInFlight); 
+		newVertexBufferBases.resize(framesInFlight); 
+		for (uint32_t i = 0; i < framesInFlight; i++) 
+		{
+			VertexBufferCreateInfo vertexBufferCreateInfo{}; 
+			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer; 
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices; 
+			newVertexBuffers[i] = VertexBuffer::Create(vertexBufferCreateInfo);
+			newVertexBufferBases[i] = new LineVertex[m_Capabilities.MaxVertices];
+		}
+	}
+
+	Renderer2D::LineVertex*& Renderer2D::GetWriteableLinePtr()
+	{
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+		m_LineBufferWriteIndex = m_LineIndexCount / m_Capabilities.MaxIndices;
+		if (m_LineBufferWriteIndex >= m_LineVertexBufferBases.size())
+		{
+			AddLineVertexBuffer();
+			m_LineVertexBufferPtr.emplace_back();
+			m_LineVertexBufferPtr[m_LineBufferWriteIndex] = m_LineVertexBufferBases[m_LineBufferWriteIndex][frameIndex];
+		}
+
+		return m_LineVertexBufferPtr[m_LineBufferWriteIndex];
+	}
+
+	void Renderer2D::StartBatch()
+	{
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
+
+		m_QuadIndexCount = 0;
+		for (uint32_t i = 0; i < m_QuadVertexBufferPtr.size(); i++)
+		{
+			m_QuadVertexBufferPtr[i] = m_QuadVertexBufferBases[i][frameIndex];
+		}
+
+		m_QuadTransformDataCount = 0;
+
+		m_LineIndexCount = 0;
+		for (uint32_t i = 0; i < m_LineVertexBufferPtr.size(); i++)
+		{
+			m_LineVertexBufferPtr[i] = m_LineVertexBufferBases[i][frameIndex];
+		}
 	}
 
 	void Renderer2D::Flush()
 	{
 		CommandBuffer* drawCommandBuffer = Renderer::GetDrawCommandBuffer();
 		RenderCommand* renderCommand = Renderer::GetRenderCommand();
+		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 
-		{	// QUAD
-			if (m_QuadPipeline.IndexCount)
+		{	// Draw quads
+			renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadRenderPass, frameIndex);
+
+			m_CommandBuffer->Begin(m_QuadRenderPass, frameIndex);
+
+			renderCommand->SetViewport(m_CommandBuffer, m_QuadRenderPass, frameIndex);
+			for (uint32_t i = 0; i <= m_QuadBufferWriteIndex; i++)
 			{
-				if (m_QuadTransformDataCount)
+				uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr[i] - (uint8_t*)m_QuadVertexBufferBases[i][frameIndex]);
+				if (dataSize)
 				{
-					uint32_t size = (uint32_t)((uint8_t*)m_QuadTransformDataPtr - (uint8_t*)m_QuadTransformDataBase);
-					m_StorageBuffer->Upload(size, m_QuadTransformDataBase, Renderer::GetCurrentFrameIndex());
+					m_QuadVertexBuffers[i][frameIndex]->Upload(dataSize, m_QuadVertexBufferBases[i][frameIndex]);
+
+					uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+
+					renderCommand->DrawIndexed(m_CommandBuffer, m_QuadPipeline, m_QuadVertexBuffers[i][frameIndex], m_QuadIndexBuffer, indexCount, frameIndex);
+
+					m_Statistics.DrawCalls++;
 				}
-
-				renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadPipeline.RenderPass, Renderer::GetCurrentFrameIndex());
-
-				if (m_QuadPipeline.IndexCount != m_QuadPipeline.PreviousIndexCount)
-				{
-					uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadPipeline.VertexBufferPtr - (uint8_t*)m_QuadPipeline.VertexBufferBase);
-					m_QuadPipeline.VertexBuffer->Upload(dataSize, m_QuadPipeline.VertexBufferBase);
-				}
-
-				renderCommand->DrawIndexed(drawCommandBuffer, m_QuadPipeline.Pipeline, m_QuadPipeline.VertexBuffer, m_QuadIndexBuffer, m_QuadPipeline.IndexCount, Renderer::GetCurrentFrameIndex());
-
-				renderCommand->EndRenderPass(drawCommandBuffer, Renderer::GetCurrentFrameIndex());
-
-				m_QuadPipeline.PreviousIndexCount = m_QuadPipeline.IndexCount;
-
-				m_Statistics.DrawCalls++;
 			}
+
+			renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
 		}
 
-		DrawPipeline(renderCommand, drawCommandBuffer, m_LinePipeline, m_QuadIndexBuffer, Renderer::GetCurrentFrameIndex(), m_Statistics);
+		{	// Draw lines
+			renderCommand->BeginRenderPass(drawCommandBuffer, m_LineRenderPass, frameIndex);
+
+			renderCommand->SetViewport(m_CommandBuffer, m_LineRenderPass, frameIndex);
+			for (uint32_t i = 0; i <= m_LineBufferWriteIndex; i++)
+			{
+				uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr[i] - (uint8_t*)m_LineVertexBufferBases[i][frameIndex]);
+				if (dataSize)
+				{
+					m_LineVertexBuffers[i][frameIndex]->Upload(dataSize, m_LineVertexBufferBases[i][frameIndex]);
+
+					uint32_t indexCount = i == m_LineBufferWriteIndex ? m_LineIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+
+					renderCommand->DrawIndexed(m_CommandBuffer, m_LinePipeline, m_LineVertexBuffers[i][frameIndex], m_LineIndexBuffer, indexCount, frameIndex);
+
+					m_Statistics.DrawCalls++;
+				}
+			}
+
+			m_CommandBuffer->End(frameIndex);
+			m_CommandBuffer->Execute(drawCommandBuffer, frameIndex);
+
+			renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
+		}
 	}
 
 	void Renderer2D::NextBatch()
 	{
 		Flush();
 		StartBatch();
-	}
-
-	Renderer2D::Pipeline2D<Renderer2D::QuadVertex> Renderer2D::CreateQuadPipeline()
-	{
-		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
-		Shader* shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Quad");
-
-		RenderPassCreateInfo renderPassCreateInfo{};
-		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
-		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
-		renderPassCreateInfo.RenderArea = windowSize;
-		renderPassCreateInfo.TargetSwapChain = true;
-		RenderPass* renderPass = RenderPass::Create(renderPassCreateInfo);
-
-		PipelineOptions pipelineOptions{};
-		pipelineOptions.Layout = {
-			 { Enumerations::ShaderDataType::Float4, "inVertexPosition" },
-			 { Enumerations::ShaderDataType::Float4, "inColor" },
-			 { Enumerations::ShaderDataType::Int, "inQuadIndex" }
-		};
-		pipelineOptions.Shader = shader;
-		pipelineOptions.RenderPass = renderPass;
-		pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
-		pipelineOptions.StorageBuffer = m_StorageBuffer;
-
-		VertexBufferCreateInfo vertexBufferCreateInfo{};
-		vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-		vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
-
-		Renderer2D::Pipeline2D<Renderer2D::QuadVertex> pipeline{};
-		pipeline.Shader = shader;
-		pipeline.Pipeline = Pipeline::Create(pipelineOptions);
-		pipeline.RenderPass = renderPass;
-		pipeline.VertexBuffer = VertexBuffer::Create(vertexBufferCreateInfo);
-		pipeline.VertexBufferBase = new Renderer2D::QuadVertex[m_Capabilities.MaxVertices];
-		return pipeline;
-	}
-
-	void Renderer2D::DestroyQuadPipeline()
-	{
-		delete m_QuadPipeline.Pipeline;
-		m_QuadPipeline.Pipeline = nullptr;
-
-		delete m_QuadPipeline.RenderPass;
-		m_QuadPipeline.RenderPass = nullptr;
-
-		delete m_QuadPipeline.VertexBuffer;
-		m_QuadPipeline.VertexBuffer = nullptr;
-
-		delete m_QuadPipeline.VertexBufferBase;
-		m_QuadPipeline.VertexBufferBase = nullptr;
-		m_QuadPipeline.VertexBufferPtr = nullptr;
-	}
-
-	Renderer2D::Pipeline2D<Renderer2D::LineVertex> Renderer2D::CreateLinePipeline()
-	{
-		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
-		Shader* shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Line");
-
-		RenderPassCreateInfo renderPassCreateInfo{};
-		renderPassCreateInfo.ImageFormat = Enumerations::ImageFormat::B8G8R8A8_UNORM;
-		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
-		renderPassCreateInfo.RenderArea = windowSize;
-		renderPassCreateInfo.TargetSwapChain = true;
-		RenderPass* renderPass = RenderPass::Create(renderPassCreateInfo);
-
-		PipelineOptions pipelineOptions{};
-		pipelineOptions.Layout = {
-			{ Enumerations::ShaderDataType::Float3, "inPosition" },
-			{ Enumerations::ShaderDataType::Float4, "inColor" }
-		};
-		pipelineOptions.Shader = shader;
-		pipelineOptions.RenderPass = renderPass;
-		pipelineOptions.UniformBuffer = m_CameraUniformBuffer;
-
-		VertexBufferCreateInfo vertexBufferCreateInfo{};
-		vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-		vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices;
-
-		Renderer2D::Pipeline2D<Renderer2D::LineVertex> pipeline{};
-		pipeline.Shader = shader;
-		pipeline.Pipeline = Pipeline::Create(pipelineOptions);
-		pipeline.RenderPass = renderPass;
-		pipeline.VertexBuffer = VertexBuffer::Create(vertexBufferCreateInfo);
-		pipeline.VertexBufferBase = new Renderer2D::LineVertex[m_Capabilities.MaxVertices];
-		return pipeline;
-	}
-
-	void Renderer2D::DestroyLinePipeline()
-	{
-		delete m_LinePipeline.Pipeline;
-		m_LinePipeline.Pipeline = nullptr;
-
-		delete m_LinePipeline.RenderPass;
-		m_LinePipeline.RenderPass = nullptr;
-
-		delete m_LinePipeline.VertexBuffer;
-		m_LinePipeline.VertexBuffer = nullptr;
-
-		delete m_LinePipeline.VertexBufferBase;
-		m_LinePipeline.VertexBufferBase = nullptr;
-		m_LinePipeline.VertexBufferPtr = nullptr;
 	}
 
 }

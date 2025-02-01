@@ -18,6 +18,7 @@ namespace Atom
 
 		virtual void BeginRenderPass(CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const = 0;
 		virtual void EndRenderPass(CommandBuffer* commandBuffer, uint32_t frameIndex) const = 0;
+		virtual void SetViewport(CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const = 0;
 
 		virtual void RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount, uint32_t frameIndex) const = 0;
 		virtual void DrawVertices(CommandBuffer* commandBuffer, Pipeline* pipeline, VertexBuffer* vertexBuffer, uint32_t vertexCount, uint32_t frameIndex) const = 0;

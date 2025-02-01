@@ -41,6 +41,11 @@ namespace Atom
 		vkDestroyPipeline(device, m_GraphicsPipeline, nullptr);
 	}
 
+	void VulkanPipeline::Set(uint32_t binding, StorageBuffer* storageBuffer) const
+	{
+		m_Options.Shader->Set(binding, storageBuffer);
+	}
+
 	void VulkanPipeline::CreatePipelineLayout(VkDevice device)
 	{
 		VulkanShader* vulkanShader = static_cast<VulkanShader*>(m_Options.Shader);

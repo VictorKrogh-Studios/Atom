@@ -7,7 +7,7 @@ namespace Atom
 	struct VertexBufferCreateInfo
 	{
 		Enumerations::BufferUsageFlags Usage;
-		uint32_t Size;
+		uint64_t Size;
 		void* Vertices = nullptr;
 	};
 
@@ -17,9 +17,12 @@ namespace Atom
 		static VertexBuffer* Create(const VertexBufferCreateInfo& createInfo);
 		static VertexBuffer* Create(uint64_t size, void* vertices);
 	public:
+		VertexBuffer(const VertexBufferCreateInfo& createInfo);
 		virtual ~VertexBuffer() = default;
 
 		virtual void Upload(uint32_t size, void* vertices) const = 0;
+	protected:
+		VertexBufferCreateInfo m_CreateInfo;
 	};
 
 }

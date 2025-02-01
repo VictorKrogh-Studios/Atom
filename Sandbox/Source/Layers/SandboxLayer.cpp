@@ -16,6 +16,9 @@ static void DrawRenderer2DStats(const Atom::Renderer2DStatistics& stats)
 	ImGui::Text(" - Indices: %d", stats.GetQuadIndexCount());
 
 	ImGui::Text("Line Count: %d", stats.LineCount);
+	ImGui::Text(" - Vertices: %d", stats.GetLineVertexCount());
+	ImGui::Text(" - Indices: %d", stats.GetLineIndexCount());
+
 	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 }
 
@@ -89,8 +92,7 @@ void SandboxLayer::OnAttach()
 
 	m_Renderer = Atom::TestRenderer::Create();
 
-	Atom::Renderer2DCapabilities caps(15000);
-	m_Renderer2D = new Atom::Renderer2D(caps);
+	m_Renderer2D = new Atom::Renderer2D();
 
 #if 0
 	float m_OrthographicSize = 10.0f;
@@ -102,7 +104,7 @@ void SandboxLayer::OnAttach()
 	float orthoTop = m_OrthographicSize * 0.5f;
 	s_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, -1.0f, 1.0f);
 #else
-	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 100.0f);
+	s_Projection = glm::perspective(glm::radians(45.0f), 1600 / (float)900, 0.1f, 1000.0f);
 	// projection[1][1] *= -1;
 #endif
 
@@ -204,24 +206,39 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 	m_Renderer2D->Begin(s_Projection, view);
 
-#if 0
-	m_Renderer2D->SubmitQuad({ 0.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 2.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-	m_Renderer2D->SubmitQuad({ 3.0f, 0.0f }, { 0.5f, 0.5f }, { 0.05f, 0.5f, 0.05f, 1.0f });
-#else
-	constexpr uint32_t size = 100;
+	constexpr uint32_t size = 150;
 	for (uint32_t x = 0; x < size; x++)
 	{
 		for (uint32_t y = 0; y < size; y++)
 		{
-			m_Renderer2D->SubmitQuad({ x, y }, { 0.95f, 0.95f }, { 0.05f, 0.5f, 0.05f, 1.0f });
+			m_Renderer2D->SubmitQuad({ x, y }, { 0.75f, 0.75f }, { 0.05f, 0.5f, 0.05f, 1.0f });
 		}
 	}
-#endif
 
 	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+
+	m_Renderer2D->SubmitLine({ 1.0f, 1.0f}, { -1.0f, -1.0f}, { 1.0f, 0.0f, 1.0f, 1.0f});
+
+	{
+		const glm::vec2 position = { 0.0f, 0.0f };
+		const float radius = 10.0f;
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
+
+		int segments = 10240;
+		for (int i = 0; i < segments; i++)
+		{
+			float angle = 2.0f * glm::pi<float>() * (float)i / segments;
+			glm::vec4 startPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+			angle = 2.0f * glm::pi<float>() * (float)((i + 1) % segments) / segments;
+			glm::vec4 endPosition = { glm::cos(angle), glm::sin(angle), 0.0f, 1.0f };
+
+			glm::vec3 p0 = transform * startPosition;
+			glm::vec3 p1 = transform * endPosition;
+			m_Renderer2D->SubmitLine(p0, p1, { 1.0f, 0.0f, 1.0f, 1.0f }, 0.07f);
+		}
+	}
 
 	m_Renderer2D->End();
 }
@@ -280,7 +297,7 @@ void SandboxLayer::OnImGui()
 
 bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
 {
-	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 100.0f);
+	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 1000.0f);
 
 	m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
 	return false;

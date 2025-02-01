@@ -44,25 +44,9 @@ namespace Atom
 
 		if (vulkanRenderPass->m_CreateInfo.ImplicitSetViewport)
 		{
-			VkViewport viewport{};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = (float)renderAreaExtent.width;
-			viewport.height = (float)renderAreaExtent.height;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-
-			vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+			SetViewport(commandBuffer, renderPass, frameIndex);
 		}
 
-		if (vulkanRenderPass->m_CreateInfo.ImplicitSetScissor)
-		{
-			VkRect2D scissor{};
-			scissor.offset = { 0, 0 };
-			scissor.extent = renderAreaExtent;
-
-			vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
-		}
 	}
 
 	void VulkanRenderCommand::EndRenderPass(CommandBuffer* commandBuffer, uint32_t frameIndex) const
@@ -70,6 +54,30 @@ namespace Atom
 		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
 
 		vkCmdEndRenderPass(vulkanCommandBuffer->m_CommandBuffers[frameIndex]);
+	}
+
+	void VulkanRenderCommand::SetViewport(CommandBuffer* commandBuffer, RenderPass* renderPass, uint32_t frameIndex) const
+	{
+		VulkanCommandBuffer* vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer);
+		VulkanRenderPass* vulkanRenderPass = static_cast<VulkanRenderPass*>(renderPass);
+
+		const VkExtent2D renderAreaExtent = vulkanRenderPass->GetRenderAreaExtent();
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)renderAreaExtent.width;
+		viewport.height = (float)renderAreaExtent.height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		vkCmdSetViewport(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = renderAreaExtent;
+
+		vkCmdSetScissor(vulkanCommandBuffer->m_CommandBuffers[frameIndex], 0, 1, &scissor);
 	}
 
 	void VulkanRenderCommand::RenderStaticPipeline(CommandBuffer* commandBuffer, Pipeline* pipeline, uint32_t vertexCount, uint32_t frameIndex) const
