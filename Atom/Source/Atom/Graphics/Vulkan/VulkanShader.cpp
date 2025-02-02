@@ -182,6 +182,34 @@ namespace Atom
 		}
 	}
 
+	void VulkanShader::Set(uint32_t binding, Texture* texture, uint32_t slot) const
+	{
+		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
+
+		VulkanTexture* vulkanTexture = static_cast<VulkanTexture*>(texture);
+
+		for (size_t i = 0; i < 3; i++)
+		{
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = vulkanTexture->m_ImageView;
+			imageInfo.sampler = vulkanTexture->m_Sampler;
+
+			VkWriteDescriptorSet descriptorWrite{};
+			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet = m_DescriptorSets[i];
+			descriptorWrite.dstBinding = binding;
+			descriptorWrite.dstArrayElement = slot;
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo = nullptr; // Optional
+			descriptorWrite.pImageInfo = &imageInfo;
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		}
+	}
+
 	std::string VulkanShader::ReadFile(const std::filesystem::path& filepath) const
 	{
 		std::string result;
@@ -257,7 +285,7 @@ namespace Atom
 				VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
 				descriptorSetLayoutBinding.binding = imageSamplerDescriptor.Binding;
 				descriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorSetLayoutBinding.descriptorCount = 1;
+				descriptorSetLayoutBinding.descriptorCount = imageSamplerDescriptor.ArraySize;
 				descriptorSetLayoutBinding.stageFlags = GetShaderStageByShaderKind(shaderDescriptor.ShaderKind);
 				descriptorSetLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
@@ -292,7 +320,13 @@ namespace Atom
 
 			if (!shaderDescriptor.ReflectionData.SampledImages.empty())
 			{
-				descriptorPoolSizes.push_back(VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(shaderDescriptor.ReflectionData.SampledImages.size() * 3) }); // 3 = Frames in Flight
+				uint32_t count = 0;
+				for (const auto& sampledImages : shaderDescriptor.ReflectionData.SampledImages)
+				{
+					count += sampledImages.ArraySize;
+				}
+
+				descriptorPoolSizes.push_back(VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(count * 3) }); // 3 = Frames in Flight
 			}
 		}
 
