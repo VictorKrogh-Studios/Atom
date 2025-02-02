@@ -46,6 +46,11 @@ namespace Atom
 		m_Options.Shader->Set(binding, storageBuffer);
 	}
 
+	void VulkanPipeline::Set(uint32_t binding, Texture* texture, uint32_t slot) const
+	{
+		m_Options.Shader->Set(binding, texture, slot);
+	}
+
 	void VulkanPipeline::CreatePipelineLayout(VkDevice device)
 	{
 		VulkanShader* vulkanShader = static_cast<VulkanShader*>(m_Options.Shader);
