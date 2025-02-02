@@ -10,8 +10,8 @@
 namespace Atom
 {
 
-	VulkanTexture::VulkanTexture(const std::filesystem::path& filepath)
-		: Texture(0, 0, 0)
+	VulkanTexture::VulkanTexture(const std::filesystem::path& filepath, const TextureCreateInfo& createInfo)
+		: Texture(0, 0, 0, createInfo)
 	{
 		int32_t width, height, channels;
 		unsigned char* data = stbi_load(filepath.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
@@ -39,6 +39,37 @@ namespace Atom
 		vkUnmapMemory(device, stagingBufferMemory);
 
 		stbi_image_free(data);
+
+		Internal::VulkanUtils::CreateImage2D(m_Width, m_Height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_ImageMemory);
+
+		Internal::VulkanUtils::TransitionImageLayout(VulkanGraphicsContext::Get()->m_GraphicsCommandPool, VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, m_Image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		Internal::VulkanUtils::CopyBufferToImage(VulkanGraphicsContext::Get()->m_GraphicsCommandPool, VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, stagingBuffer, m_Image, m_Width, m_Height);
+
+		Internal::VulkanUtils::TransitionImageLayout(VulkanGraphicsContext::Get()->m_GraphicsCommandPool, VulkanGraphicsContext::GetDevice()->m_GraphicsQueue, m_Image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		CreateImageView(device);
+		CreateSampler(device);
+
+		vkDestroyBuffer(device, stagingBuffer, nullptr);
+		vkFreeMemory(device, stagingBufferMemory, nullptr);
+	}
+
+	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, void* data, const TextureCreateInfo& createInfo)
+		: Texture(width, height, 4, createInfo)
+	{
+		uint64_t size = m_Width * m_Height * 4; //m_Channels;
+
+		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVkDevice();
+
+		VkBuffer stagingBuffer = VK_NULL_HANDLE;
+		VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+		Internal::VulkanUtils::CreateDefaultStagingBuffer(size, stagingBuffer, stagingBufferMemory);
+
+		void* mappedData;
+		vkMapMemory(device, stagingBufferMemory, 0, size, 0, &mappedData);
+		memcpy(mappedData, data, size);
+		vkUnmapMemory(device, stagingBufferMemory);
 
 		Internal::VulkanUtils::CreateImage2D(m_Width, m_Height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_Image, m_ImageMemory);
 

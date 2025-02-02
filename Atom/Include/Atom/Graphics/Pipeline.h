@@ -29,6 +29,7 @@ namespace Atom
 		virtual ~Pipeline() = default;
 
 		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const = 0;
+		virtual void Set(uint32_t binding, Texture* texture, uint32_t slot) const = 0;
 	protected:
 		PipelineOptions m_Options;
 	};

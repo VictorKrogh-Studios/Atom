@@ -26,16 +26,25 @@ namespace Atom
 
 		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(m_CameraUBO));
 
+		uint32_t data = 0xFFFFFFFF;
+		m_WhiteTexture = Texture::Create(1, 1, &data);
+		m_TextureSlots[0] = m_WhiteTexture;
+
 		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
+		m_QuadVertexTexCoords[0] = { 0.0f, 0.0f };
+		m_QuadVertexTexCoords[1] = { 1.0f, 0.0f };
+		m_QuadVertexTexCoords[2] = { 1.0f, 1.0f };
+		m_QuadVertexTexCoords[3] = { 0.0f, 1.0f };
+
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
 
 		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
 
-		uint32_t maxIndices = m_Capabilities.MaxIndices;
+		uint32_t maxIndices = m_Capabilities.MaxQuadIndices;
 		uint32_t* quadIndices = new uint32_t[maxIndices];
 
 		uint32_t offset = 0;
@@ -69,6 +78,8 @@ namespace Atom
 			pipelineOptions.Layout = {
 				 { Enumerations::ShaderDataType::Float4, "inVertexPosition" },
 				 { Enumerations::ShaderDataType::Float4, "inColor" },
+				 { Enumerations::ShaderDataType::Float2, "inTexCoord" },
+				 { Enumerations::ShaderDataType::Int, "inTextureIndex" },
 				 { Enumerations::ShaderDataType::Int, "inQuadIndex" }
 			};
 			pipelineOptions.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Quad");
@@ -81,7 +92,7 @@ namespace Atom
 
 			VertexBufferCreateInfo vertexBufferCreateInfo{};
 			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxQuadVertices;
 
 			m_QuadVertexBuffers.resize(1);
 			m_QuadVertexBufferBases.resize(1);
@@ -92,7 +103,7 @@ namespace Atom
 			for (uint32_t i = 0; i < framesInFlight; i++)
 			{
 				m_QuadVertexBuffers[0][i] = VertexBuffer::Create(vertexBufferCreateInfo);
-				m_QuadVertexBufferBases[0][i] = new QuadVertex[m_Capabilities.MaxVertices];
+				m_QuadVertexBufferBases[0][i] = new QuadVertex[m_Capabilities.MaxQuadVertices];
 			}
 		}
 
@@ -120,7 +131,7 @@ namespace Atom
 
 			VertexBufferCreateInfo vertexBufferCreateInfo{};
 			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxQuadVertices;
 
 			m_LineVertexBuffers.resize(1);
 			m_LineVertexBufferBases.resize(1);
@@ -131,10 +142,10 @@ namespace Atom
 			for (uint32_t i = 0; i < framesInFlight; i++)
 			{
 				m_LineVertexBuffers[0][i] = VertexBuffer::Create(vertexBufferCreateInfo);
-				m_LineVertexBufferBases[0][i] = new LineVertex[m_Capabilities.MaxVertices];
+				m_LineVertexBufferBases[0][i] = new LineVertex[m_Capabilities.MaxQuadVertices];
 			}
 		}
-		 
+
 		delete[] quadIndices;
 	}
 
@@ -201,6 +212,9 @@ namespace Atom
 			m_LineIndexBuffer = nullptr;
 		}
 
+		delete m_WhiteTexture;
+		m_WhiteTexture = nullptr;
+
 		delete m_CameraUniformBuffer;
 		m_CameraUniformBuffer = nullptr;
 
@@ -242,6 +256,18 @@ namespace Atom
 			m_QuadPipeline->Set(1, m_QuadTransformDataStorageBuffer);
 		}
 
+		for (uint32_t i = 0; i < m_TextureSlots.size(); i++)
+		{
+			if (m_TextureSlots[i])
+			{
+				m_QuadPipeline->Set(2, m_TextureSlots[i], i);
+			}
+			else
+			{
+				m_QuadPipeline->Set(2, m_WhiteTexture, i);
+			}
+		}
+
 		Flush();
 	}
 
@@ -259,6 +285,38 @@ namespace Atom
 		{
 			quadVertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
 			quadVertexBufferPtr->Color = color;
+			quadVertexBufferPtr->TexCoord = m_QuadVertexTexCoords[i];
+			quadVertexBufferPtr->TextureIndex = 0;
+			quadVertexBufferPtr->QuadIndex = m_QuadTransformDataCount;
+			quadVertexBufferPtr++;
+		}
+
+		quadTransformDataPtr.Position = position;
+		quadTransformDataPtr.Scale = size;
+
+		m_QuadTransformDataCount++;
+		m_QuadIndexCount += 6;
+
+		m_Statistics.QuadCount++;
+	}
+
+	void Renderer2D::SubmitQuad(const glm::vec2& position, const glm::vec2& size, Texture* texture, const glm::vec4& color)
+	{
+		SubmitQuad({ position.x, position.y, 0.0f }, { size.x, size.y, 1.0f }, texture, color);
+	}
+
+	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec3& size, Texture* texture, const glm::vec4& color)
+	{
+		auto& quadVertexBufferPtr = GetWriteableQuadBuffer();
+		auto& quadTransformDataPtr = GetQuadTransformDataPtr();
+		uint32_t textureIndex = GetTextureIndex(texture);
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			quadVertexBufferPtr->VertexPosition = m_QuadVertexPositions[i];
+			quadVertexBufferPtr->Color = color;
+			quadVertexBufferPtr->TexCoord = m_QuadVertexTexCoords[i];
+			quadVertexBufferPtr->TextureIndex = textureIndex;
 			quadVertexBufferPtr->QuadIndex = m_QuadTransformDataCount;
 			quadVertexBufferPtr++;
 		}
@@ -326,9 +384,9 @@ namespace Atom
 		{
 			VertexBufferCreateInfo vertexBufferCreateInfo{};
 			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
-			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxVertices;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::QuadVertex) * m_Capabilities.MaxQuadVertices;
 			newVertexBuffers[i] = VertexBuffer::Create(vertexBufferCreateInfo);
-			newVertexBufferBases[i] = new QuadVertex[m_Capabilities.MaxVertices];
+			newVertexBufferBases[i] = new QuadVertex[m_Capabilities.MaxQuadVertices];
 		}
 	}
 
@@ -336,7 +394,7 @@ namespace Atom
 	{
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 
-		m_QuadBufferWriteIndex = m_QuadIndexCount / m_Capabilities.MaxIndices;
+		m_QuadBufferWriteIndex = m_QuadIndexCount / m_Capabilities.MaxQuadIndices;
 		if (m_QuadBufferWriteIndex >= m_QuadVertexBufferBases.size())
 		{
 			AddQuadVertexBuffer();
@@ -364,15 +422,15 @@ namespace Atom
 		std::vector<VertexBuffer*>& newVertexBuffers = m_LineVertexBuffers.emplace_back();
 		std::vector<LineVertex*>& newVertexBufferBases = m_LineVertexBufferBases.emplace_back();
 
-		newVertexBuffers.resize(framesInFlight); 
-		newVertexBufferBases.resize(framesInFlight); 
-		for (uint32_t i = 0; i < framesInFlight; i++) 
+		newVertexBuffers.resize(framesInFlight);
+		newVertexBufferBases.resize(framesInFlight);
+		for (uint32_t i = 0; i < framesInFlight; i++)
 		{
-			VertexBufferCreateInfo vertexBufferCreateInfo{}; 
-			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer; 
-			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxVertices; 
+			VertexBufferCreateInfo vertexBufferCreateInfo{};
+			vertexBufferCreateInfo.Usage = Enumerations::BufferUsageFlags::VertexBuffer;
+			vertexBufferCreateInfo.Size = sizeof(Renderer2D::LineVertex) * m_Capabilities.MaxQuadVertices;
 			newVertexBuffers[i] = VertexBuffer::Create(vertexBufferCreateInfo);
-			newVertexBufferBases[i] = new LineVertex[m_Capabilities.MaxVertices];
+			newVertexBufferBases[i] = new LineVertex[m_Capabilities.MaxQuadVertices];
 		}
 	}
 
@@ -380,7 +438,7 @@ namespace Atom
 	{
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 
-		m_LineBufferWriteIndex = m_LineIndexCount / m_Capabilities.MaxIndices;
+		m_LineBufferWriteIndex = m_LineIndexCount / m_Capabilities.MaxQuadIndices;
 		if (m_LineBufferWriteIndex >= m_LineVertexBufferBases.size())
 		{
 			AddLineVertexBuffer();
@@ -391,6 +449,31 @@ namespace Atom
 		return m_LineVertexBufferPtr[m_LineBufferWriteIndex];
 	}
 
+	uint32_t Renderer2D::GetTextureIndex(Texture* texture)
+	{
+		uint32_t textureIndex = 0;
+		for (uint32_t i = 1; i < m_TextureSlotIndex; i++)
+		{
+			if (m_TextureSlots[i] == texture)
+			{
+				textureIndex = i;
+				break;
+			}
+		}
+
+		if (textureIndex == 0)
+		{
+			//if (m_TextureSlotIndex >= MaxTextureSlots)
+			//	FlushAndReset();
+
+			textureIndex = m_TextureSlotIndex;
+			m_TextureSlots[m_TextureSlotIndex] = texture;
+			m_TextureSlotIndex++;
+		}
+
+		return textureIndex;
+	}
+
 	void Renderer2D::StartBatch()
 	{
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
@@ -399,6 +482,12 @@ namespace Atom
 		for (uint32_t i = 0; i < m_QuadVertexBufferPtr.size(); i++)
 		{
 			m_QuadVertexBufferPtr[i] = m_QuadVertexBufferBases[i][frameIndex];
+		}
+
+		m_TextureSlotIndex = 1;
+		for (uint32_t i = 1; i < m_TextureSlots.size(); i++)
+		{
+			m_TextureSlots[i] = nullptr;
 		}
 
 		m_QuadTransformDataCount = 0;
@@ -429,7 +518,7 @@ namespace Atom
 				{
 					m_QuadVertexBuffers[i][frameIndex]->Upload(dataSize, m_QuadVertexBufferBases[i][frameIndex]);
 
-					uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+					uint32_t indexCount = i == m_QuadBufferWriteIndex ? m_QuadIndexCount - (m_Capabilities.MaxQuadIndices * i) : m_Capabilities.MaxQuadIndices;
 
 					renderCommand->DrawIndexed(m_CommandBuffer, m_QuadPipeline, m_QuadVertexBuffers[i][frameIndex], m_QuadIndexBuffer, indexCount, frameIndex);
 
@@ -451,7 +540,7 @@ namespace Atom
 				{
 					m_LineVertexBuffers[i][frameIndex]->Upload(dataSize, m_LineVertexBufferBases[i][frameIndex]);
 
-					uint32_t indexCount = i == m_LineBufferWriteIndex ? m_LineIndexCount - (m_Capabilities.MaxIndices * i) : m_Capabilities.MaxIndices;
+					uint32_t indexCount = i == m_LineBufferWriteIndex ? m_LineIndexCount - (m_Capabilities.MaxQuadIndices * i) : m_Capabilities.MaxQuadIndices;
 
 					renderCommand->DrawIndexed(m_CommandBuffer, m_LinePipeline, m_LineVertexBuffers[i][frameIndex], m_LineIndexBuffer, indexCount, frameIndex);
 

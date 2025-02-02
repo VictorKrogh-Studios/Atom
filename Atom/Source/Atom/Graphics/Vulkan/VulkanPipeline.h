@@ -13,6 +13,7 @@ namespace Atom
 		virtual ~VulkanPipeline();
 
 		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const override;
+		virtual void Set(uint32_t binding, Texture* texture, uint32_t slot) const override;
 	private:
 		void CreatePipelineLayout(VkDevice device);
 		void CreateGraphicsPipeline(VkDevice device);

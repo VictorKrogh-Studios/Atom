@@ -19,6 +19,7 @@ namespace Atom
 		virtual void Set(uint32_t binding, UniformBuffer* uniformBuffer) const = 0;
 		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const = 0;
 		virtual void Set(uint32_t binding, Texture* texture) const = 0;
+		virtual void Set(uint32_t binding, Texture* texture, uint32_t slot) const = 0;
 
 		const std::string& GetName() const { return m_Name; }
 	protected:

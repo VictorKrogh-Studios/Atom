@@ -9,7 +9,8 @@ namespace Atom
 	class VulkanTexture : public Texture
 	{
 	public:
-		VulkanTexture(const std::filesystem::path& filepath);
+		VulkanTexture(const std::filesystem::path& filepath, const TextureCreateInfo& createInfo);
+		VulkanTexture(uint32_t width, uint32_t height, void* data, const TextureCreateInfo& createInfo);
 		virtual ~VulkanTexture();
 	private:
 		void CreateImageView(VkDevice device);

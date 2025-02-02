@@ -215,8 +215,8 @@ void SandboxLayer::OnUpdate(float deltaTime)
 		}
 	}
 
-	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, m_Texture);
+	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, m_Texture);
 
 	m_Renderer2D->SubmitLine({ 1.0f, 1.0f}, { -1.0f, -1.0f}, { 1.0f, 0.0f, 1.0f, 1.0f});
 
@@ -226,7 +226,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, 0.0f }) * glm::scale(glm::mat4(1.0f), glm::vec3(radius));
 
-		int segments = 10240;
+		int segments = 1024;
 		for (int i = 0; i < segments; i++)
 		{
 			float angle = 2.0f * glm::pi<float>() * (float)i / segments;

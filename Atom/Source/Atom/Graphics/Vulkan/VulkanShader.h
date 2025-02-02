@@ -22,6 +22,7 @@ namespace Atom
 		virtual void Set(uint32_t binding, UniformBuffer* uniformBuffer) const override;
 		virtual void Set(uint32_t binding, StorageBuffer* storageBuffer) const override;
 		virtual void Set(uint32_t binding, Texture* texture) const override;
+		virtual void Set(uint32_t binding, Texture* texture, uint32_t slot) const override;
 	private:
 		std::string ReadFile(const std::filesystem::path& filepath) const;
 		
