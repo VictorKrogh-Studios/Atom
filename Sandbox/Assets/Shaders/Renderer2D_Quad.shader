@@ -18,9 +18,13 @@ layout(std140, set = 0, binding = 1) readonly buffer QuadData {
 
 layout(location = 0) in vec4 inVertexPosition;
 layout(location = 1) in vec4 inColor;
-layout(location = 2) in int inQuadIndex;
+layout(location = 2) in vec2 inTexCoord;
+layout(location = 3) in int inTextureIndex;
+layout(location = 4) in int inQuadIndex;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 v_TexCoord;
+layout(location = 2) out int v_TextureIndex;
 
 mat4 Translate(vec3 delta)
 {
@@ -45,6 +49,8 @@ void main() {
 
     gl_Position = ubo.proj * ubo.view * (transform * inVertexPosition);
     fragColor = inColor;
+    v_TexCoord = inTexCoord;
+    v_TextureIndex = inTextureIndex;
 }
 
 
@@ -53,10 +59,15 @@ void main() {
 #version 450
 
 layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 v_TexCoord;
+layout(location = 2) in flat int v_TextureIndex;
+
+layout (binding = 2) uniform sampler2D u_Textures[32];
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = fragColor;
+    // outColor = vec4(v_TexCoord, 0.0, 1.0);
+    outColor = texture(u_Textures[v_TextureIndex], v_TexCoord) * fragColor;
 }
 

@@ -7,6 +7,7 @@
 #include "Atom/Graphics/VertexBuffer.h"
 #include "Atom/Graphics/IndexBuffer.h"
 #include "Atom/Graphics/StorageBuffer.h"
+#include "Atom/Graphics/Texture.h"
 
 #include "Atom/Events/WindowEvent.h"
 
@@ -18,14 +19,14 @@ namespace Atom
 	struct Renderer2DCapabilities
 	{
 		Renderer2DCapabilities(uint32_t maxQuads = 10000)
-			: MaxQuads(maxQuads), MaxVertices(maxQuads * 4), MaxIndices(maxQuads * 6)
+			: MaxQuads(maxQuads), MaxQuadVertices(maxQuads * 4), MaxQuadIndices(maxQuads * 6)
 		{
 		}
 
 	private:
 		uint32_t MaxQuads;
-		uint32_t MaxVertices;
-		uint32_t MaxIndices;
+		uint32_t MaxQuadVertices;
+		uint32_t MaxQuadIndices;
 
 		friend class Renderer2D;
 	};
@@ -71,6 +72,9 @@ namespace Atom
 		void SubmitQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		void SubmitQuad(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color);
 
+		void SubmitQuad(const glm::vec2& position, const glm::vec2& size, Texture* texture, const glm::vec4& color = glm::vec4(1.0f));
+		void SubmitQuad(const glm::vec3& position, const glm::vec3& size, Texture* texture, const glm::vec4& color = glm::vec4(1.0f));
+
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 
@@ -83,6 +87,8 @@ namespace Atom
 		{
 			glm::vec4 VertexPosition;
 			glm::vec4 Color;
+			glm::vec2 TexCoord;
+			int32_t TextureIndex;
 			int32_t QuadIndex;
 		};
 
@@ -109,6 +115,8 @@ namespace Atom
 		void AddLineVertexBuffer();
 		Renderer2D::LineVertex*& GetWriteableLinePtr();
 
+		uint32_t GetTextureIndex(Texture* texture);
+
 		void StartBatch();
 		void Flush();
 		void NextBatch();
@@ -126,6 +134,9 @@ namespace Atom
 		Renderer2DCameraUBO m_CameraUBO;
 
 		glm::vec4 m_QuadVertexPositions[4];
+		glm::vec2 m_QuadVertexTexCoords[4];
+
+		Texture* m_WhiteTexture = nullptr;
 
 	private:
 		// QUAD VERTEX PIPELINE
@@ -142,6 +153,9 @@ namespace Atom
 		uint32_t m_QuadTransformDataCount = 0;
 		std::vector<QuadTransformData> m_QuadTransformDatas;
 		StorageBuffer* m_QuadTransformDataStorageBuffer = nullptr;
+
+		std::array<Texture*, 32> m_TextureSlots;
+		uint32_t m_TextureSlotIndex = 1;			// 0 = White Texture
 
 		// LINE VERTEX PIPELINE
 		Pipeline* m_LinePipeline = nullptr;
