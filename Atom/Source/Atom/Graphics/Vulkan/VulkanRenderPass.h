@@ -16,6 +16,8 @@ namespace Atom
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
+		virtual void SetRenderTarget(Framebuffer* framebuffer) override;
+
 		inline VkRenderPass GetVkRenderPass() const
 		{
 			return m_RenderPass;
@@ -28,8 +30,8 @@ namespace Atom
 				return VulkanSwapChain::Get()->GetCurrentFramebuffer();
 			}
 
-			AT_CORE_ASSERT(true, "Render passes only support targeting to the Swap Chain framebuffer");
-			return VK_NULL_HANDLE;
+			//AT_CORE_ASSERT(true, "Render passes only support targeting to the Swap Chain framebuffer");
+			return m_Framebuffer; // VK_NULL_HANDLE;
 		}
 
 		inline VkClearValue GetVkClearValue() const
@@ -62,6 +64,8 @@ namespace Atom
 		void CreateRenderPass(VkDevice device);
 	private:
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
+
 		VkExtent2D m_RenderArea;
 
 		friend class VulkanPipeline;

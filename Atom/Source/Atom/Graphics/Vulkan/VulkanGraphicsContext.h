@@ -53,8 +53,10 @@ namespace Atom
 		friend class VulkanIndexBuffer;
 		friend class VulkanUniformBuffer;
 		friend class VulkanStorageBuffer;
+		friend class VulkanFramebuffer;
 
 		friend class VulkanImGuiLayer;
+		friend class VulkanRenderTexture;
 	};
 
 }

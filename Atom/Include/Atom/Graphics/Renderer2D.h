@@ -8,6 +8,7 @@
 #include "Atom/Graphics/IndexBuffer.h"
 #include "Atom/Graphics/StorageBuffer.h"
 #include "Atom/Graphics/Texture.h"
+#include "Atom/Graphics/Framebuffer.h"
 
 #include "Atom/Events/WindowEvent.h"
 
@@ -78,6 +79,8 @@ namespace Atom
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 
+		RenderTexture* GetOutput() const;
+
 		const Renderer2DStatistics& GetStatistics() const
 		{
 			return m_Statistics;
@@ -143,6 +146,7 @@ namespace Atom
 		Pipeline* m_QuadPipeline = nullptr;
 		RenderPass* m_QuadRenderPass = nullptr;
 		IndexBuffer* m_QuadIndexBuffer = nullptr;
+		Framebuffer* m_QuadFramebuffer = nullptr;
 
 		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
 		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
@@ -161,6 +165,7 @@ namespace Atom
 		Pipeline* m_LinePipeline = nullptr;
 		RenderPass* m_LineRenderPass = nullptr;
 		IndexBuffer* m_LineIndexBuffer = nullptr;
+		Framebuffer* m_LineFramebuffer = nullptr;
 
 		std::vector<std::vector<VertexBuffer*>> m_LineVertexBuffers;
 		std::vector<std::vector<LineVertex*>> m_LineVertexBufferBases;

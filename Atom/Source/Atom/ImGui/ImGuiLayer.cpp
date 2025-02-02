@@ -62,12 +62,13 @@ namespace Atom
 		auto swapChain = Application::Get().GetWindow()->GetSwapChain();
 
 		RenderPassCreateInfo renderPassCreateInfo{};
-		renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
+		renderPassCreateInfo.Attachments = {
+			{ Application::Get().GetWindow()->GetImageFormat() }
+		};
 		renderPassCreateInfo.ClearColor = { 0.1f, 0.1f,0.1f, 1.0f };
-		renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
 		renderPassCreateInfo.RenderArea = { swapChain->GetWidth(), swapChain->GetHeight() };
+		renderPassCreateInfo.ClearColorOnLoad = false;
 		renderPassCreateInfo.ImplicitSetViewport = false;
-		renderPassCreateInfo.ImplicitSetScissor = false;
 		renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
 		renderPassCreateInfo.TargetSwapChain = true;
 		m_RenderPass = RenderPass::Create(renderPassCreateInfo);

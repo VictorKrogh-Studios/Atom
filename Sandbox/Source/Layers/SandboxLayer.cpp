@@ -66,7 +66,10 @@ void SandboxLayer::OnAttach()
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.Attachments = {
+			{ Atom::Application::Get().GetWindow()->GetImageFormat() }
+	};
+	//renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
 	renderPassCreateInfo.TargetSwapChain = true;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
@@ -268,6 +271,8 @@ void SandboxLayer::OnImGui()
 	}
 	ImGui::End();
 
+	ImGui::Image((ImTextureID)m_Renderer2D->GetOutput()->GetRaw(), {1600, 900});
+
 	static int location = 1;
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -310,10 +315,13 @@ SandboxLayer::TexturePipeline::TexturePipeline(Atom::UniformBuffer* uniformBuffe
 {
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.Attachments = {
+			{ Atom::Application::Get().GetWindow()->GetImageFormat() }
+	};
+	//renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { Atom::Application::Get().GetWindow()->GetWidth(), Atom::Application::Get().GetWindow()->GetHeight() };
 	renderPassCreateInfo.TargetSwapChain = true;
-	renderPassCreateInfo.LoadOperation = Atom::Enumerations::RenderPassAttachmentLoadOperation::Load;
+	//renderPassCreateInfo.LoadOperation = Atom::Enumerations::RenderPassAttachmentLoadOperation::Load;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/texture.shader");

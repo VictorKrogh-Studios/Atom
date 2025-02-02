@@ -1,10 +1,37 @@
 #pragma once
 #include "Atom/Graphics/Vulkan/VulkanGraphicsContext.h"
 
+#include "Atom/Graphics/RenderPass.h"
+
 #include <vulkan/vulkan.h>
 
 namespace Atom::Internal::VulkanUtils
 {
+
+	inline static bool IsDepthFormat(Enumerations::ImageFormat format)
+	{
+		if (format == Enumerations::ImageFormat::DEPTH24STENCIL8 || format == Enumerations::ImageFormat::DEPTH32F || format == Enumerations::ImageFormat::DEPTH32FSTENCIL8UINT)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	inline static VkAttachmentLoadOp GetVkAttachmentLoadOp(const RenderPassCreateInfo& renderPassCreateInfo, const RenderPassAttachment& renderPassAttachment)
+	{
+		if (renderPassAttachment.LoadOperation == Enumerations::AttachmentLoadOperation::Inherit)
+		{
+			if (::Atom::Internal::VulkanUtils::IsDepthFormat(renderPassAttachment.Format))
+			{
+				return renderPassCreateInfo.ClearDepthOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+			}
+
+			return renderPassCreateInfo.ClearColorOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+		}
+
+		return renderPassAttachment.LoadOperation == Enumerations::AttachmentLoadOperation::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+	}
 
 	inline static VkCommandBuffer BeginSingleTimeCommand(VkCommandPool commandPool)
 	{
@@ -127,6 +154,42 @@ namespace Atom::Internal::VulkanUtils
 		AT_CORE_ASSERT(result == VK_SUCCESS);
 
 		vkBindImageMemory(device, image, imageMemory, 0);
+	}
+
+	inline static void TransitionImageLayout(VkCommandPool commandPool, VkQueue queue,
+		VkImage image,
+		VkAccessFlags srcAccessMask,
+		VkAccessFlags dstAccessMask,
+		VkImageLayout oldImageLayout,
+		VkImageLayout newImageLayout,
+		VkPipelineStageFlags srcStageMask,
+		VkPipelineStageFlags dstStageMask,
+		VkImageSubresourceRange subresourceRange)
+	{
+		VkImageMemoryBarrier imageMemoryBarrier{};
+		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		imageMemoryBarrier.srcAccessMask = srcAccessMask;
+		imageMemoryBarrier.dstAccessMask = dstAccessMask;
+		imageMemoryBarrier.oldLayout = oldImageLayout;
+		imageMemoryBarrier.newLayout = newImageLayout;
+		imageMemoryBarrier.image = image;
+		imageMemoryBarrier.subresourceRange = subresourceRange;
+
+		VkCommandBuffer commandBuffer = BeginSingleTimeCommand(commandPool);
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			srcStageMask,
+			dstStageMask,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageMemoryBarrier);
+
+		EndSingleTimeCommand(commandBuffer, commandPool, queue);
 	}
 
 	inline static void TransitionImageLayout(VkCommandPool commandPool, VkQueue queue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)

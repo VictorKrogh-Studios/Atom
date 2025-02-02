@@ -22,4 +22,12 @@ namespace Atom
 		uint32_t m_Channels;
 	};
 
+	class RenderTexture
+	{
+	public:
+		virtual ~RenderTexture() = default;
+
+		virtual void* GetRaw() const = 0;
+	};
+
 }
