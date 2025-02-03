@@ -65,7 +65,7 @@ namespace Atom
 		Renderer2D(const Renderer2DCapabilities& capabilities = Renderer2DCapabilities());
 		~Renderer2D();
 
-		void OnEvent(Event& event);
+		void Resize(uint32_t width, uint32_t height);
 
 		void Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 		void End();
@@ -109,8 +109,6 @@ namespace Atom
 			glm::vec4 Color;
 		};
 	private:
-		bool OnWindowResizeEvent(WindowResizeEvent& event);
-
 		void AddQuadVertexBuffer();
 		Renderer2D::QuadVertex*& GetWriteableQuadBuffer();
 		Renderer2D::QuadTransformData& GetQuadTransformDataPtr();
@@ -128,6 +126,7 @@ namespace Atom
 		Renderer2DStatistics m_Statistics;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
+		Framebuffer* m_Framebuffer = nullptr;
 
 		struct Renderer2DCameraUBO
 		{
@@ -146,7 +145,6 @@ namespace Atom
 		Pipeline* m_QuadPipeline = nullptr;
 		RenderPass* m_QuadRenderPass = nullptr;
 		IndexBuffer* m_QuadIndexBuffer = nullptr;
-		Framebuffer* m_QuadFramebuffer = nullptr;
 
 		std::vector<std::vector<VertexBuffer*>> m_QuadVertexBuffers;
 		std::vector<std::vector<QuadVertex*>> m_QuadVertexBufferBases;
@@ -165,7 +163,6 @@ namespace Atom
 		Pipeline* m_LinePipeline = nullptr;
 		RenderPass* m_LineRenderPass = nullptr;
 		IndexBuffer* m_LineIndexBuffer = nullptr;
-		Framebuffer* m_LineFramebuffer = nullptr;
 
 		std::vector<std::vector<VertexBuffer*>> m_LineVertexBuffers;
 		std::vector<std::vector<LineVertex*>> m_LineVertexBufferBases;

@@ -79,9 +79,9 @@ namespace Atom
 			framebufferCreateInfo.RenderPass = m_QuadRenderPass;
 			framebufferCreateInfo.Width = (uint32_t)windowSize.x;
 			framebufferCreateInfo.Height = (uint32_t)windowSize.y;
-			m_QuadFramebuffer = Framebuffer::Create(framebufferCreateInfo);
+			m_Framebuffer = Framebuffer::Create(framebufferCreateInfo);
 
-			m_QuadRenderPass->SetRenderTarget(m_QuadFramebuffer); 
+			m_QuadRenderPass->SetRenderTarget(m_Framebuffer); 
 
 			PipelineOptions pipelineOptions{};
 			pipelineOptions.Layout = {
@@ -119,7 +119,7 @@ namespace Atom
 		{	// Setup line pipeline
 			RenderPassCreateInfo renderPassCreateInfo{};
 			renderPassCreateInfo.Attachments = {
-				{ Application::Get().GetWindow()->GetImageFormat() }
+				{ Application::Get().GetWindow()->GetImageFormat(), Enumerations::AttachmentLoadOperation::Load }
 			};
 			renderPassCreateInfo.RenderArea = windowSize;
 			renderPassCreateInfo.TargetSwapChain = false;
@@ -127,13 +127,7 @@ namespace Atom
 			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::Inline;
 			m_LineRenderPass = RenderPass::Create(renderPassCreateInfo);
 
-			FramebufferCreateInfo framebufferCreateInfo{};
-			framebufferCreateInfo.RenderPass = m_LineRenderPass;
-			framebufferCreateInfo.Width = (uint32_t)windowSize.x;
-			framebufferCreateInfo.Height = (uint32_t)windowSize.y;
-			m_LineFramebuffer = Framebuffer::Create(framebufferCreateInfo);
-
-			m_LineRenderPass->SetRenderTarget(m_LineFramebuffer);
+			m_LineRenderPass->SetRenderTarget(m_Framebuffer);
 
 			PipelineOptions pipelineOptions{};
 			pipelineOptions.Layout = {
@@ -199,9 +193,6 @@ namespace Atom
 
 			delete m_QuadIndexBuffer;
 			m_QuadIndexBuffer = nullptr;
-
-			delete m_QuadFramebuffer;
-			m_QuadFramebuffer = nullptr;
 		}
 
 		{	// Destroy line pipeline
@@ -233,6 +224,9 @@ namespace Atom
 			m_LineIndexBuffer = nullptr;
 		}
 
+		delete m_Framebuffer;
+		m_Framebuffer = nullptr;
+
 		delete m_WhiteTexture;
 		m_WhiteTexture = nullptr;
 
@@ -243,13 +237,10 @@ namespace Atom
 		m_CommandBuffer = nullptr;
 	}
 
-	void Renderer2D::OnEvent(Event& event)
+	void Renderer2D::Resize(uint32_t width, uint32_t height)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e)
-		{
-			return OnWindowResizeEvent(e);
-		});
+		m_QuadRenderPass->Resize(width, height);
+		m_LineRenderPass->Resize(width, height);
 	}
 
 	void Renderer2D::Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
@@ -386,15 +377,7 @@ namespace Atom
 
 	RenderTexture* Renderer2D::GetOutput() const
 	{
-		return m_QuadFramebuffer->GetColorAttachment(0);
-	}
-
-	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
-	{
-		m_QuadRenderPass->Resize(event.GetWidth(), event.GetHeight());
-		m_LineRenderPass->Resize(event.GetWidth(), event.GetHeight());
-
-		return false;
+		return m_Framebuffer->GetColorAttachment(0);
 	}
 
 	void Renderer2D::AddQuadVertexBuffer()
