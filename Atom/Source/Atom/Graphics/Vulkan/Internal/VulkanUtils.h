@@ -33,6 +33,18 @@ namespace Atom::Internal::VulkanUtils
 		return renderPassAttachment.LoadOperation == Enumerations::AttachmentLoadOperation::Clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
 	}
 
+	inline static VkImageLayout GetVkImageLayout(Enumerations::ImageLayout imageLayout)
+	{
+		switch (imageLayout)
+		{
+			case Atom::Enumerations::ImageLayout::ShaderReadOnlyOptimal: return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			case Atom::Enumerations::ImageLayout::PresentSrc: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			default: break;
+		}
+
+		return VK_IMAGE_LAYOUT_GENERAL;
+	}
+
 	inline static VkCommandBuffer BeginSingleTimeCommand(VkCommandPool commandPool)
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
