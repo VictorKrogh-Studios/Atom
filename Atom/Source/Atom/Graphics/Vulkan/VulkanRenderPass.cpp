@@ -41,6 +41,12 @@ namespace Atom
 	void VulkanRenderPass::Resize(uint32_t width, uint32_t height)
 	{
 		m_RenderArea = { width, height };
+
+		// TODO: Not sure this is needed?
+		if (m_Framebuffer)
+		{
+			m_Framebuffer->Resize(width, height);
+		}
 	}
 
 	void VulkanRenderPass::SetRenderTarget(Framebuffer* framebuffer)
@@ -51,9 +57,17 @@ namespace Atom
 			return;
 		}
 
-		VulkanFramebuffer* vulkanFramebuffer = static_cast<VulkanFramebuffer*>(framebuffer);
+		m_Framebuffer = framebuffer;
+	}
 
-		m_Framebuffer = vulkanFramebuffer->GetVkFramebuffer();
+	VkFramebuffer VulkanRenderPass::GetVkFramebuffer() const
+	{
+		if (m_CreateInfo.TargetSwapChain)
+		{
+			return VulkanSwapChain::Get()->GetCurrentFramebuffer();
+		}
+
+		return static_cast<VulkanFramebuffer*>(m_Framebuffer)->GetVkFramebuffer(); 
 	}
 
 	void VulkanRenderPass::CreateRenderPass(VkDevice device)
@@ -77,7 +91,7 @@ namespace Atom
 			attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			attachmentDescription.initialLayout = attachmentDescription.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			attachmentDescription.finalLayout = attachmentDescription.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			attachmentDescription.finalLayout = Internal::VulkanUtils::GetVkImageLayout(attachments[i].FinalLayout);
 
 			colorAttachmentReferences[i] = VkAttachmentReference{ i, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
 		}
