@@ -1,6 +1,7 @@
 #include <Atom.h>
 
 #include "Layers/SandboxLayer.h"
+#include "Layers/Renderer2DTestLayer.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Examples
@@ -12,7 +13,10 @@ class SandboxApplication : public Atom::Application
 public:
 	SandboxApplication(const Atom::ApplicationCreateInfo& applicationCreateInfo) : Atom::Application(applicationCreateInfo)
 	{
-		PushLayer(new SandboxLayer());
+		//PushLayer(new SandboxLayer());
+		PushLayer(new Renderer2DTestLayer());
+
+		// Examples:
 		//PushLayer(new FractalTreeLayer());
 	}
 };
