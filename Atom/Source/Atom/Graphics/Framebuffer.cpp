@@ -12,7 +12,7 @@ namespace Atom
 	}
 
 	Framebuffer::Framebuffer(const FramebufferCreateInfo& createInfo)
-		: m_CreateInfo(createInfo)
+		: m_CreateInfo(createInfo), m_Width(createInfo.Width), m_Height(createInfo.Height)
 	{
 	}
 

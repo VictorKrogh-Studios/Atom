@@ -26,9 +26,14 @@ namespace Atom
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
+		virtual uint32_t GetWidth() const { return m_Width; }
+		virtual uint32_t GetHeight() const { return m_Height; }
+
 		virtual RenderTexture* GetColorAttachment(uint32_t index) const = 0;
 	protected:
 		FramebufferCreateInfo m_CreateInfo;
+		uint32_t m_Width;
+		uint32_t m_Height;
 	};
 
 }
