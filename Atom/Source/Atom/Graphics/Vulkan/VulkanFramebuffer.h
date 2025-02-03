@@ -18,13 +18,15 @@ namespace Atom
 
 		VkFramebuffer GetVkFramebuffer() const { return m_Framebuffer; }
 	private:
+		void Create(uint32_t width, uint32_t height);
+		void Destroy();
+
 		void CreateImages(VkDevice device);
 		void CreateImageViews(VkDevice device);
 		void CreateFramebuffer(VkDevice device);
+		void CreateRenderTextures();
 	private:
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
 
 		std::vector<RenderTexture*> m_RenderTextures;
 

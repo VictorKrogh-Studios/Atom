@@ -8,29 +8,63 @@
 
 #include "Internal/VulkanUtils.h"
 
+#include "Atom/Core/Application.h"
+
 namespace Atom
 {
 
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferCreateInfo& createInfo)
 		: Framebuffer(createInfo)
 	{
-		m_Width = m_CreateInfo.Width;
-		m_Height = m_CreateInfo.Height;
+		Create(m_CreateInfo.Width, m_CreateInfo.Height);
+	}
 
+	VulkanFramebuffer::~VulkanFramebuffer()
+	{
+		Destroy();
+	}
+
+	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
+	{
+		if (m_Width == width && m_Height == height)
+		{
+			return; // No need to resize
+		}
+
+		Application::SubmitReleaseQueue([&, this, width, height]()
+		{
+			if (m_Width == width && m_Height == height)
+			{
+				return; // No need to resize
+			}
+
+			VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
+
+			this->Destroy();
+
+			this->Create(width, height);
+		});
+	}
+
+	RenderTexture* VulkanFramebuffer::GetColorAttachment(uint32_t index) const
+	{
+		return m_RenderTextures[index];
+	}
+
+	void VulkanFramebuffer::Create(uint32_t width, uint32_t height)
+	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
+
+		m_Width = width;
+		m_Height = height;
 
 		CreateImages(device);
 		CreateImageViews(device);
 		CreateFramebuffer(device);
-
-		m_RenderTextures.resize(m_AttachmentImageViews.size());
-		for (uint32_t i = 0; i < m_RenderTextures.size(); i++)
-		{
-			m_RenderTextures[i] = new VulkanRenderTexture(m_AttachmentImageViews[i]);
-		}
+		CreateRenderTextures();
 	}
 
-	VulkanFramebuffer::~VulkanFramebuffer()
+	void VulkanFramebuffer::Destroy()
 	{
 		VkDevice device = VulkanGraphicsContext::GetDevice()->GetVkDevice();
 
@@ -70,15 +104,6 @@ namespace Atom
 		m_RenderTextures.clear();
 	}
 
-	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height)
-	{
-	}
-
-	RenderTexture* VulkanFramebuffer::GetColorAttachment(uint32_t index) const
-	{
-		return m_RenderTextures[index];
-	}
-
 	void VulkanFramebuffer::CreateImages(VkDevice device)
 	{
 		Internal::VulkanPhysicalDevice* physicalDevice = VulkanGraphicsContext::GetPhysicalDevice();
@@ -109,8 +134,8 @@ namespace Atom
 			VkImageCreateInfo imageCreateInfo{ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
 			imageCreateInfo.usage = usage;
 			imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-			imageCreateInfo.extent.width = m_CreateInfo.Width;
-			imageCreateInfo.extent.height = m_CreateInfo.Height;
+			imageCreateInfo.extent.width = m_Width;
+			imageCreateInfo.extent.height = m_Height;
 			imageCreateInfo.extent.depth = 1;
 			imageCreateInfo.mipLevels = 1;
 			imageCreateInfo.arrayLayers = 1;
@@ -237,14 +262,23 @@ namespace Atom
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = vulkanRenderPass->GetVkRenderPass();
-		framebufferCreateInfo.width = m_CreateInfo.Width;
-		framebufferCreateInfo.height = m_CreateInfo.Height;
+		framebufferCreateInfo.width = m_Width;
+		framebufferCreateInfo.height = m_Height;
 		framebufferCreateInfo.layers = 1;
 		framebufferCreateInfo.attachmentCount = (uint32_t)attachments.size();
 		framebufferCreateInfo.pAttachments = attachments.data();
 
 		VkResult result = vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer);
 		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create framebuffer!");
+	}
+
+	void VulkanFramebuffer::CreateRenderTextures()
+	{
+		m_RenderTextures.resize(m_AttachmentImageViews.size());
+		for (uint32_t i = 0; i < m_RenderTextures.size(); i++)
+		{
+			m_RenderTextures[i] = new VulkanRenderTexture(m_AttachmentImageViews[i]);
+		}
 	}
 
 }
