@@ -3,6 +3,7 @@
 #include "Atom/Graphics/Enumerations/RenderPassSubpassContents.h"
 #include "Atom/Graphics/Enumerations/RenderPassAttachmentLoadOperation.h"
 #include "Atom/Graphics/Enumerations/AttachmentLoadOperation.h"
+#include "Atom/Graphics/Enumerations/ImageLayout.h"
 
 #include <glm/glm.hpp>
 
@@ -12,12 +13,22 @@ namespace Atom
 	struct RenderPassAttachment
 	{
 		RenderPassAttachment() = default;
-		RenderPassAttachment(Enumerations::ImageFormat format) : Format(format)
+		RenderPassAttachment(Enumerations::ImageFormat format) 
+			: Format(format)
+		{
+		}
+		RenderPassAttachment(Enumerations::ImageFormat format, Enumerations::AttachmentLoadOperation attachmentLoadOperation) 
+			: Format(format), LoadOperation(attachmentLoadOperation)
+		{
+		}
+		RenderPassAttachment(Enumerations::ImageFormat format, Enumerations::AttachmentLoadOperation attachmentLoadOperation, Enumerations::ImageLayout finalLayout)
+			: Format(format), LoadOperation(attachmentLoadOperation), FinalLayout(finalLayout)
 		{
 		}
 
 		Enumerations::ImageFormat Format;
 		Enumerations::AttachmentLoadOperation LoadOperation = Enumerations::AttachmentLoadOperation::Inherit;
+		Enumerations::ImageLayout FinalLayout = Enumerations::ImageLayout::ShaderReadOnlyOptimal;
 	};
 
 	struct RenderPassAttachments
