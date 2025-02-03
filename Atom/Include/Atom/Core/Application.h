@@ -31,6 +31,11 @@ namespace Atom
 
 		void Close();
 
+		inline static void SubmitReleaseQueue(const std::function<void()> func)
+		{
+			s_Instance->m_ResourceReleaseQueue.push_back(func);
+		}
+
 		static Application& Get() { return *s_Instance; };
 		Window* GetWindow() const { return m_Window; }
 	protected:
@@ -49,6 +54,8 @@ namespace Atom
 
 		float m_LastFrameTime = 0.0f;
 		float m_DeltaTime = 0.0f;
+
+		std::vector<std::function<void()>> m_ResourceReleaseQueue;
 	private:
 		inline static Application* s_Instance = nullptr;
 	};

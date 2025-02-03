@@ -82,13 +82,19 @@ namespace Atom
 			Renderer::EndFrame();
 
 			Renderer::PresentAndWait();
+
+			for (const auto& func : m_ResourceReleaseQueue)
+			{
+				func();
+			}
+			m_ResourceReleaseQueue.clear();
 		}
 	}
 
 	void Application::Close()
 	{
 		m_IsRunning = false;
-	}
+	} 
 
 	void Application::PushLayer(Layer* layer)
 	{
