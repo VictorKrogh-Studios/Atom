@@ -29,7 +29,7 @@ namespace Atom
 		virtual uint32_t GetWidth() const { return m_Width; }
 		virtual uint32_t GetHeight() const { return m_Height; }
 
-		virtual RenderTexture* GetColorAttachment(uint32_t index) const = 0;
+		virtual Texture* GetColorAttachment(uint32_t index) const = 0;
 	protected:
 		FramebufferCreateInfo m_CreateInfo;
 		uint32_t m_Width;

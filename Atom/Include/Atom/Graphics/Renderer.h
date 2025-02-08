@@ -6,11 +6,8 @@
 namespace Atom
 {
 
-	class SwapChain;
-
 	struct RendererInitializeInfo
 	{
-		SwapChain* SwapChain;
 		uint32_t FramesInFlight;
 	};
 

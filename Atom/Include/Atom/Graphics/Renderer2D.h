@@ -79,7 +79,7 @@ namespace Atom
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
 
-		RenderTexture* GetOutput() const;
+		Texture* GetOutput() const;
 
 		const Renderer2DStatistics& GetStatistics() const
 		{

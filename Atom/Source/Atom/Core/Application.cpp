@@ -26,7 +26,6 @@ namespace Atom
 
 
 		RendererInitializeInfo rendererInitializeInfo{};
-		rendererInitializeInfo.SwapChain = m_Window->GetSwapChain();
 		rendererInitializeInfo.FramesInFlight = m_CreateInfo.FramesInFlight;
 
 		Renderer::Initialize(rendererInitializeInfo);

@@ -14,7 +14,7 @@ namespace Atom
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual RenderTexture* GetColorAttachment(uint32_t index) const override;
+		virtual Texture* GetColorAttachment(uint32_t index) const override;
 
 		VkFramebuffer GetVkFramebuffer() const { return m_Framebuffer; }
 	private:
@@ -28,7 +28,7 @@ namespace Atom
 	private:
 		VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 
-		std::vector<RenderTexture*> m_RenderTextures;
+		std::vector<Texture*> m_RenderTextures;
 
 		std::vector<VkImage> m_AttachmentImages;
 		VkImage m_DepthAttachmentImage = VK_NULL_HANDLE;

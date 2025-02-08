@@ -375,7 +375,7 @@ namespace Atom
 		m_Statistics.LineCount++;
 	}
 
-	RenderTexture* Renderer2D::GetOutput() const
+	Texture* Renderer2D::GetOutput() const
 	{
 		return m_Framebuffer->GetColorAttachment(0);
 	}

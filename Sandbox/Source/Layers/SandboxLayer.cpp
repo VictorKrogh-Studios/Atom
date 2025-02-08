@@ -282,7 +282,7 @@ void SandboxLayer::OnImGui()
 			m_Renderer2D->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		ImGui::Image((ImTextureID)m_Renderer2D->GetOutput()->GetRaw(), { m_ViewportSize.x, m_ViewportSize.y });
+		ImGui::Image((ImTextureID)m_Renderer2D->GetOutput()->GetNativeHandle(), { m_ViewportSize.x, m_ViewportSize.y });
 	}
 	ImGui::End();
 	ImGui::PopStyleVar(1);

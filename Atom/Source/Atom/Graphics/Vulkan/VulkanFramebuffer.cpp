@@ -3,7 +3,7 @@
 #include "VulkanGraphicsContext.h"
 
 #include "VulkanRenderPass.h"
-#include "VulkanRenderTexture.h"
+#include "VulkanTexture.h"
 #include "VulkanUtils.h"
 
 #include "Internal/VulkanUtils.h"
@@ -46,7 +46,7 @@ namespace Atom
 		});
 	}
 
-	RenderTexture* VulkanFramebuffer::GetColorAttachment(uint32_t index) const
+	Texture* VulkanFramebuffer::GetColorAttachment(uint32_t index) const
 	{
 		return m_RenderTextures[index];
 	}
@@ -277,7 +277,9 @@ namespace Atom
 		m_RenderTextures.resize(m_AttachmentImageViews.size());
 		for (uint32_t i = 0; i < m_RenderTextures.size(); i++)
 		{
-			m_RenderTextures[i] = new VulkanRenderTexture(m_AttachmentImageViews[i]);
+			delete m_RenderTextures[i];
+
+			m_RenderTextures[i] = new VulkanTexture(m_Width, m_Height, m_AttachmentImages[i], m_AttachmentImageViews[i]);
 		}
 	}
 
