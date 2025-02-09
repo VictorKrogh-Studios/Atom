@@ -71,7 +71,10 @@ namespace Atom::Vulkan::Utils
 	{
 		switch (imageFormat)
 		{
-			case Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM: return VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
+			case Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM:		return VK_FORMAT_B8G8R8A8_UNORM;
+			case Atom::Enumerations::ImageFormat::DEPTH32FSTENCIL8UINT: return VK_FORMAT_D32_SFLOAT_S8_UINT;
+			case Atom::Enumerations::ImageFormat::DEPTH32F:             return VK_FORMAT_D32_SFLOAT; 
+			case Atom::Enumerations::ImageFormat::DEPTH24STENCIL8:		return VulkanGraphicsContext::GetPhysicalDevice()->GetDepthFormat();
 			case Atom::Enumerations::ImageFormat::Unknown:
 			default: break;
 		}

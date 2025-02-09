@@ -160,6 +160,7 @@ namespace Atom
 		AT_CORE_ASSERT(result == VK_SUCCESS, "Failed to create surface");
 	}
 
+	// TODO: Move to VulkanPhysicalDevice
 	void VulkanSwapChain::FindSuitablePresentQueueIndex(VkPhysicalDevice physicalDevice)
 	{
 		// Get available queue family properties
@@ -220,6 +221,7 @@ namespace Atom
 		m_QueueNodeIndex = graphicsQueueNodeIndex;
 	}
 
+	// TODO: Move to VulkanPhysicalDevice
 	void VulkanSwapChain::FindImageFormatAndColorSpace(VkPhysicalDevice physicalDevice)
 	{
 		// Get list of supported surface formats
@@ -325,6 +327,7 @@ namespace Atom
 		VkSurfaceCapabilitiesKHR surfCaps;
 		VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_Surface, &surfCaps);
 
+		// TODO: Move to VulkanPhysicalDevice (make a method for retrieving Present Modes)
 		// Get available present modes
 		uint32_t presentModeCount;
 		result = vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, NULL);

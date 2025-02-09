@@ -8,6 +8,7 @@
 #include "Atom/Graphics/IndexBuffer.h"
 #include "Atom/Graphics/StorageBuffer.h"
 #include "Atom/Graphics/Texture.h"
+#include "Atom/Graphics/Framebuffer.h"
 
 #include "Atom/Events/WindowEvent.h"
 
@@ -64,7 +65,7 @@ namespace Atom
 		Renderer2D(const Renderer2DCapabilities& capabilities = Renderer2DCapabilities());
 		~Renderer2D();
 
-		void OnEvent(Event& event);
+		void Resize(uint32_t width, uint32_t height);
 
 		void Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix);
 		void End();
@@ -77,6 +78,8 @@ namespace Atom
 
 		void SubmitLine(const glm::vec2& start, const glm::vec2& end, const glm::vec4& color, float thickness = 0.02f);
 		void SubmitLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float thickness = 0.02f);
+
+		Texture* GetOutput() const;
 
 		const Renderer2DStatistics& GetStatistics() const
 		{
@@ -106,8 +109,6 @@ namespace Atom
 			glm::vec4 Color;
 		};
 	private:
-		bool OnWindowResizeEvent(WindowResizeEvent& event);
-
 		void AddQuadVertexBuffer();
 		Renderer2D::QuadVertex*& GetWriteableQuadBuffer();
 		Renderer2D::QuadTransformData& GetQuadTransformDataPtr();
@@ -125,6 +126,7 @@ namespace Atom
 		Renderer2DStatistics m_Statistics;
 		CommandBuffer* m_CommandBuffer = nullptr;
 		UniformBuffer* m_CameraUniformBuffer = nullptr;
+		Framebuffer* m_Framebuffer = nullptr;
 
 		struct Renderer2DCameraUBO
 		{

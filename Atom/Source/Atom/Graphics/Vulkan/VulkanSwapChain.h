@@ -25,10 +25,14 @@ namespace Atom
 
 		// Internal to Vulkan components!
 
+		static VulkanSwapChain* Get() { return s_Instance; }
+
+		const std::vector<VkImage>& GetVkImages() const { return m_SwapChainImages; }
+		const std::vector<VkImageView>& GetVkImageViews() const { return m_SwapChainImageViews; }
+
 		VkFramebuffer GetCurrentFramebuffer() const { return m_Framebuffers[m_CurrentImageIndex]; }
 		const SwapChainSemaphores& GetSwapChainSemaphores(uint32_t index) const{ return m_SwapChainSemaphores[index]; }
 	private:
-		static VulkanSwapChain* Get() { return s_Instance; }
 
 		void CreateSurface();
 		void FindSuitablePresentQueueIndex(VkPhysicalDevice physicalDevice);

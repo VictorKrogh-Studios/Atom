@@ -19,9 +19,11 @@ namespace Atom
 		Renderer::GetShaderLibrary()->Load("Renderer2D_Quad", "Assets/Shaders/Renderer2D_Quad.shader");
 		Renderer::GetShaderLibrary()->Load("Renderer2D_Line", "Assets/Shaders/Renderer2D_Line.shader");
 
+		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
+
 		CommandBufferCreateInfo commandBufferCreateInfo{};
-		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Secondary;
-		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::RENDER_PASS_CONTINUE_BIT;
+		commandBufferCreateInfo.Level = Enumerations::CommandBufferLevel::Primary;
+		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::ONE_TIME_SUBMIT_BIT; //RENDER_PASS_CONTINUE_BIT;
 		m_CommandBuffer = CommandBuffer::Create(commandBufferCreateInfo);
 
 		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(m_CameraUBO));
@@ -41,8 +43,6 @@ namespace Atom
 		m_QuadVertexTexCoords[3] = { 0.0f, 1.0f };
 
 		uint32_t framesInFlight = Renderer::GetFramesInFlight();
-
-		glm::vec2 windowSize = { Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight() };
 
 		uint32_t maxIndices = m_Capabilities.MaxQuadIndices;
 		uint32_t* quadIndices = new uint32_t[maxIndices];
@@ -66,13 +66,22 @@ namespace Atom
 			m_QuadTransformDataStorageBuffer = StorageBuffer::Create(sizeof(Renderer2D::QuadTransformData) * m_Capabilities.MaxQuads);
 
 			RenderPassCreateInfo renderPassCreateInfo{};
-			renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
-			renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+			renderPassCreateInfo.Attachments = {
+				{ Application::Get().GetWindow()->GetImageFormat() }
+			};
 			renderPassCreateInfo.RenderArea = windowSize;
-			renderPassCreateInfo.TargetSwapChain = true;
-			renderPassCreateInfo.ImplicitSetViewport = false;
-			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
+			renderPassCreateInfo.TargetSwapChain = false;
+			renderPassCreateInfo.ImplicitSetViewport = true;
+			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::Inline;
 			m_QuadRenderPass = RenderPass::Create(renderPassCreateInfo);
+
+			FramebufferCreateInfo framebufferCreateInfo{};
+			framebufferCreateInfo.RenderPass = m_QuadRenderPass;
+			framebufferCreateInfo.Width = (uint32_t)windowSize.x;
+			framebufferCreateInfo.Height = (uint32_t)windowSize.y;
+			m_Framebuffer = Framebuffer::Create(framebufferCreateInfo);
+
+			m_QuadRenderPass->SetRenderTarget(m_Framebuffer); 
 
 			PipelineOptions pipelineOptions{};
 			pipelineOptions.Layout = {
@@ -109,13 +118,16 @@ namespace Atom
 
 		{	// Setup line pipeline
 			RenderPassCreateInfo renderPassCreateInfo{};
-			renderPassCreateInfo.ImageFormat = Application::Get().GetWindow()->GetImageFormat();
-			renderPassCreateInfo.LoadOperation = Enumerations::RenderPassAttachmentLoadOperation::Load;
+			renderPassCreateInfo.Attachments = {
+				{ Application::Get().GetWindow()->GetImageFormat(), Enumerations::AttachmentLoadOperation::Load }
+			};
 			renderPassCreateInfo.RenderArea = windowSize;
-			renderPassCreateInfo.TargetSwapChain = true;
-			renderPassCreateInfo.ImplicitSetViewport = false;
-			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::SecondaryCommandBuffer;
+			renderPassCreateInfo.TargetSwapChain = false;
+			renderPassCreateInfo.ImplicitSetViewport = true;
+			renderPassCreateInfo.SubpassContents = Enumerations::RenderPassSubpassContents::Inline;
 			m_LineRenderPass = RenderPass::Create(renderPassCreateInfo);
+
+			m_LineRenderPass->SetRenderTarget(m_Framebuffer);
 
 			PipelineOptions pipelineOptions{};
 			pipelineOptions.Layout = {
@@ -212,6 +224,9 @@ namespace Atom
 			m_LineIndexBuffer = nullptr;
 		}
 
+		delete m_Framebuffer;
+		m_Framebuffer = nullptr;
+
 		delete m_WhiteTexture;
 		m_WhiteTexture = nullptr;
 
@@ -222,13 +237,10 @@ namespace Atom
 		m_CommandBuffer = nullptr;
 	}
 
-	void Renderer2D::OnEvent(Event& event)
+	void Renderer2D::Resize(uint32_t width, uint32_t height)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e)
-		{
-			return OnWindowResizeEvent(e);
-		});
+		m_QuadRenderPass->Resize(width, height);
+		m_LineRenderPass->Resize(width, height);
 	}
 
 	void Renderer2D::Begin(const glm::mat4& projectionMatrix, const glm::mat4& viewMatrix)
@@ -363,12 +375,9 @@ namespace Atom
 		m_Statistics.LineCount++;
 	}
 
-	bool Renderer2D::OnWindowResizeEvent(WindowResizeEvent& event)
+	Texture* Renderer2D::GetOutput() const
 	{
-		m_QuadRenderPass->Resize(event.GetWidth(), event.GetHeight());
-		m_LineRenderPass->Resize(event.GetWidth(), event.GetHeight());
-
-		return false;
+		return m_Framebuffer->GetColorAttachment(0);
 	}
 
 	void Renderer2D::AddQuadVertexBuffer()
@@ -505,12 +514,13 @@ namespace Atom
 		RenderCommand* renderCommand = Renderer::GetRenderCommand();
 		uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 
+		//renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadRenderPass, frameIndex);
+		m_CommandBuffer->Reset(frameIndex);
+		m_CommandBuffer->Begin(frameIndex);
+
 		{	// Draw quads
-			renderCommand->BeginRenderPass(drawCommandBuffer, m_QuadRenderPass, frameIndex);
+			renderCommand->BeginRenderPass(m_CommandBuffer, m_QuadRenderPass, frameIndex);
 
-			m_CommandBuffer->Begin(m_QuadRenderPass, frameIndex);
-
-			renderCommand->SetViewport(m_CommandBuffer, m_QuadRenderPass, frameIndex);
 			for (uint32_t i = 0; i <= m_QuadBufferWriteIndex; i++)
 			{
 				uint32_t dataSize = (uint32_t)((uint8_t*)m_QuadVertexBufferPtr[i] - (uint8_t*)m_QuadVertexBufferBases[i][frameIndex]);
@@ -526,13 +536,13 @@ namespace Atom
 				}
 			}
 
-			renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
+			renderCommand->EndRenderPass(m_CommandBuffer, frameIndex);
 		}
 
 		{	// Draw lines
-			renderCommand->BeginRenderPass(drawCommandBuffer, m_LineRenderPass, frameIndex);
+			renderCommand->BeginRenderPass(m_CommandBuffer, m_LineRenderPass, frameIndex);
 
-			renderCommand->SetViewport(m_CommandBuffer, m_LineRenderPass, frameIndex);
+			//renderCommand->SetViewport(m_CommandBuffer, m_LineRenderPass, frameIndex);
 			for (uint32_t i = 0; i <= m_LineBufferWriteIndex; i++)
 			{
 				uint32_t dataSize = (uint32_t)((uint8_t*)m_LineVertexBufferPtr[i] - (uint8_t*)m_LineVertexBufferBases[i][frameIndex]);
@@ -548,11 +558,11 @@ namespace Atom
 				}
 			}
 
-			m_CommandBuffer->End(frameIndex);
-			m_CommandBuffer->Execute(drawCommandBuffer, frameIndex);
-
-			renderCommand->EndRenderPass(drawCommandBuffer, frameIndex);
+			renderCommand->EndRenderPass(m_CommandBuffer, frameIndex);
 		}
+
+		m_CommandBuffer->End(frameIndex);
+		m_CommandBuffer->Submit(frameIndex);
 	}
 
 	void Renderer2D::NextBatch()

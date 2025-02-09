@@ -63,7 +63,7 @@ void FractalTreeLayer::OnUpdate(float deltaTime)
 
 void FractalTreeLayer::OnEvent(Atom::Event& event)
 {
-	m_Renderer2D->OnEvent(event);
+	//m_Renderer2D->OnEvent(event);
 }
 
 void FractalTreeLayer::OnImGui()

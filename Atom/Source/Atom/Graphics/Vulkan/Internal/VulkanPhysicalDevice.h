@@ -27,6 +27,10 @@ namespace Atom::Internal
 		VkPhysicalDevice GetVkPhysicalDevice() const { return m_PhysicalDevice; }
 		const VkPhysicalDeviceProperties& GetProperties() const { return m_Properties; }
 		const VkPhysicalDeviceFeatures& GetFeatures() const { return m_Features; }
+
+		VkFormat FindDepthFormat() const;
+
+		VkFormat GetDepthFormat() const { return m_DepthFormat; }
 	private:
 		void FindSuitableGPU();
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
@@ -40,6 +44,8 @@ namespace Atom::Internal
 		std::unordered_set<std::string> m_SupportedExtensions;
 		QueueFamilyIndices m_QueueFamilyIndices;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
+
+		VkFormat m_DepthFormat = VK_FORMAT_UNDEFINED;
 
 		friend class VulkanDevice;
 		friend class VulkanSwapChain;

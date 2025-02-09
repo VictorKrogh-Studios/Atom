@@ -28,6 +28,7 @@ private:
 	Atom::Texture* m_Texture = nullptr;
 
 	glm::vec3 m_CameraPosition = { 0,0,10 };
+	glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 
 private:
 	class TexturePipeline
@@ -63,6 +64,8 @@ private:
 		const std::vector<uint32_t> indices = { 
 			0, 1, 2, 2, 3, 0
 		};
+
+		friend class SandboxLayer;
 	};
 	TexturePipeline* m_TexturePipeline = nullptr;
 };

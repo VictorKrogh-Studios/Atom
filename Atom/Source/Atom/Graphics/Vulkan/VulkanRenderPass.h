@@ -1,5 +1,6 @@
 #pragma once
 #include "Atom/Graphics/RenderPass.h"
+#include "Atom/Graphics/Framebuffer.h"
 
 #include "Atom/Graphics/Vulkan/VulkanSwapChain.h"
 
@@ -16,21 +17,14 @@ namespace Atom
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
+		virtual void SetRenderTarget(Framebuffer* framebuffer) override;
+
 		inline VkRenderPass GetVkRenderPass() const
 		{
 			return m_RenderPass;
 		}
 
-		inline VkFramebuffer GetVkFramebuffer() const
-		{
-			if (m_CreateInfo.TargetSwapChain)
-			{
-				return VulkanSwapChain::Get()->GetCurrentFramebuffer();
-			}
-
-			AT_CORE_ASSERT(true, "Render passes only support targeting to the Swap Chain framebuffer");
-			return VK_NULL_HANDLE;
-		}
+		VkFramebuffer GetVkFramebuffer() const;
 
 		inline VkClearValue GetVkClearValue() const
 		{
@@ -61,7 +55,11 @@ namespace Atom
 	private:
 		void CreateRenderPass(VkDevice device);
 	private:
+		Framebuffer* m_Framebuffer = nullptr;
+
 		VkRenderPass m_RenderPass = VK_NULL_HANDLE;
+		//VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
+
 		VkExtent2D m_RenderArea;
 
 		friend class VulkanPipeline;

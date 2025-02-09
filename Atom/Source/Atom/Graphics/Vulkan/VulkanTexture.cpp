@@ -5,6 +5,8 @@
 
 #include "Internal/VulkanUtils.h"
 
+#include <backends/imgui_impl_vulkan.h>
+
 #include <stb_image.h>
 
 namespace Atom
@@ -86,14 +88,41 @@ namespace Atom
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
 	}
 
+	VulkanTexture::VulkanTexture(uint32_t width, uint32_t height, VkImage vkImage, VkImageView vkImageView)
+		: Texture(width, height, 0, {})
+	{
+		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVkDevice();
+
+		m_Image = vkImage;
+		m_ImageView = vkImageView;
+
+		CreateSampler(device);
+
+		m_ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(m_Sampler, m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+
 	VulkanTexture::~VulkanTexture()
 	{
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVkDevice();
 
 		vkDestroySampler(device, m_Sampler, nullptr);
-		vkDestroyImageView(device, m_ImageView, nullptr);
-		vkDestroyImage(device, m_Image, nullptr);
-		vkFreeMemory(device, m_ImageMemory, nullptr);
+
+		if (!m_ImGuiDescriptorSet)
+		{
+			vkDestroyImageView(device, m_ImageView, nullptr);
+			vkDestroyImage(device, m_Image, nullptr);
+			vkFreeMemory(device, m_ImageMemory, nullptr);
+		}
+	}
+
+	TextureNativeHandle VulkanTexture::GetNativeHandle()
+	{
+		if (!m_ImGuiDescriptorSet)
+		{
+			m_ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(m_Sampler, m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+
+		return m_ImGuiDescriptorSet;
 	}
 
 	void VulkanTexture::CreateImageView(VkDevice device)
@@ -127,7 +156,7 @@ namespace Atom
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
 		samplerInfo.anisotropyEnable = features.samplerAnisotropy;
-		samplerInfo.maxAnisotropy = 1.0f; 
+		samplerInfo.maxAnisotropy = 1.0f;
 		if (samplerInfo.anisotropyEnable)
 		{
 			samplerInfo.maxAnisotropy = props.limits.maxSamplerAnisotropy;

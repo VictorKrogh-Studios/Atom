@@ -1,4 +1,5 @@
 #include "ATPCH.h"
+#include "Atom/Core/Application.h"
 #include "Atom/Graphics/Renderer.h"
 
 #include "Atom/Graphics/SwapChain.h"
@@ -23,7 +24,7 @@ namespace Atom
 	{
 		s_Data = new RendererData;
 		s_Data->InitializeInfo = initializeInfo;
-		s_Data->SwapChain = s_Data->InitializeInfo.SwapChain;
+		s_Data->SwapChain = Application::Get().GetWindow()->GetSwapChain();
 		s_Data->RenderCommand = RenderCommand::Create();
 		s_Data->ShaderLibrary = new ShaderLibrary();
 
@@ -32,6 +33,8 @@ namespace Atom
 		commandBufferCreateInfo.Usage = Enumerations::CommandBufferUsageFlags::ONE_TIME_SUBMIT_BIT;
 		commandBufferCreateInfo.TargetSwapChain = true;
 		s_Data->DrawCommandBuffers = CommandBuffer::Create(commandBufferCreateInfo, s_Data->InitializeInfo.FramesInFlight);
+
+		// TODO: Move swapchain framebuffers, and renderpass, to here
 	}
 
 	void Renderer::Shutdown()

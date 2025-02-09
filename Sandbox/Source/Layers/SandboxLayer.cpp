@@ -66,7 +66,10 @@ void SandboxLayer::OnAttach()
 
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.Attachments = {
+			{ Atom::Application::Get().GetWindow()->GetImageFormat() }
+	};
+	//renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
 	renderPassCreateInfo.RenderArea = { 1600, 900 };
 	renderPassCreateInfo.TargetSwapChain = true;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
@@ -218,7 +221,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	m_Renderer2D->SubmitQuad({ -1.0f, -1.0f }, { 1.0f, 1.0f }, m_Texture);
 	m_Renderer2D->SubmitQuad({ -1.0f, 1.0f }, { 1.0f, 1.0f }, m_Texture);
 
-	m_Renderer2D->SubmitLine({ 1.0f, 1.0f}, { -1.0f, -1.0f}, { 1.0f, 0.0f, 1.0f, 1.0f});
+	m_Renderer2D->SubmitLine({ 1.0f, 1.0f }, { -1.0f, -1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f });
 
 	{
 		const glm::vec2 position = { 0.0f, 0.0f };
@@ -245,8 +248,6 @@ void SandboxLayer::OnUpdate(float deltaTime)
 
 void SandboxLayer::OnEvent(Atom::Event& event)
 {
-	m_Renderer2D->OnEvent(event);
-
 	Atom::EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<Atom::WindowResizeEvent>([this](Atom::WindowResizeEvent& e)
 	{
@@ -267,6 +268,24 @@ void SandboxLayer::OnImGui()
 		ImGui::InputFloat2("Mouse Position", &mousePos[0]);
 	}
 	ImGui::End();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	if (ImGui::Begin("Renderer2D Viewport"))
+	{
+		const auto& viewportSize = ImGui::GetContentRegionAvail();
+		if (viewportSize.x != m_ViewportSize.x || viewportSize.y != m_ViewportSize.y)
+		{
+			m_ViewportSize = { viewportSize.x, viewportSize.y };
+
+			s_Projection = glm::perspective(glm::radians(45.0f), m_ViewportSize.x / m_ViewportSize.y, 0.1f, 1000.0f);
+
+			m_Renderer2D->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
+
+		ImGui::Image((ImTextureID)m_Renderer2D->GetOutput()->GetNativeHandle(), { m_ViewportSize.x, m_ViewportSize.y });
+	}
+	ImGui::End();
+	ImGui::PopStyleVar(1);
 
 	static int location = 1;
 	ImGuiIO& io = ImGui::GetIO();
@@ -297,9 +316,10 @@ void SandboxLayer::OnImGui()
 
 bool SandboxLayer::OnWindowResizeEvent(Atom::WindowResizeEvent& event)
 {
-	s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 1000.0f);
+	//s_Projection = glm::perspective(glm::radians(45.0f), event.GetWidth() / (float)event.GetHeight(), 0.1f, 1000.0f);
 
 	m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
+	m_TexturePipeline->m_RenderPass->Resize(event.GetWidth(), event.GetHeight());
 	return false;
 }
 
@@ -310,10 +330,11 @@ SandboxLayer::TexturePipeline::TexturePipeline(Atom::UniformBuffer* uniformBuffe
 {
 	Atom::RenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.ClearColor = { 0.2f, 0.5f, 0.8f, 1.0f };
-	renderPassCreateInfo.ImageFormat = Atom::Application::Get().GetWindow()->GetImageFormat(); // Atom::Enumerations::ImageFormat::B8G8R8A8_UNORM;
+	renderPassCreateInfo.Attachments = {
+			{ Atom::Application::Get().GetWindow()->GetImageFormat() }
+	};
 	renderPassCreateInfo.RenderArea = { Atom::Application::Get().GetWindow()->GetWidth(), Atom::Application::Get().GetWindow()->GetHeight() };
 	renderPassCreateInfo.TargetSwapChain = true;
-	renderPassCreateInfo.LoadOperation = Atom::Enumerations::RenderPassAttachmentLoadOperation::Load;
 	m_RenderPass = Atom::RenderPass::Create(renderPassCreateInfo);
 
 	m_Shader = Atom::Shader::CreateFromFile("Assets/Shaders/texture.shader");
